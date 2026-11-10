@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-10">
+<meta name="app-updated" content="2026-11-10 881790c237">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -551,14 +551,26 @@ label.opt{cursor:pointer}
   .opt > .btn{justify-self:start}
 }
 /* Intro bij het opstarten: Ready, Set, Go! (verdwijnt ook zonder JS na 2 s; tik = overslaan) */
-.intro{position:fixed;inset:0;z-index:60;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;user-select:none;-webkit-user-select:none;animation:introOut .35s var(--ease) 1.65s forwards}
+/* Intro op een vaste tel van 0,5 s: Ready, Set, Go! komen op de tel omhoog; daarna wordt GO! op elke tel
+   groter en schuift naar het midden, en op de laatste tel vliegt het het scherm uit (ongeveer 3,7 s). */
+.intro{--fs:min(24vh,34vw);position:fixed;inset:0;z-index:60;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;cursor:pointer;user-select:none;-webkit-user-select:none;animation:introOut .3s ease-in 3.35s forwards}
 .intro span{display:block;overflow:hidden;line-height:.86;padding:0 .04em}
-.intro b{display:block;font-weight:900;font-stretch:62%;text-transform:uppercase;font-size:min(24vh,34vw);letter-spacing:-.01em;color:var(--paper);transform:translateY(105%);animation:introUp .45s cubic-bezier(.16,1,.3,1) .08s forwards}
-.intro span:nth-child(2) b{animation-delay:.4s}
-.intro span:nth-child(3){animation:introPop .32s var(--ease) 1.12s}
-.intro span:nth-child(3) b{font-stretch:125%;color:var(--stock-fg);animation-delay:.72s}
+.intro b{display:block;font-weight:900;font-stretch:62%;text-transform:uppercase;font-size:var(--fs);letter-spacing:-.01em;color:var(--paper);transform:translateY(105%);animation:introUp .45s cubic-bezier(.16,1,.3,1) .1s forwards}
+.intro span:nth-child(2) b{animation-delay:.6s}
+.intro span:nth-child(-n+2){animation:introFade .25s ease 1.55s forwards}
+.intro span:nth-child(3){will-change:transform;animation:introGo 1.95s linear 1.55s forwards}
+.intro span:nth-child(3) b{font-stretch:125%;color:var(--stock-fg);animation-delay:1.1s}
 @keyframes introUp{to{transform:none}}
-@keyframes introPop{50%{transform:scale(1.08)}}
+@keyframes introFade{to{opacity:0}}
+@keyframes introGo{
+  0%,25%,50%{animation-timing-function:cubic-bezier(.2,1.5,.4,1)}
+  0%{transform:none}
+  8%,25%{transform:translateY(calc(var(--fs) * -.86)) scale(1.1)}
+  33%,50%{transform:translateY(calc(var(--fs) * -.86)) scale(1.3)}
+  58%,75%{transform:translateY(calc(var(--fs) * -.86)) scale(1.6)}
+  75%{animation-timing-function:cubic-bezier(.7,0,.9,.4)}
+  100%{transform:translateY(calc(var(--fs) * -.86)) scale(24)}
+}
 @keyframes introOut{to{opacity:0;visibility:hidden}}
 @media (prefers-reduced-motion:reduce){.intro{display:none}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}.ci-num.pop,.ticket.issued{animation:none}.stub-torn{display:none}}
@@ -2610,8 +2622,8 @@ function renderBackupInfo(){
   $("backupInfo").textContent = last ? t("opt.backupLast", {d: fmtDate(last)}) : t("opt.backupNever");
 }
 function renderVersion(){
-  const d = (document.querySelector('meta[name="app-updated"]') || {}).content;
-  $("optVersion").textContent = d ? t("opt.updated", {d: fmtDate(d + "T12:00:00")}) : "";
+  const [d, v] = ((document.querySelector('meta[name="app-updated"]') || {}).content || "").split(" ");
+  $("optVersion").textContent = d ? t("opt.updated", {d: fmtDate(d + "T12:00:00")}) + (v ? " · " + v.slice(0, 7) : "") : "";
 }
 function renderSettings(){
   $("optBand").value = opts.band || "";
@@ -2686,7 +2698,7 @@ $("optReset").addEventListener("click", async () => {
 /* ---------- opstarten ---------- */
 if(opts.lang !== "nl") applyI18n(); else document.documentElement.classList.remove("i18n-wait");
 // Intro: weg na de animatie, of direct bij een tik
-(function(){ const el = $("intro"); if(!el) return; const done = () => el.remove(); el.addEventListener("click", done); el.addEventListener("animationend", e => { if(e.target === el) done(); }); setTimeout(done, 2600); })();
+(function(){ const el = $("intro"); if(!el) return; const done = () => el.remove(); el.addEventListener("click", done); el.addEventListener("animationend", e => { if(e.target === el) done(); }); setTimeout(done, 4200); })();
 applyBand(); applyLook(); applyTabs(); renderSettings();
 setPlayBtn("idle"); updateMetButtons();
 $("stageBtn").textContent = t("stageOn"); $("tapHint").textContent = t("tapHint"); $("fileNote").textContent = t("fileNote");

@@ -1,5 +1,5 @@
 // AUTOMATISCH GEGENEREERD door scripts/build-sw.mjs. Niet met de hand aanpassen.
-const VERSION = "d7c9109adf";
+const VERSION = "881790c237";
 const CACHE = "switchbone-setlist-" + VERSION;
 const ASSETS = [
   "./",
@@ -16,7 +16,9 @@ const ASSETS = [
 
 self.addEventListener("install", (event) => {
   // Alles vooraf opslaan, zodat de app daarna volledig offline werkt.
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS)));
+  // cache: "reload" slaat de browsercache over (GitHub Pages: max-age=600), anders kon een
+  // nieuwe versie de oude index.html opslaan.
+  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS.map((u) => new Request(u, { cache: "reload" })))));
 });
 
 self.addEventListener("activate", (event) => {
