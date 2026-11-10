@@ -1,5 +1,5 @@
 // AUTOMATISCH GEGENEREERD door scripts/build-sw.mjs. Niet met de hand aanpassen.
-const VERSION = "93e937e805";
+const VERSION = "5b2b142319";
 const CACHE = "switchbone-setlist-" + VERSION;
 const ASSETS = [
   "./",
@@ -36,6 +36,11 @@ self.addEventListener("message", (event) => {
 self.addEventListener("fetch", (event) => {
   const req = event.request;
   if (req.method !== "GET" || new URL(req.url).origin !== self.location.origin) return;
+  // ?fresh (Nieuwe nummers ophalen): eerst het netwerk, zonder internet de versie op het apparaat
+  if (new URL(req.url).searchParams.has("fresh")) {
+    event.respondWith(fetch(req, { cache: "no-store" }).catch(() => caches.match(req, { ignoreSearch: true })));
+    return;
+  }
   event.respondWith(
     caches.match(req, { ignoreSearch: true }).then((hit) => {
       if (hit) return hit;

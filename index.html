@@ -229,11 +229,19 @@ body.setmode #nowFacts,body.setmode .lyrics-bar{display:none!important}
 #songList li{grid-template-columns:minmax(0,1fr) auto}
 #songList li.st-pass .t,#songList li.st-pass .a{color:var(--faint)}
 /* Status per nummer: Spelen (papier), Oefenen (hoofdkleur), Passen (lijn) */
-.status{display:inline-flex;gap:3px;padding:3px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r-sm)}
-.status button{flex:1 1 0;min-height:40px;padding:4px 12px;border:0;border-radius:5px;background:none;color:var(--mute);font-size:var(--t-s);font-weight:700;cursor:pointer;white-space:nowrap}
-.status button[aria-pressed="true"]{background:var(--paper);color:var(--ink)}
-.status button[data-v="practice"][aria-pressed="true"]{background:var(--stock);color:var(--on-stock)}
-.status button[data-v="pass"][aria-pressed="true"]{background:var(--line-2);color:var(--paper)}
+/* Status als schuifknop: drie even brede vakken, een blokje (.thumb) schuift naar de keuze. Tikken of slepen. */
+.status{display:inline-grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:3px;padding:3px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r-sm);position:relative;isolation:isolate;touch-action:pan-y;--i:0}
+.status[data-v="practice"]{--i:1}
+.status[data-v="pass"]{--i:2}
+.status .thumb{position:absolute;z-index:-1;top:3px;bottom:3px;left:3px;width:calc((100% - 12px) / 3);border-radius:5px;background:var(--paper);transform:translateX(calc(var(--i) * (100% + 3px)));transition:transform .24s cubic-bezier(.25,.8,.3,1),background-color .24s;pointer-events:none}
+.status[data-v="practice"] .thumb{background:var(--stock)}
+.status[data-v="pass"] .thumb{background:var(--line-2)}
+.status.dragging .thumb{transition:background-color .24s}
+.status button{min-height:40px;padding:4px 12px;border:0;border-radius:5px;background:none;color:var(--mute);font-size:var(--t-s);font-weight:700;cursor:pointer;white-space:nowrap;transition:color .24s}
+.status button[aria-pressed="true"]{color:var(--ink)}
+.status button[data-v="practice"][aria-pressed="true"]{color:var(--on-stock)}
+.status button[data-v="pass"][aria-pressed="true"]{color:var(--paper)}
+@media (prefers-reduced-motion:reduce){.status .thumb,.status button{transition:none}}
 .practice li{grid-template-columns:minmax(0,1fr) auto auto}
 .practice li.current{background:var(--stock);color:var(--on-stock)}
 .practice li.current .a,.practice li.current .dur{color:var(--on-stock-2)}
@@ -855,6 +863,10 @@ label.opt{cursor:pointer}
               <label class="btn small" for="importFile" style="cursor:pointer" data-i18n="opt.backupRestore">Back-up terugzetten</label>
             </div>
           </div>
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" data-i18n="opt.newSongs">Nieuwe nummers</span><span class="note" data-i18n="opt.newSongsNote">Haalt de nummers op die online in de app zijn gezet. Je eigen nummers, teksten en tempo's blijven staan. Werkt alleen met internet.</span></div>
+            <button class="btn small" id="optFetchSongs" type="button" data-i18n="opt.newSongsBtn">Ophalen</button>
+          </div>
         </div>
 
         <h3 class="label set-sub" id="optAboutH" data-i18n="opt.about">Over de app</h3>
@@ -1155,7 +1167,8 @@ const I18N = {
   "askClearText": ["Alle nummers gaan uit de setlist. De nummers zelf blijven gewoon bestaan.", "All songs are removed from the setlist. The songs themselves stay."],
   "cleared": ["Setlist leeggemaakt", "Setlist cleared"],
   "exported": ["Back-up gemaakt", "Backup created"],
-  "importRes": ["{a} toegevoegd, {u} bijgewerkt", "{a} added, {u} updated"],
+  "importRes": ["{n} nummers in het bestand: {a} nieuw, {u} stonden er al", "{n} songs in the file: {a} new, {u} already there"],
+  "importAll": ["De {n} nummers in het bestand stonden er allemaal al, niets toegevoegd", "All {n} songs in the file were already there, nothing added"],
   "importSet": [", setlist met {n} nummers", ", setlist with {n} songs"],
   "importSaved1": [", 1 bewaarde setlist", ", 1 saved setlist"],
   "importSavedN": [", {n} bewaarde setlists", ", {n} saved setlists"],
@@ -1211,6 +1224,13 @@ const I18N = {
   "opt.version": ["Versie", "Version"],
   "opt.updated": ["Laatste update {d}", "Last update {d}"],
   "opt.updateCheck": ["Zoek naar update", "Check for update"],
+  "opt.newSongs": ["Nieuwe nummers", "New songs"],
+  "opt.newSongsNote": ["Haalt de nummers op die online in de app zijn gezet. Je eigen nummers, teksten en tempo's blijven staan. Werkt alleen met internet.", "Fetches the songs that were put online in the app. Your own songs, lyrics and tempos stay as they are. Needs an internet connection."],
+  "opt.newSongsBtn": ["Ophalen", "Fetch"],
+  "opt.newSongsAdded": ["{n} nieuwe nummers toegevoegd", "{n} new songs added"],
+  "opt.newSongsAdded1": ["1 nieuw nummer toegevoegd", "1 new song added"],
+  "opt.newSongsNone": ["Je hebt alle nummers al", "You already have all the songs"],
+  "opt.newSongsFail": ["Ophalen lukte niet. Probeer het later nog eens.", "Fetching failed. Please try again later."],
   "opt.offline": ["Geen internet. Bijwerken kan alleen online.", "No internet. Updating only works online."],
   "opt.upToDate": ["Je hebt de nieuwste versie", "You have the latest version"],
   "opt.updating": ["Nieuwe versie wordt opgehaald", "Downloading the new version"],
@@ -1339,18 +1359,53 @@ function setStatus(id, v, say){
   s.status = v; s.updatedAt = Date.now(); ls.set(LS_SONGS, songs); renderAll();
   if(say) toast(t(v === "play" ? "toPlay" : "toPass", {t: s.title || t("untitled")}));
 }
+const ST_VALUES = ["play", "practice", "pass"];
 function statusControl(s){
   const g = document.createElement("div"); g.className = "status"; g.setAttribute("role", "group");
   g.setAttribute("aria-label", t("statusAria", {t: s.title || t("untitled")}));
-  ["play", "practice", "pass"].forEach(v => {
-    const b = document.createElement("button"); b.type = "button"; b.dataset.v = v; b.textContent = t("st." + v);
-    b.setAttribute("aria-pressed", String(songStatus(s) === v)); b.disabled = readOnly;
-    b.addEventListener("click", () => {
+  g.dataset.v = songStatus(s);
+  const thumb = document.createElement("span"); thumb.className = "thumb"; thumb.setAttribute("aria-hidden", "true"); g.append(thumb);
+  let timer = 0, dragged = false;
+  // Eerst het blokje laten schuiven, daarna pas opslaan (dat bouwt de lijst opnieuw op)
+  const choose = v => {
+    if(readOnly || g.dataset.v === v){ thumb.style.transform = ""; return; }
+    g.dataset.v = v; thumb.style.transform = "";
+    g.querySelectorAll("button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.v === v)));
+    clearTimeout(timer);
+    const wait = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 240;
+    timer = setTimeout(() => {
       setStatus(s.id, v);
       const nb = $("songList").querySelector(`li[data-id="${CSS.escape(s.id)}"] .status button[data-v="${v}"]`); if(nb) nb.focus({preventScroll: true});
-    });
+    }, wait);
+  };
+  ST_VALUES.forEach(v => {
+    const b = document.createElement("button"); b.type = "button"; b.dataset.v = v; b.textContent = t("st." + v);
+    b.setAttribute("aria-pressed", String(songStatus(s) === v)); b.disabled = readOnly;
+    b.addEventListener("click", () => { if(dragged){ dragged = false; return; } choose(v); });
     g.append(b);
   });
+  // Slepen: het blokje volgt de vinger, loslaten kiest het vak eronder
+  let start = null;
+  g.addEventListener("pointerdown", e => { if(readOnly || e.button > 0) return; start = {x: e.clientX, id: e.pointerId}; dragged = false; });
+  g.addEventListener("pointermove", e => {
+    if(!start || e.pointerId !== start.id) return;
+    if(!dragged && Math.abs(e.clientX - start.x) < 6) return;
+    if(!dragged){ dragged = true; g.classList.add("dragging"); try{ g.setPointerCapture(e.pointerId); }catch(err){} }
+    const r = g.getBoundingClientRect(), w = (r.width - 12) / 3;
+    const x = Math.max(0, Math.min(r.width - 6 - w, e.clientX - r.left - 3 - w / 2));
+    thumb.style.transform = `translateX(${x}px)`;
+  });
+  const end = e => {
+    if(!start || e.pointerId !== start.id) return;
+    start = null; g.classList.remove("dragging");
+    if(!dragged) return;
+    const r = g.getBoundingClientRect();
+    const i = Math.max(0, Math.min(2, Math.floor((e.clientX - r.left) / (r.width / 3))));
+    choose(ST_VALUES[i]);
+    setTimeout(() => { dragged = false; }, 0);
+  };
+  g.addEventListener("pointerup", end);
+  g.addEventListener("pointercancel", e => { if(start && e.pointerId === start.id){ start = null; dragged = false; g.classList.remove("dragging"); thumb.style.transform = ""; } });
   return g;
 }
 function renderList(){
@@ -2359,7 +2414,7 @@ $("importFile").addEventListener("change", async e => {
       if(ch){ saveOpts(); applyLook(); applyBand(); renderSettings(); bandMsg = t("importBand"); }
     }
     sortSongs(); ls.set(LS_SONGS, songs); renderAll();
-    toast(t("importRes", {a: added, u: updated}) + setMsg + bandMsg);
+    toast((added ? t("importRes", {n: added + updated, a: added, u: updated}) : t("importAll", {n: updated})) + setMsg + bandMsg);
   }catch(err){ toast(t("importBad")); }
   e.target.value = "";
 });
@@ -2536,6 +2591,33 @@ $("optUpdate").addEventListener("click", async () => {
     toast(t(swReg.installing || swReg.waiting ? "opt.updating" : "opt.upToDate"));
     if(swReg.waiting) $("updateBar").hidden = false;
   }catch(e){ toast(t("opt.offline")); }
+});
+// Nieuwe nummers ophalen: songs.json van de site. Alleen ontbrekende nummers erbij; bij bestaande alleen lege velden (tempo, toon, duur) aanvullen.
+$("optFetchSongs").addEventListener("click", async () => {
+  if(!navigator.onLine){ toast(t("opt.offline")); return; }
+  const btn = $("optFetchSongs"); btn.disabled = true;
+  try{
+    const r = await fetch("songs.json?fresh=" + Date.now(), {cache:"no-store"});
+    if(!r.ok) throw new Error(r.status);
+    const j = await r.json(); const list = Array.isArray(j) ? j : (j.songs || []);
+    const keyOf = s => normQ((s.title || "") + "|" + (s.artist || ""));
+    let added = 0;
+    list.forEach(raw => {
+      if(!raw || !raw.title) return;
+      const cur = songs.find(s => (raw.id && s.id === raw.id) || keyOf(s) === keyOf(raw));
+      if(cur){
+        if(!cur.bpm && raw.bpm) cur.bpm = raw.bpm;
+        if(!cur.key && raw.key) cur.key = raw.key;
+        if(!cur.duration && raw.duration) cur.duration = raw.duration;
+        return;
+      }
+      songs.push({id: raw.id || ("s" + Date.now().toString(36) + Math.random().toString(36).slice(2,6)), title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, lyrics:raw.lyrics || "", status:["play", "practice", "pass"].includes(raw.status) ? raw.status : "play", updatedAt:Date.now()});
+      added++;
+    });
+    sortSongs(); ls.set(LS_SONGS, songs); renderAll();
+    toast(added === 1 ? t("opt.newSongsAdded1") : added ? t("opt.newSongsAdded", {n: added}) : t("opt.newSongsNone"));
+  }catch(e){ toast(t("opt.newSongsFail")); }
+  btn.disabled = false;
 });
 $("optReset").addEventListener("click", async () => {
   if(!await ask(t("opt.resetAsk"), t("opt.resetNote"), t("opt.resetBtn"), true)) return;
