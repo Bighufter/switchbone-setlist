@@ -1,0 +1,1196 @@
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Switchbone Setlist</title>
+<meta name="theme-color" content="#0F1012">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Setlist">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="preload" href="fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+/* Lettertype: Archivo, lokaal meegeleverd zodat de app offline werkt (SIL Open Font License, zie fonts/licenses).
+   Eén familie over een vaste ladder van breedtes en maten: breed voor cijfers en labels, smal voor titels, normaal voor de tekst. */
+@font-face{font-family:"Archivo";src:url("fonts/archivo-latin-wdth-normal.woff2") format("woff2");font-weight:100 900;font-stretch:62% 125%;font-style:normal;font-display:swap}
+
+/* Look: concertkaartje. Elk getrokken nummer is een oranje kaartje op een donkere grond; gespeeld is afgescheurd. */
+:root{
+  --ink:#0F1012; --ink-2:#17181B; --ink-3:#202227; --line:#2C2E34; --line-2:#3E4148;
+  --paper:#F4EFE4; --mute:#A6A9B0; --faint:#82868E;
+  --stock:#F26B1D; --stock-hi:#FF8740; --on-stock:#140A04; --on-stock-2:#4A2108;
+  --ok:#7DD39A; --danger:#FF8A70;
+  --f:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --r:12px; --r-sm:7px;
+  --t-xs:13px; --t-s:15px; --t-m:18px; --t-l:24px; --t-xl:34px; --t-2xl:clamp(34px,3.6vw,52px); --t-3xl:clamp(52px,7vw,96px);
+  --stub:200px;
+  --ease:cubic-bezier(.16,1,.3,1);
+  color-scheme:dark;
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scrollbar-color:var(--line-2) transparent}
+body{margin:0;overscroll-behavior-y:none;background:var(--ink);color:var(--paper);font:400 var(--t-m)/1.45 var(--f);font-variant-numeric:tabular-nums;caret-color:var(--stock);
+  padding-left:max(20px, env(safe-area-inset-left,0px));padding-right:max(20px, env(safe-area-inset-right,0px));padding-block:18px 40px}
+img{max-width:100%}
+[hidden]{display:none!important}
+::selection{background:var(--stock);color:var(--on-stock)}
+.wrap{max-width:1320px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+h1,h2,h3{margin:0;text-wrap:balance}
+button,input,textarea,select{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--stock);outline-offset:3px}
+.label{font-size:var(--t-xs);font-weight:800;font-stretch:125%;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
+.mono{font-variant-numeric:tabular-nums}
+
+/* Kop */
+header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+h1.brand{display:flex;align-items:center;gap:14px;min-width:0}
+h1.brand .logo{display:block;height:44px;width:auto;border-radius:3px}
+h1.brand .sub{font-size:var(--t-s);font-weight:800;font-stretch:125%;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
+.status{font-size:var(--t-s);color:var(--mute);display:flex;align-items:center;gap:8px}
+.net{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--faint)}
+.net.on{background:var(--ok)}
+
+/* Knoppen */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:1px solid var(--line-2);background:var(--ink-3);border-radius:var(--r-sm);padding:10px 16px;cursor:pointer;font-weight:700;font-size:var(--t-s);line-height:1.15;white-space:nowrap;transition:background-color .15s,border-color .15s}
+.btn:hover{border-color:var(--mute)}
+.btn:active{background-color:var(--line)}
+.btn.primary{background:var(--stock);border-color:var(--stock);color:var(--on-stock)}
+.btn.primary:hover{background:var(--stock-hi);border-color:var(--stock-hi)}
+/* Oranje hoort bij het kaartje; overige hoofdknoppen zijn papier op inkt */
+.btn.solid{background:var(--paper);border-color:var(--paper);color:var(--ink)}
+.btn.solid:hover{background:#FFFFFF;border-color:#FFFFFF}
+.btn.ghost{background:transparent}
+.btn.small{min-height:44px;padding:8px 14px}
+.btn .ico{width:14px;height:14px;display:block;flex:none}
+.btn.danger{color:var(--danger)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+a.btn{text-decoration:none;color:var(--paper)}
+a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
+.iconbtn svg{width:20px;height:20px;display:block}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);gap:24px;align-items:start}
+.col{display:flex;flex-direction:column;gap:18px;min-width:0}
+
+/* Trekken */
+.stage{display:flex;flex-direction:column;gap:18px;min-width:0}
+.draw-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);padding:10px}
+.draw-btn{min-height:64px;padding:0 30px;font-size:var(--t-l);font-weight:900;font-stretch:125%;letter-spacing:.06em;text-transform:uppercase;border-radius:9px}
+.pot{font-size:var(--t-s);font-weight:600;color:var(--mute)}
+#resetPot{margin-left:auto}
+
+/* Het kaartje */
+.ticket{position:relative;display:grid;grid-template-columns:minmax(0,1fr) var(--stub);background:var(--stock);color:var(--on-stock);border-radius:var(--r)}
+.ticket::before,.ticket::after{content:"";position:absolute;right:calc(var(--stub) - 14px);width:28px;height:28px;border-radius:50%;background:var(--ink)}
+.ticket::before{top:-14px}
+.ticket::after{bottom:-14px}
+.tk-main{padding:24px 30px 22px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.now{display:flex;flex-direction:column;gap:8px;min-width:0}
+.now h2{font-size:var(--t-3xl);font-weight:900;font-stretch:62%;line-height:.9;text-transform:uppercase;overflow-wrap:anywhere}
+.now .artist{font-size:var(--t-l);font-weight:600;line-height:1.3;color:var(--on-stock-2)}
+.now.shuffling h2{opacity:.55}
+.facts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-top:2px solid var(--on-stock)}
+.fact{display:flex;flex-direction:column;gap:4px;padding:12px 16px 2px;border:0;border-left:2px solid var(--on-stock);background:none;color:inherit;text-align:left;min-width:0;border-radius:0}
+.fact:first-child{border-left:0;padding-left:0}
+.fact .label{color:var(--on-stock-2)}
+.fact b{font-size:var(--t-2xl);font-weight:800;font-stretch:112%;line-height:1;white-space:nowrap}
+.tempofact{cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent;transition:background-color .1s}
+.tempofact .bpmbig{display:flex;align-items:baseline;gap:6px}
+.tempofact .unit{font-size:var(--t-s);font-weight:800;font-stretch:125%;color:var(--on-stock-2)}
+.tempofact small{font-size:var(--t-xs);font-weight:700;color:var(--on-stock-2);white-space:nowrap}
+.tempofact.hit{background:color-mix(in srgb,var(--on-stock) 14%,transparent)}
+.tempofact.tapped b{text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:7px}
+.durbar{display:block;height:8px;border-radius:4px;background:color-mix(in srgb,var(--on-stock) 20%,transparent);margin-top:8px;overflow:hidden}
+.durbar i{display:block;height:100%;width:0;background:var(--on-stock);border-radius:4px}
+#tapSave{grid-column:1 / -1;justify-self:start;margin-top:12px;background:var(--on-stock);border-color:var(--on-stock);color:var(--stock)}
+.tk-stub{border-left:3px dashed color-mix(in srgb,var(--on-stock) 50%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px 16px}
+.tk-stub .label{color:var(--on-stock-2)}
+.stub-no{font-size:88px;font-weight:900;font-stretch:125%;line-height:.85}
+.stub-of{font-size:var(--t-s);font-weight:800;font-stretch:125%;letter-spacing:.06em;color:var(--on-stock-2);margin-top:-4px}
+.playfact{width:112px;height:112px;border-radius:50%;background:var(--on-stock);color:var(--stock);border:0;display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease)}
+.playfact:active{transform:scale(.94)}
+.playfact svg{width:44px;height:44px;display:block}
+.playfact .cnt{font-size:46px;font-weight:900;font-stretch:125%;line-height:1}
+.playfact.stop{background:var(--paper);color:var(--on-stock)}
+.playfact:disabled{opacity:.35;cursor:not-allowed}
+/* Nog niets getrokken: een leeg kaartje */
+.ticket.blank{background:var(--ink-2);color:var(--paper);outline:2px dashed var(--line-2);outline-offset:-2px;grid-template-columns:minmax(0,1fr)}
+.ticket.blank::before,.ticket.blank::after,.ticket.blank .tk-stub{display:none}
+.ticket.blank .now h2{font-size:clamp(40px,5vw,64px)}
+.ticket.blank .now .artist{font-size:var(--t-m);color:var(--mute)}
+.ticket.blank .label{color:var(--mute)}
+/* Signatuur: het kaartje komt onder de trekbalk vandaan; de oude strook scheurt af */
+@keyframes issue{from{transform:translateY(-18px);clip-path:inset(0 0 100% 0 round 12px)}to{transform:none;clip-path:inset(-20px -20px -20px -20px round 12px)}}
+.ticket.issued{animation:issue .6s var(--ease)}
+.ticket.drawing .tk-stub > *{visibility:hidden}
+.stub-torn{position:fixed;z-index:25;margin:0;pointer-events:none;background:var(--stock);color:var(--on-stock);border-radius:0 var(--r) var(--r) 0;
+  transform-origin:0 0;animation:tear .55s cubic-bezier(.5,0,.75,0) forwards}
+@keyframes tear{0%{transform:none;opacity:1}25%{transform:rotate(4deg)}100%{transform:translate(40px,70vh) rotate(24deg);opacity:0}}
+
+/* Tekst */
+#lyricsWrap{display:flex;flex-direction:column;gap:12px;min-width:0}
+.lyrics-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.lyrics-bar .row{gap:6px}
+.timer{font-size:var(--t-s);font-weight:700;color:var(--mute);min-width:3.4em;text-align:center}
+.play-hint{font-size:var(--t-s);color:var(--mute);margin:0;max-width:70ch}
+.lyrics{white-space:pre-wrap;font-family:var(--f);font-size:calc(26px * var(--ls,1) * var(--stage,1));font-weight:500;line-height:1.5;color:var(--paper);max-width:48ch;margin:0;overflow-wrap:anywhere;max-height:60vh;overflow:auto;padding-right:8px}
+.lyrics .tag{display:inline-block;font-size:.58em;font-weight:800;font-stretch:125%;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-top:.5em}
+.lyrics.empty{color:var(--mute);font-size:var(--t-l)}
+.lyrics.playing{cursor:pointer;max-width:none}
+.empty{color:var(--mute)}
+
+/* Rechterkolom */
+.panel{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.panel-head h2{font-size:var(--t-l);font-weight:900;font-stretch:125%;letter-spacing:.05em;text-transform:uppercase}
+.file-drop{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:14px;border:1px dashed var(--line-2);border-radius:var(--r-sm)}
+.note{font-size:var(--t-s);color:var(--mute)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{border:1px solid var(--line-2);border-radius:999px;padding:8px 14px;font-size:var(--t-s);font-weight:700;background:var(--ink-3);cursor:pointer}
+.chip.sel{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+.beats{display:flex;gap:8px;align-items:center}
+.beat{width:14px;height:14px;border-radius:50%;border:2px solid var(--faint);transition:background-color .05s}
+.beat.on{background:var(--stock);border-color:var(--stock)}
+.beat.first.on{background:var(--paper);border-color:var(--paper)}
+select,input[type=text],input[type=number],input[type=search],textarea{background:var(--ink);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:11px 12px;width:100%;min-width:0;font-size:var(--t-m)}
+select:focus,input:focus,textarea:focus{border-color:var(--stock);outline:none}
+::placeholder{color:var(--mute);opacity:1}
+textarea{min-height:240px;resize:vertical;line-height:1.5}
+.listtools{display:flex;gap:8px;flex-wrap:wrap}
+
+/* De rol: alle nummers, duur als lengte */
+.songs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.songs li{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:10px 10px 10px 12px;background:var(--ink-3);border-radius:var(--r-sm)}
+.songs .idx{font-size:var(--t-s);font-weight:800;font-stretch:125%;color:var(--mute)}
+.songs .t{font-size:var(--t-m);font-weight:800;font-stretch:88%;text-transform:uppercase;line-height:1.3;overflow-wrap:break-word}
+.songs .a{font-size:var(--t-s);color:var(--mute)}
+.songs .meta{display:flex;gap:8px;align-items:center}
+.songs .bpmtag{font-size:var(--t-s);font-weight:700;color:var(--mute)}
+.songs .durbar{grid-column:2 / -1;height:4px;margin:4px 0 0;background:var(--line)}
+.songs .durbar i{background:var(--faint)}
+/* Gespeeld: het kaartje zonder strook, met een gescheurde rechterrand */
+.songs li.played{--z:9px;background:var(--line);padding-right:calc(10px + var(--z));
+  -webkit-mask:conic-gradient(from 45deg at left,#000 90deg,#0000 0) 100% 0 / var(--z) calc(var(--z) * 2) repeat-y,linear-gradient(#000 0 0) 0 0 / calc(100% - var(--z)) 100% no-repeat;
+  mask:conic-gradient(from 45deg at left,#000 90deg,#0000 0) 100% 0 / var(--z) calc(var(--z) * 2) repeat-y,linear-gradient(#000 0 0) 0 0 / calc(100% - var(--z)) 100% no-repeat}
+.songs li.sep{display:block;background:none;padding:12px 2px 2px}
+.songs li.played .t{text-decoration:line-through;text-decoration-thickness:2px;color:var(--mute)}
+.songs li.played .a,.songs li.played .bpmtag,.songs li.played .idx{color:var(--mute)}
+.songs li.current{background:var(--stock);color:var(--on-stock);-webkit-mask:none;mask:none;padding-right:10px}
+.songs li.current .t{text-decoration:none;color:var(--on-stock)}
+.songs li.current .a,.songs li.current .bpmtag,.songs li.current .idx{color:var(--on-stock-2)}
+.songs li.current .durbar{background:color-mix(in srgb,var(--on-stock) 20%,transparent)}
+.songs li.current .durbar i{background:var(--on-stock)}
+.songs li.current .btn{background:transparent;border-color:color-mix(in srgb,var(--on-stock) 45%,transparent);color:var(--on-stock)}
+.linkish{background:none;border:0;padding:0;cursor:pointer;text-align:left;color:inherit;min-width:0}
+
+/* Bewerken */
+.overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 82%,transparent);display:flex;align-items:flex-start;justify-content:center;
+  padding:max(24px, env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) 24px max(16px, env(safe-area-inset-left,0px));overflow:auto;z-index:20}
+.editor{width:100%;max-width:680px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.editor h2{font-size:var(--t-xl);font-weight:900;font-stretch:112%;text-transform:uppercase}
+.fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:12px}
+@media (max-width:520px){.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fields .wide{grid-column:1 / -1}}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.err{color:var(--danger);font-size:var(--t-s)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--paper);color:var(--ink);padding:12px 20px;border-radius:var(--r-sm);font-weight:800;z-index:30;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+
+/* Aftellen */
+.countin{position:fixed;inset:0;z-index:40;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;cursor:pointer;
+  padding:max(16px, env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) max(16px, env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));user-select:none;-webkit-user-select:none}
+.ci-logo{width:min(360px,60vw);height:auto;max-width:100%;border-radius:3px;opacity:.9}
+.ci-title{font-weight:900;font-stretch:62%;text-transform:uppercase;font-size:clamp(32px,6vw,76px);line-height:.95;text-align:center;text-wrap:balance;color:var(--paper);max-width:100%;overflow-wrap:anywhere}
+.ci-num{font-weight:900;font-stretch:125%;font-size:min(54vh,62vw);line-height:.85;color:var(--stock);min-height:.85em}
+.ci-num.first{color:var(--paper)}
+.ci-num.pop{animation:ciPop .3s var(--ease)}
+@keyframes ciPop{from{transform:scale(1.12);opacity:.4}to{transform:none;opacity:1}}
+.ci-beats{display:flex;gap:18px}
+.ci-beats i{width:26px;height:26px;border-radius:50%;border:3px solid var(--line-2)}
+.ci-beats i.on{background:var(--stock);border-color:var(--stock)}
+.ci-beats i.on:first-child{background:var(--paper);border-color:var(--paper)}
+.ci-hint{font-size:var(--t-s);color:var(--mute)}
+
+/* Updatebalk */
+.updatebar{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));z-index:35;display:flex;gap:12px;align-items:center;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r);padding:8px 8px 8px 16px;box-shadow:0 12px 30px rgba(0,0,0,.45);font-weight:700;max-width:calc(100% - 32px)}
+
+/* Aanraakschermen */
+button,a.btn,.chip,.tabbar button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@media (hover:none){.btn:hover{border-color:var(--line-2)}.btn.primary:hover{background:var(--stock);border-color:var(--stock)}}
+.tabbar{display:none}
+
+/* Groot scherm en meelopen: het nummer bezit het scherm */
+body.stagemode,body.playing{--stage:1.5}
+body.stagemode header.top,body.stagemode .grid > .col:last-child,body.stagemode .draw-row,body.stagemode #playHint,body.stagemode .tabbar,
+body.playing header.top,body.playing .draw-row,body.playing #playHint,body.playing .grid > .col:last-child,body.playing .tabbar,
+body.stagemode #nowArtist,body.stagemode .stub-no,body.stagemode .stub-of,body.stagemode .tk-stub .label,body.stagemode .durfact,body.stagemode #tapHint,body.stagemode #tapSave,
+body.playing #nowArtist,body.playing .stub-no,body.playing .stub-of,body.playing .tk-stub .label,body.playing .durfact,body.playing #tapHint,body.playing #tapSave{display:none!important}
+body.stagemode .grid,body.playing .grid{grid-template-columns:minmax(0,1fr)}
+body.stagemode .wrap,body.playing .wrap{max-width:none}
+body.stagemode .ticket,body.playing .ticket{--stub:120px}
+/* Strook tijdens het spelen: titel met tempo en toon ernaast */
+body.stagemode .tk-main,body.playing .tk-main{padding:14px 24px;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 28px}
+body.stagemode .now,body.playing .now{flex:1 1 320px}
+body.stagemode .facts,body.playing .facts{grid-template-columns:auto auto;border-top:0;flex:none}
+body.stagemode .fact,body.playing .fact{padding:2px 0 2px 20px;border-left-width:2px}
+body.stagemode .fact:first-child,body.playing .fact:first-child{border-left:0;padding-left:0;padding-right:20px}
+body.stagemode .fact b,body.playing .fact b{font-size:36px}
+body.stagemode .tempofact,body.playing .tempofact{pointer-events:none}
+body.stagemode .now h2,body.playing .now h2{font-size:clamp(30px,4vw,48px)}
+body.stagemode .tk-stub,body.playing .tk-stub{padding:10px}
+body.stagemode .playfact,body.playing .playfact{width:76px;height:76px}
+body.stagemode .playfact svg,body.playing .playfact svg{width:30px;height:30px}
+body.stagemode .lyrics,body.playing .lyrics{max-height:calc(100dvh - 230px);max-width:none}
+/* Meelopen: de regels onder de leeshoogte zakken iets terug */
+body.playing .lyrics{-webkit-mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5));mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5))}
+body.playing{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+
+/* iPad en groter: twee kolommen, rechterkolom blijft in beeld */
+@media (min-width:700px) and (min-height:521px), (min-width:1001px){
+  .grid > .col:last-child{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;border-radius:var(--r)}
+  .lyrics{max-height:max(280px, calc(100dvh - 590px))}
+}
+/* Tablet staand: één kolom; tempo en de rol naast elkaar onder de tekst */
+@media (min-width:700px) and (orientation:portrait) and (min-height:521px){
+  .grid{grid-template-columns:minmax(0,1fr)}
+  .grid > .col:last-child{position:static;max-height:none;overflow:visible;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);align-items:start;gap:18px}
+  .lyrics{max-height:max(320px, calc(100dvh - 600px))}
+}
+@media (min-width:700px) and (max-width:900px) and (orientation:portrait){
+  :root{--stub:150px}
+  .tk-main{padding:20px 22px 18px}
+  .stub-no{font-size:64px}
+  .playfact{width:90px;height:90px}
+  .draw-btn{font-size:20px;padding:0 20px}
+}
+/* iPad (1024 breed en groter): tekst leesbaar op een meter afstand */
+@media (min-width:1000px){
+  .lyrics{font-size:calc(32px * var(--ls,1) * var(--stage,1))}
+}
+
+/* iPhone (staand en liggend): één onderdeel tegelijk met een tabbalk */
+@media (max-width:699px), (max-height:520px) and (max-width:1000px){
+  body{padding-block:12px calc(88px + env(safe-area-inset-bottom,0px));padding-left:max(14px, env(safe-area-inset-left,0px));padding-right:max(14px, env(safe-area-inset-right,0px))}
+  .wrap{gap:14px}
+  h1.brand .logo{height:34px}
+  .grid{grid-template-columns:minmax(0,1fr);gap:14px}
+  .col{gap:14px}
+  [data-view]{display:none}
+  body:not([data-tab]) [data-view="play"],body[data-tab="play"] [data-view="play"],body[data-tab="tempo"] [data-view="tempo"],body[data-tab="list"] [data-view="list"]{display:flex}
+  .draw-row{padding:8px;gap:10px}
+  .draw-btn{flex:1 1 100%;min-width:0;min-height:58px;padding:0 14px;font-size:22px;font-stretch:100%;white-space:normal}
+  .pot{flex:1 1 auto}
+  #resetPot{margin-left:0}
+  :root{--stub:100px}
+  .ticket::before,.ticket::after{width:22px;height:22px;right:calc(var(--stub) - 11px)}
+  .ticket::before{top:-11px}.ticket::after{bottom:-11px}
+  .tk-main{padding:18px 16px 16px;gap:14px}
+  .now h2{font-size:clamp(34px,11vw,52px)}
+  .now .artist{font-size:var(--t-m)}
+  .fact{padding:10px 8px 2px}
+  .fact b{font-size:26px;font-stretch:100%}
+  .tempofact small{white-space:normal}
+  .tempofact .unit{display:none}
+  .songs .meta{flex-direction:column;align-items:flex-end;gap:4px}
+  .songs .meta .btn{min-height:36px;padding:6px 10px}
+  .stub-no{font-size:42px}
+  .playfact{width:70px;height:70px}
+  .playfact svg{width:28px;height:28px}
+  .lyrics{font-size:calc(20px * var(--ls,1) * var(--stage,1));max-height:max(240px, calc(100dvh - 340px))}
+  body.stagemode .ticket,body.playing .ticket{--stub:84px}
+  body.stagemode .playfact,body.playing .playfact{width:58px;height:58px}
+  body.stagemode .tk-main,body.playing .tk-main{padding:12px 14px;gap:8px 18px}
+  body.stagemode .now,body.playing .now{flex-basis:100%}
+  body.stagemode .fact b,body.playing .fact b{font-size:24px}
+  .tabbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
+    padding:6px max(8px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px, env(safe-area-inset-left,0px))}
+  .tabbar button{background:none;border:0;border-radius:8px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--t-xs);font-weight:800;font-stretch:112%;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);cursor:pointer}
+  .tabbar svg{width:22px;height:22px;display:block}
+  .tabbar button[aria-current="page"]{color:var(--paper);background:var(--ink-3)}
+  .tcount{font-weight:700}
+  .toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
+  .overlay{padding:0;align-items:stretch}
+  .editor{max-width:none;min-height:100%;border:0;border-radius:0;box-shadow:none;
+    padding:calc(16px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px))}
+  .editor > .row:last-child{position:sticky;bottom:0;background:var(--ink-2);padding-block:10px}
+  textarea{min-height:40vh}
+}
+/* iPhone liggend: weinig hoogte */
+@media (max-height:520px) and (max-width:1000px){
+  header.top{display:none}
+  .now h2{font-size:30px}
+  .lyrics{max-height:max(160px, calc(100dvh - 170px))}
+  body.playing .now{display:none}
+  body.playing .lyrics{max-height:calc(100dvh - 120px)}
+}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}.ci-num.pop,.ticket.issued{animation:none}.stub-torn{display:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <h1 class="brand"><img class="logo" src="assets/logo.png" alt="Switchbone" width="1200" height="228"><span class="sub">Setlist</span></h1>
+    <div class="status" id="status">Lijst laden…</div>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <section class="stage" aria-labelledby="nowTitle" data-view="play">
+        <div class="draw-row">
+          <button class="btn primary draw-btn" id="drawBtn">Trek een nummer</button>
+          <div class="pot" id="potInfo"></div>
+          <button class="btn ghost small" id="resetPot" hidden>Alles terug in de pot</button>
+        </div>
+
+        <article class="ticket blank" id="ticket">
+          <div class="tk-main">
+            <div class="now" id="now">
+              <h2 id="nowTitle">Nog niets getrokken</h2>
+              <div class="artist" id="nowArtist">Voeg nummers toe en trek er een. Een nummer komt pas terug als de pot leeg is.</div>
+            </div>
+
+            <div class="facts" id="nowFacts" hidden>
+              <button type="button" class="fact tempofact" id="tap" aria-label="Tempo. Tik mee op de tel om het tempo te meten">
+                <span class="label">Tempo</span>
+                <b class="bpmbig"><span id="nowBpm">–</span><span class="unit">bpm</span></b>
+                <small id="tapHint">Tik mee op de tel</small>
+                <span id="tapBpm" hidden></span>
+              </button>
+              <div class="fact keyfact"><span class="label">Toon</span><b id="nowKey">–</b></div>
+              <div class="fact durfact"><span class="label">Duur</span><b id="nowDur">–</b><span class="durbar" aria-hidden="true"><i id="nowDurBar"></i></span></div>
+              <div class="fact" style="flex-direction:row;align-items:center;gap:12px" hidden>
+                <button class="btn small" id="nowMet">Klik</button>
+                <div class="beats" id="beatsNow" aria-hidden="true"><i class="beat first"></i><i class="beat"></i><i class="beat"></i><i class="beat"></i></div>
+              </div>
+              <button type="button" class="btn small" id="tapSave" hidden>Opslaan</button>
+            </div>
+          </div>
+          <div class="tk-stub">
+            <span class="label">Nr</span>
+            <span class="stub-no" id="nowStub">–</span>
+            <span class="stub-of" id="nowStubOf"></span>
+            <button type="button" class="playfact" id="playBtn" aria-label="Start met aftellen" title="Start met aftellen"></button>
+          </div>
+        </article>
+
+        <div id="lyricsWrap" hidden>
+          <div class="lyrics-bar">
+            <div class="row">
+              <button class="btn small" id="slower" aria-label="Tekst langzamer laten lopen">−</button>
+              <span class="timer" id="speedLbl" title="Snelheid">×1.0</span>
+              <button class="btn small" id="faster" aria-label="Tekst sneller laten lopen">+</button>
+              <span class="timer" id="timer"></span>
+            </div>
+            <div class="row">
+              <button class="btn small" id="stageBtn">Groot scherm</button>
+              <button class="btn small" id="fontDown" aria-label="Kleinere tekst">A−</button>
+              <button class="btn small" id="fontUp" aria-label="Grotere tekst">A+</button>
+              <button class="btn small iconbtn" id="nowEdit" aria-label="Nummer bewerken" title="Nummer bewerken"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="3.5" stroke-dasharray="3.4 2.49"/><circle cx="12" cy="12" r="4.6" fill="none" stroke="currentColor" stroke-width="2.6"/></svg></button>
+            </div>
+          </div>
+          <p class="play-hint" id="playHint"></p>
+          <pre class="lyrics" id="nowLyrics"></pre>
+        </div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="panel" aria-labelledby="tempoH" data-view="tempo">
+        <div class="panel-head"><h2 id="tempoH">Tempo</h2></div>
+        <div class="file-drop">
+          <label class="btn small" for="audioFile" style="cursor:pointer">Kies opname</label>
+          <input type="file" id="audioFile" accept="audio/*,video/*" hidden>
+          <div class="note" id="fileNote">Kies een opname van de repetitie of het origineel (mp3, m4a, wav). Het tempo wordt in je browser berekend.</div>
+          <div class="row" id="fileChips" hidden></div>
+        </div>
+        <div class="row">
+          <button class="btn small" id="tempoMet" disabled>Klik op dit tempo</button>
+          <div class="beats" id="beatsTempo" aria-hidden="true"><i class="beat first"></i><i class="beat"></i><i class="beat"></i><i class="beat"></i></div>
+        </div>
+        <div class="row" style="flex-wrap:nowrap">
+          <select id="assignSel" aria-label="Kies nummer"></select>
+          <button class="btn small" id="assignBtn" disabled>Opslaan</button>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="listH" data-view="list">
+        <div class="panel-head"><h2 id="listH">Nummers</h2><button class="btn solid small" id="addBtn">+ Nummer</button></div>
+        <div class="listtools">
+          <button class="btn small" id="exportBtn" type="button">Exporteren</button>
+          <label class="btn small" for="importFile" style="cursor:pointer">Importeren</label>
+          <input type="file" id="importFile" accept=".json,application/json" hidden>
+        </div>
+        <input type="search" id="search" placeholder="Zoek op titel of artiest" aria-label="Zoeken">
+        <ul class="songs" id="songList"></ul>
+        <p class="empty" id="listEmpty" hidden>Nog geen nummers. Voeg het eerste nummer toe met <b>+ Nummer</b>: titel, tempo en de tekst.</p>
+      </section>
+    </div>
+  </div>
+</div>
+
+<nav class="tabbar" aria-label="Onderdelen">
+  <button type="button" data-tab="play" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 7.5v2a2.5 2.5 0 0 0 0 5v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5v-2a2.5 2.5 0 0 0 0-5z"/><path d="M15 6v12" stroke-dasharray="2 2"/></svg>Spelen</button>
+  <button type="button" data-tab="tempo" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 18H5z"/><path d="M12 17 16 7"/></svg>Tempo</button>
+  <button type="button" data-tab="list" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Nummers <span class="tcount" id="tabCount"></span></span></button>
+</nav>
+
+<div class="overlay" id="overlay" hidden>
+  <form class="editor" id="editor" novalidate>
+    <h2 id="edTitle">Nummer toevoegen</h2>
+    <div class="fields">
+      <label class="field wide"><span class="label">Titel</span><input type="text" id="fTitle" required></label>
+      <label class="field"><span class="label">Tempo (BPM)</span><input type="number" id="fBpm" min="30" max="300" inputmode="numeric"></label>
+      <label class="field"><span class="label">Toonsoort</span><input type="text" id="fKey" placeholder="bv. Am"></label>
+      <label class="field wide" style="grid-column:span 2"><span class="label">Artiest / origineel</span><input type="text" id="fArtist"></label>
+      <label class="field"><span class="label">Duur (m:ss)</span><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"></label>
+    </div>
+    <div class="row">
+      <a class="btn small" id="lkBpm" target="_blank" rel="noopener">Zoek origineel tempo ↗</a>
+      <a class="btn small" id="lkLyr" target="_blank" rel="noopener">Zoek tekst ↗</a>
+      <span class="note">Opent een zoekopdracht in een nieuw tabblad. Neem tempo en tekst daarna hier over.</span>
+    </div>
+    <label class="field"><span class="label">Tekst</span><textarea id="fLyrics" placeholder="Plak hier de tekst. Akkoorden mogen erbij."></textarea><span class="note">Bij opslaan worden dubbele lege regels en resten van tekstsites (zoals “Embed” en “You might also like”) weggehaald. Zet [Refrein] of [Couplet] op een eigen regel, dan valt het op tijdens het spelen.</span></label>
+    <div class="err" id="edErr" hidden></div>
+    <div class="row" style="justify-content:space-between">
+      <button type="button" class="btn danger" id="edDelete" hidden>Verwijderen</button>
+      <div class="row" style="margin-left:auto">
+        <button type="button" class="btn" id="edCancel">Annuleren</button>
+        <button type="submit" class="btn solid" id="edSave">Opslaan</button>
+      </div>
+    </div>
+  </form>
+</div>
+<div class="countin" id="countin" role="status" aria-live="assertive" hidden>
+  <img class="ci-logo" src="assets/logo.png" alt="" width="1200" height="228">
+  <div class="ci-title" id="ciTitle"></div>
+  <div class="ci-num" id="ciNum"></div>
+  <div class="ci-beats" id="ciBeats" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+  <div class="ci-hint">Tik om te annuleren</div>
+</div>
+<div class="toast" id="toast" hidden></div>
+<div class="updatebar" id="updateBar" role="status" hidden>
+  <span>Nieuwe versie klaar</span>
+  <button class="btn solid small" id="updateNow" type="button">Bijwerken</button>
+  <button class="btn small" id="updateLater" type="button">Later</button>
+</div>
+
+<script>
+(function(){
+const $ = id => document.getElementById(id);
+const LS_SONGS = "setlist-trekker-songs", LS_PLAYED = "setlist-trekker-played", LS_FONT = "setlist-trekker-font";
+const ls = {
+  get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+};
+
+let songs = [];          // {id,title,artist,bpm,key,lyrics}
+let played = new Set(ls.get(LS_PLAYED, []));
+let currentId = null;
+let mode = "pending";    // db | local
+let db = null, readOnly = false;
+let fontScale = ls.get(LS_FONT, 1);
+let editingId = null;
+
+/* ---------- storage ---------- */
+function sortSongs(){ songs.sort((a,b)=> (a.title||"").localeCompare(b.title||"", "nl", {sensitivity:"base"})); }
+function useLocal(){
+  mode = "local";
+  songs = ls.get(LS_SONGS, []);
+  sortSongs();
+  updateNet();
+  renderAll();
+}
+async function initStore(){
+  // Alles staat op dit apparaat (localStorage). Eerste start: startlijst uit songs.json laden.
+  let stored = null;
+  try{ stored = localStorage.getItem(LS_SONGS); }catch(e){}
+  if(stored === null){
+    try{
+      const r = await fetch("songs.json");
+      const j = await r.json();
+      ls.set(LS_SONGS, Array.isArray(j) ? j : (j.songs || []));
+    }catch(e){}
+  }
+  try{ if(navigator.storage && navigator.storage.persist) await navigator.storage.persist(); }catch(e){}
+  useLocal();
+}
+async function saveSong(s){
+  const body = {title:s.title, artist:s.artist||"", bpm:s.bpm||null, key:s.key||"", duration:s.duration||null, lyrics:s.lyrics||"", updatedAt:Date.now()};
+  if(mode === "db"){
+    const ref = s.id ? db.collection("songs").doc(s.id) : db.collection("songs").doc();
+    await ref.set(body);
+    return ref.id;
+  }
+  const id = s.id || ("s" + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
+  const i = songs.findIndex(x => x.id === id);
+  const full = Object.assign({id}, body);
+  if(i >= 0) songs[i] = full; else songs.push(full);
+  sortSongs(); ls.set(LS_SONGS, songs); renderAll();
+  return id;
+}
+async function deleteSong(id){
+  if(mode === "db"){ await db.collection("songs").doc(id).delete(); }
+  else { songs = songs.filter(s => s.id !== id); ls.set(LS_SONGS, songs); renderAll(); }
+  played.delete(id); ls.set(LS_PLAYED, [...played]);
+  if(currentId === id){ currentId = null; }
+}
+async function setBpm(id, bpm){
+  const s = songs.find(x => x.id === id); if(!s) return;
+  if(mode === "db"){ await db.collection("songs").doc(id).update({bpm, updatedAt:Date.now()}); }
+  else { s.bpm = bpm; ls.set(LS_SONGS, songs); renderAll(); }
+}
+function writeError(e){
+  if(e && e.code === "invalid_argument" && mode === "db"){ readOnly = true; renderAll(); return "Je kunt deze lijst alleen bekijken. Vraag de eigenaar om bewerkrechten."; }
+  if(e && e.code === "quota_exceeded") return "De lijst zit vol. Verwijder eerst een paar nummers.";
+  return "Opslaan lukte niet. Probeer het zo nog eens.";
+}
+
+/* ---------- rendering ---------- */
+function setStatus(t){ $("status").textContent = t; }
+function songNo(id){ return songs.findIndex(s => s.id === id) + 1; }
+function pad(n){ return String(n).padStart(2, "0"); }
+
+function renderAll(){
+  // forget played ids that no longer exist
+  const ids = new Set(songs.map(s => s.id));
+  for(const p of [...played]) if(!ids.has(p)) played.delete(p);
+  renderList(); renderPot(); renderNow(); renderAssign();
+  $("addBtn").disabled = readOnly;
+}
+function renderList(){
+  const q = $("search").value.trim().toLowerCase();
+  const ul = $("songList"); ul.textContent = "";
+  const match = s => !q || (s.title||"").toLowerCase().includes(q) || (s.artist||"").toLowerCase().includes(q);
+  // Volgorde op toestand: het huidige kaartje, dan de pot, dan wat vanavond al is uitgegeven (laatst uitgegeven bovenaan)
+  const cur = songs.filter(s => s.id === currentId && match(s));
+  const pot = songs.filter(s => s.id !== currentId && !played.has(s.id) && match(s));
+  const done = [...played].reverse().map(id => songs.find(s => s.id === id)).filter(s => s && s.id !== currentId && match(s));
+  const list = cur.concat(pot, done);
+  $("listEmpty").hidden = songs.length > 0 || mode === "pending";
+  $("tabCount").textContent = songs.length ? "(" + songs.length + ")" : "";
+  list.forEach((s, i) => {
+    if(done.length && i === cur.length + pot.length){
+      const sep = document.createElement("li"); sep.className = "sep label"; sep.textContent = "Gespeeld"; ul.append(sep);
+    }
+    const li = document.createElement("li");
+    if(played.has(s.id)) li.className = "played";
+    if(s.id === currentId) li.classList.add("current");
+    const seq = issueNo(s.id);
+    const idx = document.createElement("span"); idx.className = "idx"; idx.textContent = seq ? pad(seq) : "";
+    const main = document.createElement("button"); main.className = "linkish"; main.type = "button";
+    const t = document.createElement("div"); t.className = "t"; t.textContent = s.title || "Zonder titel";
+    const a = document.createElement("div"); a.className = "a"; a.textContent = titleCase(s.artist) || (s.lyrics ? "" : "Nog geen tekst");
+    main.append(t, a);
+    main.addEventListener("click", () => { showSong(s.id); });
+    main.title = "Toon dit nummer";
+    const meta = document.createElement("div"); meta.className = "meta";
+    const b = document.createElement("span"); b.className = "bpmtag"; b.textContent = s.bpm ? s.bpm + " bpm" : "– bpm";
+    meta.append(b);
+    if(!readOnly){
+      const e = document.createElement("button"); e.className = "btn small ghost"; e.type = "button"; e.textContent = "Bewerk";
+      e.addEventListener("click", () => openEditor(s.id));
+      meta.append(e);
+    }
+    const bar = document.createElement("span"); bar.className = "durbar"; bar.setAttribute("aria-hidden", "true");
+    const fill = document.createElement("i"); fill.style.width = durPct(s.duration) + "%"; bar.append(fill);
+    li.append(idx, main, meta, bar); ul.append(li);
+  });
+  if(songs.length && !list.length){
+    const li = document.createElement("li"); li.style.gridTemplateColumns = "1fr";
+    li.innerHTML = '<span class="empty">Geen nummers gevonden.</span>'; ul.append(li);
+  }
+}
+function issueNo(id){ const i = [...played].indexOf(id); return i < 0 ? 0 : i + 1; } // volgnummer van vanavond
+function revealCurrent(){
+  const col = document.querySelector(".grid > .col:last-child");
+  if(!col || getComputedStyle(col).overflowY !== "auto") return;
+  const li = $("songList").querySelector("li.current"); if(!li) return;
+  const cr = col.getBoundingClientRect(), lr = li.getBoundingClientRect();
+  if(lr.top < cr.top || lr.bottom > cr.bottom) col.scrollBy({top: lr.top - cr.top - 120, behavior: reduced() ? "auto" : "smooth"});
+}
+function durPct(sec){ return sec ? Math.max(6, Math.min(100, Math.round(sec / 420 * 100))) : 0; } // 7:00 = volle balk
+function pool(){ return songs.filter(s => !played.has(s.id)); }
+function renderPot(){
+  const left = pool().length, total = songs.length;
+  $("drawBtn").disabled = total === 0;
+  $("potInfo").textContent = total === 0 ? "" : (left === 0 ? "Pot is leeg, alles is gespeeld" : `Nog ${left} van ${total} in de pot`);
+  $("resetPot").hidden = played.size === 0;
+}
+function renderNow(){
+  const s = songs.find(x => x.id === currentId);
+  $("ticket").classList.toggle("blank", !s);
+  if(!s){
+    $("nowTitle").textContent = songs.length ? "Klaar voor de volgende" : "Nog niets getrokken";
+    $("nowArtist").textContent = songs.length ? "Druk op Trek een nummer. Een nummer komt pas terug als de pot leeg is." : "Voeg eerst nummers toe aan de lijst.";
+    $("nowFacts").hidden = true; $("lyricsWrap").hidden = true;
+    return;
+  }
+  const seq = issueNo(s.id);
+  $("nowStub").textContent = seq ? pad(seq) : "–";
+  $("nowStubOf").textContent = seq ? "/" + pad(songs.length) : "";
+  $("nowTitle").textContent = s.title || "Zonder titel";
+  $("nowArtist").textContent = titleCase(s.artist);
+  $("nowFacts").hidden = false;
+  renderTempoFact();
+  $("nowKey").textContent = s.key || "–";
+  $("nowDur").textContent = s.duration ? fmtDur(s.duration) : "–";
+  $("nowDurBar").style.width = durPct(s.duration) + "%";
+  $("nowMet").disabled = !s.bpm;
+  $("nowEdit").hidden = readOnly;
+  updateTapSave();
+  $("lyricsWrap").hidden = false;
+  const lyr = $("nowLyrics");
+  if(lyricsFor !== s.id && scroller.active) stopScroll(true);
+  lyricsFor = s.id;
+  const txt = s.lyrics ? cleanLyrics(s.lyrics) : "Nog geen tekst bij dit nummer.";
+  if(lyr.dataset.raw !== txt){ renderLyrics(lyr, txt); lyr.dataset.raw = txt; }
+  lyr.classList.toggle("empty", !s.lyrics);
+  lyr.style.setProperty("--ls", fontScale);
+  $("playBtn").disabled = !s.lyrics;
+  if(!scroller.active) $("timer").textContent = s.duration ? fmtDur(s.duration) : "";
+  // Alleen een hint als er iets ontbreekt voor het aftellen of het meelopen
+  const hint = [];
+  if(s.lyrics && !s.bpm) hint.push("Vul een tempo in, dan telt de afspeelknop eerst 4 tikken af.");
+  if(s.lyrics && !s.duration) hint.push("Zonder ingevulde duur loopt de tekst mee alsof het nummer 3:30 duurt.");
+  $("playHint").textContent = hint.join(" ");
+  $("playHint").hidden = !hint.length;
+}
+function renderAssign(){
+  const sel = $("assignSel"); const prev = sel.value;
+  sel.textContent = "";
+  const o0 = document.createElement("option"); o0.value = ""; o0.textContent = songs.length ? "Tempo opslaan bij…" : "Nog geen nummers"; sel.append(o0);
+  songs.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.title + (s.bpm ? ` (${s.bpm})` : ""); sel.append(o); });
+  sel.value = songs.some(s => s.id === prev) ? prev : (currentId || "");
+  sel.disabled = readOnly;
+  updateAssignBtn();
+}
+function updateAssignBtn(){ $("assignBtn").disabled = readOnly || !$("assignSel").value || !detectedBpm; }
+
+function resetTempo(){
+  if(metOwner === "tempo") stopMet();
+  taps = []; setDetected(null);
+  $("tapHint").textContent = "Tik mee op de tel";
+  $("fileChips").hidden = true; $("fileChips").textContent = "";
+  try{ $("audioFile").value = ""; }catch(e){}
+  $("fileNote").textContent = "Kies een opname van de repetitie of het origineel (mp3, m4a, wav). Het tempo wordt in je browser berekend.";
+  setSpeed(1);
+}
+function showSong(id){
+  if(id !== currentId){ stopScroll(true); resetTempo(); }
+  currentId = id;
+  renderNow(); renderList(); renderAssign(); revealCurrent();
+  if(isPhone()){ setTab("play"); }
+  else if(window.scrollY > 200) window.scrollTo({top:0, behavior: reduced() ? "auto" : "smooth"});
+}
+function reduced(){ return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
+
+/* ---------- drawing ---------- */
+let drawing = false;
+$("drawBtn").addEventListener("click", () => {
+  if(drawing || !songs.length) return;
+  let p = pool();
+  if(!p.length){ played.clear(); p = pool(); }
+  const pick = p[Math.floor(Math.random() * p.length)];
+  stopMet(); stopScroll(true);
+  tearStub(); $("ticket").classList.add("drawing");
+  const finish = () => {
+    drawing = false; $("now").classList.remove("shuffling"); $("ticket").classList.remove("drawing");
+    played.delete(pick.id); played.add(pick.id); ls.set(LS_PLAYED, [...played]);
+    resetTempo();
+    currentId = pick.id; renderAll(); revealCurrent();
+    // Signatuur: het nieuwe kaartje komt onder de trekbalk vandaan
+    const t = $("ticket"); t.classList.remove("issued");
+    if(!reduced()){ void t.offsetWidth; t.classList.add("issued"); }
+  };
+  if(reduced() || songs.length < 2){ finish(); return; }
+  drawing = true; $("now").classList.add("shuffling");
+  $("nowFacts").hidden = true; $("lyricsWrap").hidden = true;
+  let n = 0; const steps = 12;
+  const tick = () => {
+    const r = songs[Math.floor(Math.random() * songs.length)];
+    $("nowTitle").textContent = r.title; $("nowArtist").textContent = "";
+    if(++n < steps) setTimeout(tick, 40 + n * 8); else finish();
+  };
+  tick();
+});
+// Signatuur: de strook van het vorige kaartje scheurt af en valt weg
+function tearStub(){
+  const t = $("ticket");
+  if(reduced() || !currentId || t.classList.contains("blank")) return;
+  const stub = t.querySelector(".tk-stub"), r = stub.getBoundingClientRect();
+  if(!r.width || r.bottom < 0 || r.top > innerHeight) return;
+  const c = stub.cloneNode(true);
+  c.querySelectorAll("[id]").forEach(el => el.removeAttribute("id"));
+  c.classList.add("stub-torn"); c.setAttribute("aria-hidden", "true");
+  Object.assign(c.style, {left: r.left + "px", top: r.top + "px", width: r.width + "px", height: r.height + "px"});
+  document.body.append(c);
+  c.addEventListener("animationend", () => c.remove(), {once: true});
+  setTimeout(() => c.remove(), 1200);
+}
+$("resetPot").addEventListener("click", () => { played.clear(); ls.set(LS_PLAYED, []); renderAll(); toast("Alle nummers zitten weer in de pot"); });
+$("search").addEventListener("input", renderList);
+$("fontUp").addEventListener("click", () => { fontScale = Math.min(2, +(fontScale + .1).toFixed(1)); ls.set(LS_FONT, fontScale); renderNow(); });
+$("fontDown").addEventListener("click", () => { fontScale = Math.max(.7, +(fontScale - .1).toFixed(1)); ls.set(LS_FONT, fontScale); renderNow(); });
+
+/* ---------- editor ---------- */
+function openEditor(id){
+  if(readOnly) return;
+  editingId = id || null;
+  const s = songs.find(x => x.id === id) || {};
+  $("edTitle").textContent = id ? "Nummer bewerken" : "Nummer toevoegen";
+  $("fTitle").value = s.title || ""; $("fArtist").value = s.artist || "";
+  $("fBpm").value = s.bpm || (id ? "" : (detectedBpm || "")); $("fKey").value = s.key || ""; $("fDur").value = s.duration ? fmtDur(s.duration) : ""; $("fLyrics").value = s.lyrics || "";
+  $("edDelete").hidden = !id; $("edDelete").dataset.armed = ""; $("edDelete").textContent = "Verwijderen";
+  $("edErr").hidden = true;
+  updateLookups();
+  $("overlay").hidden = false; $("fTitle").focus();
+}
+function titleCase(str){ return (str || "").replace(/(^|[\s(\/-])(\p{L})/gu, (m, p, c) => p + c.toLocaleUpperCase("nl")); }
+function updateLookups(){
+  const t = $("fTitle").value.trim(), a = $("fArtist").value.trim();
+  const q = s => "https://www.google.com/search?q=" + encodeURIComponent(`"${t}" ${a} ${s}`.trim());
+  [["lkBpm", "bpm tempo"], ["lkLyr", "lyrics"]].forEach(([id, s]) => {
+    const el = $(id);
+    if(t){ el.href = q(s); el.removeAttribute("aria-disabled"); } else { el.removeAttribute("href"); el.setAttribute("aria-disabled", "true"); }
+  });
+}
+$("fTitle").addEventListener("input", updateLookups);
+$("fArtist").addEventListener("input", updateLookups);
+$("fArtist").addEventListener("blur", () => { $("fArtist").value = titleCase($("fArtist").value); updateLookups(); });
+function closeEditor(){ $("overlay").hidden = true; editingId = null; }
+$("addBtn").addEventListener("click", () => openEditor(null));
+$("nowEdit").addEventListener("click", () => openEditor(currentId));
+$("edCancel").addEventListener("click", closeEditor);
+$("overlay").addEventListener("click", e => { if(e.target === $("overlay")) closeEditor(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("overlay").hidden) closeEditor(); });
+$("editor").addEventListener("submit", async e => {
+  e.preventDefault();
+  const title = $("fTitle").value.trim();
+  const bpmRaw = $("fBpm").value.trim();
+  const bpm = bpmRaw ? Math.round(Number(bpmRaw)) : null;
+  if(!title){ showErr("Vul een titel in."); return; }
+  if(bpmRaw && (!bpm || bpm < 30 || bpm > 300)){ showErr("Tempo moet tussen 30 en 300 BPM liggen."); return; }
+  const durRaw = $("fDur").value.trim();
+  const duration = durRaw ? parseDur(durRaw) : null;
+  if(durRaw && !duration){ showErr("Schrijf de duur als minuten:seconden, bijvoorbeeld 3:45."); return; }
+  $("edSave").disabled = true;
+  try{
+    const id = await saveSong({id:editingId, title, artist:titleCase($("fArtist").value.trim()), bpm, key:$("fKey").value.trim(), duration, lyrics:cleanLyrics($("fLyrics").value)});
+    const wasNew = !editingId;
+    closeEditor();
+    toast(wasNew ? "Nummer toegevoegd" : "Opgeslagen");
+    if(!wasNew && id === currentId) renderNow();
+  }catch(err){ showErr(writeError(err)); }
+  finally{ $("edSave").disabled = false; }
+});
+$("edDelete").addEventListener("click", async () => {
+  const b = $("edDelete");
+  if(!b.dataset.armed){ b.dataset.armed = "1"; b.textContent = "Zeker weten? Tik nog eens"; return; }
+  try{ await deleteSong(editingId); closeEditor(); toast("Nummer verwijderd"); renderAll(); }
+  catch(err){ showErr(writeError(err)); }
+});
+function showErr(t){ $("edErr").textContent = t; $("edErr").hidden = false; }
+let toastT;
+function toast(t){ const el = $("toast"); el.textContent = t; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 2200); }
+
+/* ---------- lyrics cleanup & stage view ---------- */
+function cleanLyrics(t){
+  let lines = (t || "").replace(/\r\n?/g, "\n").replace(/ /g, " ").split("\n").map(l => l.replace(/[ \t]+$/, "").replace(/\d*Embed$/, ""));
+  const junk = [/^\d*\s*embed$/i, /^you might also like$/i, /^\d+\s+contributors?/i, /^translations?$/i, /^get tickets/i, /^see .+ live$/i];
+  lines = lines.filter(l => !junk.some(r => r.test(l.trim())));
+  while(lines.length && !lines[0].trim()) lines.shift();
+  if(lines.length && /\blyrics$/i.test(lines[0].trim()) && lines[0].trim().split(/\s+/).length <= 12) lines.shift();
+  return lines.join("\n").replace(/\n{3,}/g, "\n\n").replace(/^\s*\n+/, "").replace(/\s+$/, "");
+}
+function renderLyrics(el, txt){
+  el.textContent = "";
+  txt.split("\n").forEach((line, i) => {
+    if(i) el.append("\n");
+    if(/^\s*\[[^\]]+\]\s*$/.test(line)){ const sp = document.createElement("span"); sp.className = "tag"; sp.textContent = line.trim().replace(/^\[|\]$/g, ""); el.append(sp); }
+    else el.append(line);
+  });
+}
+$("fLyrics").addEventListener("blur", () => { const v = $("fLyrics").value; const c = cleanLyrics(v); if(c !== v.replace(/\s+$/, "")) $("fLyrics").value = c; });
+function setStage(on){
+  document.body.classList.toggle("stagemode", on);
+  $("stageBtn").textContent = on ? "Klein scherm" : "Groot scherm";
+  try{
+    if(on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
+    if(!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
+  }catch(e){}
+  window.scrollTo(0, 0);
+}
+$("stageBtn").addEventListener("click", () => setStage(!document.body.classList.contains("stagemode")));
+document.addEventListener("fullscreenchange", () => { if(!document.fullscreenElement && document.body.classList.contains("stagemode")) setStage(false); });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && $("overlay").hidden && document.body.classList.contains("stagemode")) setStage(false); });
+
+/* ---------- lyrics play-along ---------- */
+let lyricsFor = null, speedFactor = 1;
+const scroller = {active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
+function fmtDur(sec){ sec = Math.max(0, Math.round(sec)); return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); }
+function parseDur(v){
+  const m = v.match(/^(\d{1,2})[:.,](\d{1,2})$/); if(m){ const s = (+m[1]) * 60 + (+m[2]); return (+m[2]) < 60 && s >= 20 && s <= 1800 ? s : null; }
+  const n = Number(v); return Number.isFinite(n) && n >= 1 && n <= 30 ? Math.round(n * 60) : null;
+}
+const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></svg>';
+const ICON_STOP = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" fill="currentColor"/></svg>';
+const ico = svg => svg.replace("<svg ", '<svg class="ico" ');
+// state: "idle" | "count" (met n) | "start" | "stop" | "resume"
+function setPlayBtn(state, n){
+  const b = $("playBtn"); let label = "Start met aftellen"; let html = ICON_PLAY; let stop = false;
+  if(state === "count"){ html = '<span class="cnt">' + n + '</span>'; label = "Aftellen"; }
+  else if(state === "start"){ label = "Start"; }
+  else if(state === "stop"){ html = ICON_STOP; label = "Stop"; stop = true; }
+  else if(state === "resume"){ label = "Verder"; }
+  b.innerHTML = html; b.setAttribute("aria-label", label); b.title = label; b.classList.toggle("stop", stop);
+}
+setPlayBtn("idle");
+async function wakeOn(){ try{ if(navigator.wakeLock) scroller.wake = await navigator.wakeLock.request("screen"); }catch(e){} }
+function wakeOff(){ try{ scroller.wake && scroller.wake.release(); }catch(e){} scroller.wake = null; }
+function startPlayAlong(){
+  const s = songs.find(x => x.id === currentId); if(!s || !s.lyrics) return;
+  stopScroll(true); stopMet();
+  const lyr = $("nowLyrics"); lyr.classList.add("playing"); lyr.scrollTop = 0;
+  scroller.active = true; scroller.paused = true; scroller.total = s.duration || 210; scroller.elapsed = 0;
+  wakeOn();
+  document.body.classList.add("playing"); window.scrollTo(0, 0);
+  const go = () => {
+    hideCount();
+    const max = Math.max(0, lyr.scrollHeight - lyr.clientHeight);
+    scroller.speed = max / scroller.total; scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
+    scroller.paused = false; scroller.last = performance.now();
+    setPlayBtn("stop");
+    scroller.raf = requestAnimationFrame(step);
+  };
+  showCount(s.title);
+  if(s.bpm){
+    const ctx = audio(), spb = 60 / s.bpm, t0 = ctx.currentTime + .15;
+    for(let i = 0; i < 4; i++){
+      click(t0 + i * spb, i === 0);
+      scroller.countTimers.push(setTimeout(() => { setPlayBtn("count", i + 1); flash($("beatsNow"), i); countBeat(i, String(i + 1)); }, (.15 + i * spb) * 1000));
+    }
+    scroller.countTimers.push(setTimeout(go, (.15 + 4 * spb) * 1000));
+  } else {
+    setPlayBtn("start");
+    ["3", "2", "1"].forEach((n, i) => scroller.countTimers.push(setTimeout(() => countBeat(i + 1, n), 100 + i * 700)));
+    scroller.countTimers.push(setTimeout(go, 100 + 3 * 700));
+  }
+}
+function step(now){
+  if(!scroller.active) return;
+  const lyr = $("nowLyrics");
+  const dt = Math.min(.25, (now - scroller.last) / 1000); scroller.last = now;
+  if(!scroller.paused){
+    if(Math.abs(lyr.scrollTop - scroller.lastSet) > 3) scroller.pos = lyr.scrollTop; // zelf gescrold
+    scroller.pos += scroller.speed * speedFactor * dt;
+    scroller.elapsed += dt * speedFactor;
+    lyr.scrollTop = scroller.pos; scroller.lastSet = lyr.scrollTop;
+    $("timer").textContent = fmtDur(scroller.elapsed) + " / " + fmtDur(scroller.total);
+    if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); toast("Einde van het nummer"); return; }
+  }
+  scroller.raf = requestAnimationFrame(step);
+}
+function showCount(title){
+  $("ciTitle").textContent = title || ""; $("ciNum").textContent = ""; $("ciNum").className = "ci-num";
+  $("ciBeats").querySelectorAll("i").forEach(d => d.classList.remove("on"));
+  $("countin").hidden = false;
+}
+function countBeat(i, label){
+  const n = $("ciNum"); n.textContent = label;
+  n.className = "ci-num" + (i === 0 ? " first" : ""); void n.offsetWidth; n.classList.add("pop");
+  $("ciBeats").querySelectorAll("i").forEach((d, k) => d.classList.toggle("on", k <= i));
+}
+function hideCount(){ $("countin").hidden = true; }
+$("countin").addEventListener("click", () => stopScroll(false));
+function togglePause(){
+  if(!scroller.active || scroller.countTimers.length && scroller.speed === 0) return;
+  scroller.paused = !scroller.paused; scroller.last = performance.now();
+  setPlayBtn(scroller.paused ? "resume" : "stop");
+  if(scroller.paused) toast("Gepauzeerd, tik op de tekst om verder te gaan");
+}
+function stopScroll(silent){
+  scroller.countTimers.forEach(clearTimeout); scroller.countTimers = [];
+  hideCount();
+  cancelAnimationFrame(scroller.raf);
+  scroller.active = false; scroller.paused = false; scroller.speed = 0;
+  $("nowLyrics").classList.remove("playing");
+  document.body.classList.remove("playing");
+  setPlayBtn("idle");
+  const s = songs.find(x => x.id === currentId); $("timer").textContent = s && s.duration ? fmtDur(s.duration) : "";
+  wakeOff();
+}
+$("playBtn").addEventListener("click", () => {
+  if(!scroller.active){ startPlayAlong(); return; }
+  if(scroller.paused && scroller.speed){ togglePause(); return; }
+  stopScroll(false);
+});
+$("nowLyrics").addEventListener("click", () => { if(scroller.active && scroller.speed) togglePause(); });
+function setSpeed(f){ speedFactor = Math.min(2, Math.max(.5, Math.round(f * 10) / 10)); $("speedLbl").textContent = "×" + speedFactor.toFixed(1); }
+$("slower").addEventListener("click", () => setSpeed(speedFactor - .1));
+$("faster").addEventListener("click", () => setSpeed(speedFactor + .1));
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && scroller.active) wakeOn(); });
+
+/* ---------- metronome ---------- */
+let actx = null, metTimer = null, nextTime = 0, beatN = 0, metBpm = 0, metOwner = null;
+function audio(){ if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if(actx.state === "suspended") actx.resume(); return actx; }
+function click(t, accent){
+  const ctx = audio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+  o.frequency.value = accent ? 1650 : 1100;
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(accent ? .6 : .35, t + .002); g.gain.exponentialRampToValueAtTime(0.0001, t + .05);
+  o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + .06);
+}
+function flash(beatsEl, i){
+  const dots = beatsEl.querySelectorAll(".beat");
+  dots.forEach((d, k) => d.classList.toggle("on", k === i));
+  setTimeout(() => dots[i] && dots[i].classList.remove("on"), 110);
+}
+function startMet(bpm, owner){
+  stopMet();
+  const ctx = audio(); metBpm = bpm; metOwner = owner; beatN = 0; nextTime = ctx.currentTime + .06;
+  const beatsEl = owner === "now" ? $("beatsNow") : $("beatsTempo");
+  metTimer = setInterval(() => {
+    while(nextTime < ctx.currentTime + .12){
+      const i = beatN % 4; click(nextTime, i === 0);
+      const delay = Math.max(0, (nextTime - ctx.currentTime) * 1000);
+      setTimeout(() => flash(beatsEl, i), delay);
+      nextTime += 60 / metBpm; beatN++;
+    }
+  }, 25);
+  updateMetButtons();
+}
+function stopMet(){ if(metTimer){ clearInterval(metTimer); metTimer = null; } metOwner = null; updateMetButtons(); }
+function updateMetButtons(){
+  $("nowMet").innerHTML = metOwner === "now" ? ico(ICON_STOP) + "Stop" : ico(ICON_PLAY) + "Klik";
+  $("tempoMet").innerHTML = metOwner === "tempo" ? ico(ICON_STOP) + "Stop" : ico(ICON_PLAY) + (detectedBpm ? `Klik op ${detectedBpm}` : "Klik op dit tempo");
+}
+$("nowMet").addEventListener("click", () => {
+  const s = songs.find(x => x.id === currentId);
+  if(metOwner === "now"){ stopMet(); return; }
+  if(s && s.bpm) startMet(s.bpm, "now");
+});
+$("tempoMet").addEventListener("click", () => {
+  if(metOwner === "tempo"){ stopMet(); return; }
+  if(detectedBpm) startMet(detectedBpm, "tempo");
+});
+
+/* ---------- tempo: tap ---------- */
+let taps = [], detectedBpm = null;
+function setDetected(bpm, source){
+  detectedBpm = bpm;
+  $("tapBpm").textContent = bpm || "—";
+  $("tempoMet").disabled = !bpm;
+  if(metOwner === "tempo" && bpm) metBpm = bpm;
+  updateMetButtons(); updateAssignBtn(); updateTapSave(); renderTempoFact();
+}
+function renderTempoFact(){
+  const s = songs.find(x => x.id === currentId);
+  const el = $("tap");
+  if(detectedBpm){ $("nowBpm").textContent = detectedBpm; el.classList.add("tapped"); }
+  else { $("nowBpm").textContent = s && s.bpm ? s.bpm : "–"; el.classList.remove("tapped"); }
+}
+function updateTapSave(){ const b = $("tapSave"); b.hidden = !(detectedBpm && currentId && !readOnly); if(!b.hidden) b.textContent = `Opslaan (${detectedBpm})`; }
+$("tapSave").addEventListener("click", async () => {
+  if(!detectedBpm || !currentId) return;
+  const bpm = detectedBpm;
+  try{
+    await setBpm(currentId, bpm);
+    const s = songs.find(x => x.id === currentId); if(s) s.bpm = bpm;
+    taps = []; setDetected(null);
+    $("tapHint").textContent = "Opgeslagen";
+    toast(`${bpm} bpm opgeslagen`); renderNow(); renderList();
+  }
+  catch(err){ toast(writeError(err)); }
+});
+function doTap(){
+  const now = performance.now();
+  if(taps.length && now - taps[taps.length - 1] > 2000) taps = [];
+  taps.push(now); if(taps.length > 9) taps.shift();
+  const el = $("tap"); el.classList.add("hit"); setTimeout(() => el.classList.remove("hit"), 90);
+  if(taps.length < 2){ $("tapHint").textContent = "Blijf tikken…"; return; }
+  const iv = []; for(let i = 1; i < taps.length; i++) iv.push(taps[i] - taps[i-1]);
+  iv.sort((a,b) => a - b); const med = iv[Math.floor(iv.length / 2)];
+  const good = iv.filter(x => Math.abs(x - med) < med * .25);
+  const avg = good.reduce((a,b) => a + b, 0) / good.length;
+  $("tapHint").textContent = `${taps.length} tikken`;
+  $("fileChips").hidden = true;
+  setDetected(Math.round(60000 / avg), "tap");
+}
+$("tap").addEventListener("pointerdown", e => { e.preventDefault(); doTap(); });
+$("tap").addEventListener("keydown", e => { if(e.key === " " || e.key === "Enter"){ e.preventDefault(); doTap(); } });
+document.addEventListener("keydown", e => {
+  if(e.key !== " " || !$("overlay").hidden) return;
+  const tag = (e.target.tagName || "").toLowerCase();
+  if(["input","textarea","select","button"].includes(tag) || e.target.id === "tap") return;
+  e.preventDefault(); doTap();
+});
+
+/* ---------- tempo: from file ---------- */
+$("audioFile").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  $("fileNote").textContent = `"${f.name}" analyseren…`; $("fileChips").hidden = true;
+  try{
+    const res = await analyzeFile(f);
+    $("fileNote").textContent = `Geschat tempo voor "${f.name}". Klopt het niet, kies dan de halve of dubbele waarde.`;
+    const chips = $("fileChips"); chips.textContent = "";
+    const opts = [Math.round(res / 2), res, Math.round(res * 2)].filter(x => x >= 40 && x <= 260);
+    opts.forEach(v => {
+      const c = document.createElement("button"); c.type = "button"; c.className = "chip" + (v === res ? " sel" : ""); c.textContent = v + " bpm";
+      c.addEventListener("click", () => { chips.querySelectorAll(".chip").forEach(x => x.classList.remove("sel")); c.classList.add("sel"); setDetected(v, "file"); });
+      chips.append(c);
+    });
+    chips.hidden = false;
+    $("tapHint").textContent = "Uit opname";
+    taps = [];
+    setDetected(res, "file");
+  }catch(err){
+    $("fileNote").textContent = "Dit bestand kon niet worden gelezen. Probeer een mp3, m4a of wav.";
+  }
+});
+async function analyzeFile(file){
+  const buf = await file.arrayBuffer();
+  const Ctx = window.AudioContext || window.webkitAudioContext;
+  const ctx = new Ctx();
+  const ab = await new Promise((res, rej) => { const p = ctx.decodeAudioData(buf, res, rej); if(p && p.then) p.then(res, rej); });
+  try{ ctx.close(); }catch(e){}
+  const sr = ab.sampleRate, len = ab.length;
+  const start = len > sr * 60 ? Math.floor(len * .2) : 0;
+  const end = Math.min(len, start + sr * 50);
+  const n = end - start;
+  const mono = new Float32Array(n);
+  for(let c = 0; c < ab.numberOfChannels; c++){ const d = ab.getChannelData(c); for(let i = 0; i < n; i++) mono[i] += d[start + i]; }
+  const fps = 200, hop = Math.round(sr / fps), win = hop * 2;
+  const frames = Math.floor((n - win) / hop);
+  if(frames < fps * 4) throw new Error("te kort");
+  const e = new Float32Array(frames);
+  for(let f = 0; f < frames; f++){
+    let s = 0; const o = f * hop;
+    for(let i = 0; i < win; i++){ const v = mono[o + i]; s += v * v; }
+    e[f] = Math.log(1e-9 + s);
+  }
+  const on = new Float32Array(frames);
+  for(let f = 1; f < frames; f++) on[f] = Math.max(0, e[f] - e[f-1]);
+  // remove slow trend
+  const W = 16; const flux = new Float32Array(frames); let acc = 0;
+  for(let f = 0; f < frames; f++){ acc += on[f]; if(f >= W) acc -= on[f - W]; const m = acc / Math.min(f + 1, W); flux[f] = Math.max(0, on[f] - m); }
+  const minLag = Math.floor(fps * 60 / 220), maxLag = Math.ceil(fps * 60 / 55);
+  const ac = new Float32Array(maxLag * 2 + 2);
+  for(let l = minLag; l < ac.length; l++){
+    let s = 0; for(let f = 0; f + l < frames; f++) s += flux[f] * flux[f + l];
+    ac[l] = s / (frames - l);
+  }
+  let best = minLag, bestScore = -1;
+  for(let l = minLag; l <= maxLag; l++){
+    const bpm = fps * 60 / l;
+    const prior = Math.exp(-0.5 * Math.pow(Math.log2(bpm / 115) / 0.9, 2)); // lichte voorkeur rond 115
+    const sc = (ac[l] + 0.5 * (ac[2 * l] || 0)) * prior;
+    if(sc > bestScore){ bestScore = sc; best = l; }
+  }
+  // parabolic refinement
+  let lag = best;
+  const a = ac[best - 1], b = ac[best], c = ac[best + 1];
+  const den = a - 2 * b + c; if(den !== 0) lag = best + 0.5 * (a - c) / den;
+  let bpm = fps * 60 / lag;
+  while(bpm < 70) bpm *= 2;
+  while(bpm > 190) bpm /= 2;
+  return Math.round(bpm);
+}
+
+/* ---------- assign ---------- */
+$("assignSel").addEventListener("change", updateAssignBtn);
+$("assignBtn").addEventListener("click", async () => {
+  const id = $("assignSel").value; if(!id || !detectedBpm) return;
+  try{ await setBpm(id, detectedBpm); const s = songs.find(x => x.id === id); toast(`${detectedBpm} bpm opgeslagen bij ${s ? s.title : "nummer"}`); renderNow(); }
+  catch(err){ toast(writeError(err)); }
+});
+
+/* ---------- iPhone-tabs ---------- */
+const phoneMQ = window.matchMedia("(max-width:699px), (max-height:520px) and (max-width:1000px)");
+function isPhone(){ return phoneMQ.matches; }
+function setTab(t){
+  document.body.dataset.tab = t;
+  document.querySelectorAll(".tabbar button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"));
+  if(isPhone()) window.scrollTo(0, 0);
+}
+document.querySelectorAll(".tabbar button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+setTab("play");
+
+/* ---------- online/offline ---------- */
+function updateNet(){
+  const on = navigator.onLine;
+  $("status").innerHTML = '<span class="net' + (on ? " on" : "") + '"></span>' + (on ? "Online" : "Offline") + " \u00b7 opgeslagen op dit apparaat";
+}
+window.addEventListener("online", updateNet);
+window.addEventListener("offline", updateNet);
+
+/* ---------- exporteren / importeren ---------- */
+function exportData(){
+  return JSON.stringify({app:"switchbone-setlist", version:1, exportedAt:new Date().toISOString(), songs}, null, 2);
+}
+$("exportBtn").addEventListener("click", async () => {
+  const name = "switchbone-setlist-" + new Date().toISOString().slice(0,10) + ".json";
+  const file = new File([exportData()], name, {type:"application/json"});
+  try{
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); return; }
+  }catch(e){ if(e && e.name === "AbortError") return; }
+  const url = URL.createObjectURL(file);
+  const a = document.createElement("a"); a.href = url; a.download = name; document.body.append(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  toast("Export gemaakt");
+});
+$("importFile").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  try{
+    const j = JSON.parse(await f.text());
+    const list = Array.isArray(j) ? j : (j.songs || []);
+    if(!Array.isArray(list) || !list.length) throw new Error("leeg");
+    const keyOf = s => ((s.title || "") + "|" + (s.artist || "")).toLowerCase().replace(/[\u2019']/g, "").trim();
+    let added = 0, updated = 0;
+    list.forEach(raw => {
+      if(!raw || !raw.title) return;
+      const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, lyrics:raw.lyrics || "", updatedAt:raw.updatedAt || Date.now()};
+      const i = songs.findIndex(s => (inc.id && s.id === inc.id) || keyOf(s) === keyOf(inc));
+      if(i >= 0){
+        const cur = songs[i];
+        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: inc.lyrics || cur.lyrics || "", bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, key: inc.key || cur.key || ""});
+        updated++;
+      } else {
+        inc.id = inc.id || ("s" + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
+        songs.push(inc); added++;
+      }
+    });
+    sortSongs(); ls.set(LS_SONGS, songs); renderAll();
+    toast(`${added} toegevoegd, ${updated} bijgewerkt`);
+  }catch(err){ toast("Dit bestand kon niet worden ingelezen. Kies een export van de Setlist-app."); }
+  e.target.value = "";
+});
+
+/* ---------- offline + updates (service worker) ---------- */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", async () => {
+    try{
+      const reg = await navigator.serviceWorker.register("sw.js");
+      let waiting = null;
+      const offer = w => { if(!w) return; waiting = w; if(!document.body.classList.contains("playing")) $("updateBar").hidden = false; };
+      if(reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
+      reg.addEventListener("updatefound", () => {
+        const w = reg.installing; if(!w) return;
+        w.addEventListener("statechange", () => { if(w.state === "installed" && navigator.serviceWorker.controller) offer(w); });
+      });
+      $("updateNow").addEventListener("click", () => { if(waiting) waiting.postMessage("skipWaiting"); });
+      $("updateLater").addEventListener("click", () => { $("updateBar").hidden = true; });
+      let reloading = false;
+      navigator.serviceWorker.addEventListener("controllerchange", () => { if(reloading) return; reloading = true; location.reload(); });
+      document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && navigator.onLine) reg.update().catch(() => {}); });
+    }catch(e){}
+  });
+}
+
+renderAll();
+initStore();
+})();
+</script>
+</body>
+</html>

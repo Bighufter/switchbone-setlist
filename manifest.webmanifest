@@ -1,0 +1,17 @@
+{
+  "name": "Switchbone Setlist",
+  "short_name": "Setlist",
+  "description": "Oefenapp van Switchbone: trek willekeurig een nummer, met tekst, tempo en aftellen. Werkt offline.",
+  "lang": "nl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0F1012",
+  "theme_color": "#0F1012",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

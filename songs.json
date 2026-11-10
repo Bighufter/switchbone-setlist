@@ -1,0 +1,159 @@
+{
+  "app": "switchbone-setlist",
+  "version": 1,
+  "songs": [
+    {
+      "id": "51ruomigc1yz2rmonssi",
+      "title": "Are You Gonna Go My Way",
+      "artist": "Lenny Kravitz",
+      "bpm": 130,
+      "key": "",
+      "duration": 212,
+      "lyrics": ""
+    },
+    {
+      "id": "addicted-to-love",
+      "title": "Addicted To Love",
+      "artist": "Robert Palmer",
+      "bpm": 112,
+      "key": "",
+      "duration": 363,
+      "lyrics": ""
+    },
+    {
+      "id": "aint-talkin-bout-love",
+      "title": "Ain't Talkin' 'Bout Love",
+      "artist": "Van Halen",
+      "bpm": 139,
+      "key": "",
+      "duration": 230,
+      "lyrics": ""
+    },
+    {
+      "id": "are-you-gonna-be-my-girl",
+      "title": "Are You Gonna Be My Girl",
+      "artist": "Jet",
+      "bpm": 105,
+      "key": "",
+      "duration": 213,
+      "lyrics": ""
+    },
+    {
+      "id": "chasing-cars",
+      "title": "Chasing Cars",
+      "artist": "Snow Patrol",
+      "bpm": 104,
+      "key": "",
+      "duration": 267,
+      "lyrics": ""
+    },
+    {
+      "id": "dakota",
+      "title": "Dakota",
+      "artist": "Stereophonics",
+      "bpm": 147,
+      "key": "",
+      "duration": 297,
+      "lyrics": ""
+    },
+    {
+      "id": "fortunate-son",
+      "title": "Fortunate Son",
+      "artist": "Creedence Clearwater Revival",
+      "bpm": 133,
+      "key": "",
+      "duration": 140,
+      "lyrics": ""
+    },
+    {
+      "id": "hanging-by-a-moment",
+      "title": "Hanging By A Moment",
+      "artist": "Lifehouse",
+      "bpm": 124,
+      "key": "",
+      "duration": 216,
+      "lyrics": ""
+    },
+    {
+      "id": "hash-pipe",
+      "title": "Hash Pipe",
+      "artist": "Weezer",
+      "bpm": 126,
+      "key": "",
+      "duration": 186,
+      "lyrics": ""
+    },
+    {
+      "id": "hot-legs",
+      "title": "Hot Legs",
+      "artist": "Rod Stewart",
+      "bpm": 113,
+      "key": "",
+      "duration": 314,
+      "lyrics": ""
+    },
+    {
+      "id": "im-a-believer",
+      "title": "I'm A Believer",
+      "artist": "Smash Mouth",
+      "bpm": 162,
+      "key": "",
+      "duration": 186,
+      "lyrics": ""
+    },
+    {
+      "id": "long-blond-animal",
+      "title": "Long Blond Animal",
+      "artist": "Golden Earring",
+      "bpm": null,
+      "key": "",
+      "duration": 216,
+      "lyrics": ""
+    },
+    {
+      "id": "n9elvvfjwgjm0ub607j1",
+      "title": "I’m a believer",
+      "artist": "The Monkeys",
+      "bpm": 140,
+      "key": "",
+      "duration": 167,
+      "lyrics": ""
+    },
+    {
+      "id": "paper-in-fire",
+      "title": "Paper In Fire",
+      "artist": "John Cougar Mellencamp",
+      "bpm": 142,
+      "key": "",
+      "duration": 231,
+      "lyrics": ""
+    },
+    {
+      "id": "rebel-yell",
+      "title": "Rebel Yell",
+      "artist": "Billy Idol",
+      "bpm": 166,
+      "key": "",
+      "duration": 285,
+      "lyrics": ""
+    },
+    {
+      "id": "song-2",
+      "title": "Song 2",
+      "artist": "Blur",
+      "bpm": 130,
+      "key": "",
+      "duration": 122,
+      "lyrics": ""
+    },
+    {
+      "id": "time-bomb",
+      "title": "Time Bomb",
+      "artist": "Rancid",
+      "bpm": 165,
+      "key": "",
+      "duration": 144,
+      "lyrics": ""
+    }
+  ]
+}
