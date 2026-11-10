@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-10 d1909a5614">
+<meta name="app-updated" content="2026-11-10 1f85518b06">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -375,6 +375,19 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
 }
 /* iPad: drie schermen. 1 = alleen trekken, 2 = het getrokken nummer met afspeelknop, 3 = speelt (strook, voortgang, tekst) */
 .timefact,.pausefact,.next-row,.play-cap{display:none}
+/* iPhone: onder de trekbalk (vaste plek, verspringt niet) "Vorige nog een keer" (alleen als er een vorige is) en Overslaan */
+@media (max-width:699.98px), (max-width:1000.98px) and (max-height:520.98px){
+  .stage > *{order:2}
+  .stage > .practice-bar,.stage > .draw-row{order:0}
+  .stage > .next-row{order:1}
+  body:not(.playing):not(.practicing):not(.setmode):not(.stagemode) .stage.picked .next-row{display:block}
+  .next-row .pot,#resetPot2{display:none!important}
+  .next-btns{display:flex;gap:10px}
+  .next-btns .btn{flex:1;min-height:52px;font-weight:800}
+  .next-row:not(.has-prev) #nextBtn{display:none}
+  #nextBtn{background:color-mix(in srgb,var(--stock) 26%,var(--ink));border-color:var(--stock-fg);color:var(--stock-fg)}
+  .skip-btn{background:none}
+}
 @media (min-width:700px) and (min-height:521px), (min-width:1001px){
   body{--pad-h:calc(100dvh - 176px + var(--tab-save,0px) - env(safe-area-inset-bottom,0px))}
   /* Scherm 1 */
@@ -1508,7 +1521,7 @@ function renderNow(){
   const s = songs.find(x => x.id === currentId);
   $("ticket").classList.toggle("blank", !s);
   if(!$("now").classList.contains("shuffling")) document.querySelector(".stage").classList.toggle("picked", !!s);
-  $("nextBtn").textContent = nextLabel();
+  updNext();
   document.querySelector(".stage").classList.toggle("nolyr", !!s && !(s.lyrics || "").trim());
   if(!s){
     $("nowTitle").textContent = songs.length ? t("readyNext") : t("nothingYet");
@@ -1581,16 +1594,17 @@ let drawing = false;
 // Zonder tekst valt er niets af te spelen: het nummer telt meteen als gespeeld en de knop eronder wordt "Volgende nummer"
 function curNoLyrics(){ const s = songs.find(x => x.id === currentId); return !!(s && !(s.lyrics || "").trim()); }
 function nextIsNext(){ return songDone || curNoLyrics(); }
-// iPad: na afloop of stoppen staat meteen een volgend nummer klaar (autoNext). prevId is het nummer
+// iPad en iPhone: na afloop of stoppen staat meteen een volgend nummer klaar (autoNext). prevId is het nummer
 // dat net klaar is; de knop eronder wordt dan "Vorige nog een keer" (zolang het nieuwe nummer tekst heeft).
 let prevId = null;
 function showPrev(){ return !!prevId && !curNoLyrics() && songs.some(x => x.id === prevId); }
 function nextLabel(){ return t(showPrev() ? "playPrev" : nextIsNext() ? "nextSong" : "otherSong"); }
+function updNext(){ $("nextBtn").textContent = nextLabel(); $("nextRow").classList.toggle("has-prev", showPrev()); }
 function autoNext(){
-  if(!isPad() || !songDone || setPlay.active || document.body.classList.contains("practicing")) return;
+  if(!songDone || setPlay.active || document.body.classList.contains("practicing")) return;
   const done = currentId; prevId = done; drawSong(false);
   if(!drawing && currentId === done) prevId = null;
-  $("nextBtn").textContent = nextLabel();
+  updNext();
 }
 function playPrev(){
   const id = prevId; prevId = null;
@@ -1828,7 +1842,7 @@ function setPlayBtn(state, n){
   else if(state === "resume"){ label = t("pbResume"); }
   b.innerHTML = html; b.setAttribute("aria-label", label); b.title = label; b.classList.toggle("stop", stop);
   $("playCap").classList.toggle("on", state === "idle" && songDone);
-  $("nextBtn").textContent = nextLabel();
+  updNext();
   setPauseBtn();
 }
 function setPauseBtn(){
