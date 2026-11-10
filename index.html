@@ -9,6 +9,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
+<meta name="app-updated" content="2026-11-10">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -50,10 +51,6 @@ button,input,textarea,select{font:inherit;color:inherit}
 header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 h1.brand{display:flex;align-items:center;gap:14px;min-width:0}
 h1.brand .logo{display:block;height:44px;width:auto;border-radius:3px}
-h1.brand .sub{font-size:var(--t-s);font-weight:800;font-stretch:125%;letter-spacing:.16em;text-transform:uppercase;color:var(--mute)}
-.status{font-size:var(--t-s);color:var(--mute);display:flex;align-items:center;gap:8px}
-.net{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--faint)}
-.net.on{background:var(--ok)}
 
 /* Knoppen */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:1px solid var(--line-2);background:var(--ink-3);border-radius:var(--r-sm);padding:10px 16px;cursor:pointer;font-weight:700;font-size:var(--t-s);line-height:1.15;white-space:nowrap;transition:background-color .15s,border-color .15s}
@@ -68,6 +65,7 @@ h1.brand .sub{font-size:var(--t-s);font-weight:800;font-stretch:125%;letter-spac
 .btn.small{min-height:44px;padding:8px 14px}
 .btn .ico{width:14px;height:14px;display:block;flex:none}
 .btn.danger{color:var(--danger)}
+.btn.solid.danger,.btn.solid.danger:hover{background:var(--danger);border-color:var(--danger);color:var(--ink)}
 .btn:disabled{opacity:.4;cursor:not-allowed}
 a.btn{text-decoration:none;color:var(--paper)}
 a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
@@ -106,8 +104,6 @@ a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 .tempofact small{font-size:var(--t-xs);font-weight:700;color:var(--on-stock-2);white-space:nowrap}
 .tempofact.hit{background:color-mix(in srgb,var(--on-stock) 14%,transparent)}
 .tempofact.tapped b{text-decoration:underline;text-decoration-thickness:4px;text-underline-offset:7px}
-.durbar{display:block;height:8px;border-radius:4px;background:color-mix(in srgb,var(--on-stock) 20%,transparent);margin-top:8px;overflow:hidden}
-.durbar i{display:block;height:100%;width:0;background:var(--on-stock);border-radius:4px}
 #tapSave{grid-column:1 / -1;justify-self:start;margin-top:12px;background:var(--on-stock);border-color:var(--on-stock);color:var(--stock)}
 .tk-stub{border-left:3px dashed color-mix(in srgb,var(--on-stock) 50%,transparent);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:20px 16px}
 .tk-stub .label{color:var(--on-stock-2)}
@@ -131,6 +127,10 @@ a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 
 /* Tekst */
 #lyricsWrap{display:flex;flex-direction:column;gap:12px;min-width:0}
+/* Voortgang: alleen zichtbaar zodra de tekst loopt */
+.song-prog{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:0 0 12px}
+.song-prog[hidden]{display:none}
+.song-prog i{display:block;height:100%;width:100%;background:var(--stock);transform-origin:left;transform:scaleX(0)}
 .lyrics-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .lyrics-bar .row{gap:6px}
 .timer{font-size:var(--t-s);font-weight:700;color:var(--mute);min-width:3.4em;text-align:center}
@@ -159,7 +159,7 @@ select:focus,input:focus,textarea:focus{border-color:var(--stock);outline:none}
 ::placeholder{color:var(--mute);opacity:1}
 textarea{min-height:240px;resize:vertical;line-height:1.5}
 
-/* De rol: alle nummers, duur als lengte */
+/* De rol: alle nummers */
 .songs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
 .songs li{display:grid;grid-template-columns:2.2em minmax(0,1fr) auto;gap:2px 12px;align-items:center;padding:10px 10px 10px 12px;background:var(--ink-3);border-radius:var(--r-sm)}
 .songs .idx{font-size:var(--t-s);font-weight:800;font-stretch:125%;color:var(--mute)}
@@ -167,8 +167,6 @@ textarea{min-height:240px;resize:vertical;line-height:1.5}
 .songs .a{font-size:var(--t-s);color:var(--mute)}
 .songs .meta{display:flex;gap:8px;align-items:center}
 .songs .bpmtag{font-size:var(--t-s);font-weight:700;color:var(--mute)}
-.songs .durbar{grid-column:2 / -1;height:4px;margin:4px 0 0;background:var(--line)}
-.songs .durbar i{background:var(--faint)}
 /* Gespeeld: het kaartje zonder strook, met een gescheurde rechterrand */
 .songs li.played{--z:9px;background:var(--line);padding-right:calc(10px + var(--z));
   -webkit-mask:conic-gradient(from 45deg at left,#000 90deg,#0000 0) 100% 0 / var(--z) calc(var(--z) * 2) repeat-y,linear-gradient(#000 0 0) 0 0 / calc(100% - var(--z)) 100% no-repeat;
@@ -179,17 +177,46 @@ textarea{min-height:240px;resize:vertical;line-height:1.5}
 .songs li.current{background:var(--stock);color:var(--on-stock);-webkit-mask:none;mask:none;padding-right:10px}
 .songs li.current .t{text-decoration:none;color:var(--on-stock)}
 .songs li.current .a,.songs li.current .bpmtag,.songs li.current .idx{color:var(--on-stock-2)}
-.songs li.current .durbar{background:color-mix(in srgb,var(--on-stock) 20%,transparent)}
-.songs li.current .durbar i{background:var(--on-stock)}
 .songs li.current .btn{background:transparent;border-color:color-mix(in srgb,var(--on-stock) 45%,transparent);color:var(--on-stock)}
 
 /* Setlist: eigen keuze en volgorde, tijd per nummer en totale speeltijd */
-.set-sum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:2px solid var(--line-2)}
+.set-sum{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;align-items:center;border-top:2px solid var(--line-2)}
+.set-play{width:64px;height:64px;border-radius:50%;background:var(--stock);color:var(--on-stock);border:0;display:grid;place-items:center;cursor:pointer;margin:10px 0 0 12px;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease),background .15s}
+.set-play svg{width:26px;height:26px;margin-left:3px}
+.set-play:hover{background:var(--stock-hi)}
+.set-play:active{transform:scale(.94)}
+.set-play:disabled{background:var(--ink-3);color:var(--faint);cursor:default}
+.set-play:focus-visible{outline:2px solid var(--paper);outline-offset:3px}
+.set-next{display:flex;align-items:baseline;gap:14px;margin-top:14px;padding:14px 18px;background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r)}
+.set-next[hidden]{display:none}
+.set-next .label{color:var(--mute);flex:none}
+.set-next .nx-t{font-size:var(--t-l);font-weight:800;font-stretch:112%;text-transform:uppercase;line-height:1.15;color:var(--paper);overflow-wrap:anywhere;min-width:0}
+.set-next.last .nx-t{text-transform:none;font-stretch:100%;font-weight:600;font-size:var(--t-m);color:var(--mute)}
+body.setmode #nowFacts,body.setmode .lyrics-bar{display:none!important}
+.set-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:14px 20px;padding:16px 0 4px;border-top:1px solid var(--line)}
+.set-tools .label{display:block;margin-bottom:8px;color:var(--mute)}
+.set-tools .row{flex-wrap:nowrap}
+.set-tools input[type=number]{width:96px;flex:none;font-variant-numeric:tabular-nums}
+.set-tools .unit{color:var(--mute);font-size:var(--t-s);margin-right:4px}
+.set-tools .btn{flex:none}
+.set-tools .btn svg{width:16px;height:16px}
+.set-fill-note{margin-top:8px}
+.saved li{grid-template-columns:minmax(0,1fr) auto 44px}
+.editor.small{max-width:440px}
+@media (min-width:700px){.overlay.center{align-items:center}}
+.pick-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
+.pick-tools select{width:auto;max-width:44vw}
+.pick-tools[hidden]{display:none}
+@media (min-width:700px){.songs.pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
+.saved li.on{box-shadow:inset 3px 0 0 var(--stock)}
+body.setmode .draw-row,body.setmode #playHint{display:none!important}
+body.setmode .lyrics{max-height:var(--ly-max,60vh)}
+body.setmode .toast{bottom:auto;top:calc(16px + env(safe-area-inset-top,0px))}
+body.setmode.playing #nowArtist,body.setmode.stagemode #nowArtist{display:block!important}
 .set-sum .fact{border-left-color:var(--line-2);padding-bottom:4px}
 .set-sum .fact .label{color:var(--mute)}
 .set-sum .fact b{color:var(--paper)}
 .setlist li{grid-template-columns:44px 2em minmax(0,1fr) auto 44px;padding-left:4px;touch-action:pan-y}
-.setlist .durbar{grid-column:3 / -2}
 .songs .dur{font-size:var(--t-m);font-weight:800;font-stretch:112%;white-space:nowrap}
 .songs .dur.none{color:var(--faint)}
 .drag{width:44px;height:44px;display:grid;place-items:center;background:none;border:0;padding:0;color:var(--mute);cursor:grab;touch-action:none;border-radius:var(--r-sm);-webkit-user-select:none;user-select:none}
@@ -199,7 +226,6 @@ textarea{min-height:240px;resize:vertical;line-height:1.5}
 .setlist li.current .drag{color:var(--on-stock)}
 .setlist li.current .dur{color:var(--on-stock)}
 .pick li{grid-template-columns:minmax(0,1fr) auto 44px}
-.pick .durbar{grid-column:1 / -2}
 .set-sub{margin:10px 0 -4px}
 .linkish{background:none;border:0;padding:0;cursor:pointer;text-align:left;color:inherit;min-width:0}
 
@@ -268,10 +294,14 @@ body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 body:not([data-tab]) [data-view="play"],body[data-tab="play"] [data-view="play"],body[data-tab="setlist"] [data-view="setlist"],body[data-tab="tempo"] [data-view="tempo"],body[data-tab="list"] [data-view="list"]{display:flex}
 body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:last-child,body[data-tab="setlist"] .grid > .col:first-child,body[data-tab="list"] .grid > .col:first-child,body[data-tab="tempo"] .grid > .col:first-child{display:none}
 .grid > .col:last-child .panel{width:100%;max-width:880px;margin-inline:auto}
-.tabbar{display:grid;grid-template-columns:repeat(4,minmax(0,200px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
+.tabbar{display:grid;grid-template-columns:repeat(3,minmax(0,200px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
   padding:6px max(8px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px, env(safe-area-inset-left,0px))}
 .tabbar button{background:none;border:0;border-radius:8px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--t-xs);font-weight:800;font-stretch:112%;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);cursor:pointer}
 .tabbar svg{width:22px;height:22px;display:block}
+.app-updated{grid-column:1 / -1;margin:0;padding:2px 0 4px;text-align:center;font-size:var(--t-xs);color:var(--faint);letter-spacing:.02em}
+.app-updated[hidden],body:not([data-tab="play"]) .app-updated,body.playing .app-updated,body.setmode .app-updated,body.stagemode .app-updated{display:none}
+body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+.tabbar button[hidden]{display:none}
 .tabbar button[aria-current="page"]{color:var(--paper);background:var(--ink-3)}
 .tcount{font-weight:700}
 .toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
@@ -298,7 +328,12 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
   h1.brand .logo{height:34px}
   .grid{gap:14px}
   .col{gap:14px}
-  .tabbar{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+  .tabbar{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+  .set-next{padding:12px 14px;margin-top:10px;gap:10px}
+  .set-next .nx-t{font-size:var(--t-m)}
+  .set-tools{grid-template-columns:minmax(0,1fr)}
+  .saved li{grid-template-columns:minmax(0,1fr) auto 40px}
+  .set-play{width:56px;height:56px;margin-left:8px}
   .tabbar button{letter-spacing:.03em}
   .setlist li{grid-template-columns:40px 1.6em minmax(0,1fr) auto 40px;gap:2px 8px}
   .setlist .drag,.setlist .iconbtn{width:40px;min-width:40px}
@@ -333,6 +368,10 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
   .editor{max-width:none;min-height:100%;border:0;border-radius:0;box-shadow:none;
     padding:calc(16px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px))}
   .editor > .row:last-child{position:sticky;bottom:0;background:var(--ink-2);padding-block:10px}
+  /* korte pop-up (naam bewaren): kaartje bovenin, ruimte voor het toetsenbord */
+  .overlay.center{padding:calc(16px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) 16px max(16px, env(safe-area-inset-left,0px));align-items:flex-start}
+  .editor.small{min-height:0;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 24px 60px rgba(0,0,0,.45);padding:20px}
+  .editor.small > .row:last-child{position:static;padding-block:0}
   textarea{min-height:40vh}
 }
 /* iPhone liggend: weinig hoogte */
@@ -350,8 +389,7 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
 
 <div class="wrap">
   <header class="top">
-    <h1 class="brand"><img class="logo" src="assets/logo.png" alt="Switchbone" width="1200" height="228"><span class="sub">Setlist</span></h1>
-    <div class="status" id="status">Lijst laden…</div>
+    <h1 class="brand"><img class="logo" src="assets/logo.png" alt="Switchbone Setlist" width="1200" height="228"></h1>
   </header>
 
   <div class="grid">
@@ -378,7 +416,7 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
                 <span id="tapBpm" hidden></span>
               </button>
               <div class="fact keyfact"><span class="label">Toon</span><b id="nowKey">–</b></div>
-              <div class="fact durfact"><span class="label">Duur</span><b id="nowDur">–</b><span class="durbar" aria-hidden="true"><i id="nowDurBar"></i></span></div>
+              <div class="fact durfact"><span class="label">Duur</span><b id="nowDur">–</b></div>
               <div class="fact" style="flex-direction:row;align-items:center;gap:12px" hidden>
                 <button class="btn small" id="nowMet">Klik</button>
                 <div class="beats" id="beatsNow" aria-hidden="true"><i class="beat first"></i><i class="beat"></i><i class="beat"></i><i class="beat"></i></div>
@@ -410,22 +448,47 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
             </div>
           </div>
           <p class="play-hint" id="playHint"></p>
+          <div class="song-prog" id="songProg" role="progressbar" aria-label="Hoever je in het nummer bent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i id="songProgFill"></i></div>
           <pre class="lyrics" id="nowLyrics"></pre>
+          <div class="set-next" id="setNext" aria-live="polite" hidden><span class="label">Volgende</span><span class="nx-t" id="nxTitle"></span></div>
         </div>
       </section>
     </div>
 
     <div class="col">
       <section class="panel" aria-labelledby="setH" data-view="setlist">
-        <div class="panel-head"><h2 id="setH">Setlist</h2><button class="btn ghost small" id="setClear" type="button" hidden>Leegmaken</button></div>
+        <div class="panel-head"><h2 id="setH">Setlist</h2><div class="row head-actions"><button class="btn small" id="setSaveOpen" type="button" hidden>Bewaar</button><button class="btn ghost small" id="setClear" type="button" hidden>Leegmaken</button></div></div>
         <div class="set-sum" aria-live="polite">
           <div class="fact"><span class="label">Nummers</span><b id="setCount">0</b></div>
           <div class="fact"><span class="label">Speeltijd</span><b id="setTotal">0:00</b></div>
+          <button type="button" class="set-play" id="setPlay" aria-label="Speel de setlist af" title="Speel de setlist af" disabled></button>
+        </div>
+        <div class="set-tools">
+          <div>
+            <label class="label" for="setTarget">Speelduur</label>
+            <div class="row">
+              <input type="number" id="setTarget" min="5" max="600" step="5" inputmode="numeric" placeholder="45" aria-describedby="setFillNote"><span class="unit">min</span>
+              <button type="button" class="btn small" id="setFill"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>Vul aan</button>
+            </div>
+            <p class="note set-fill-note" id="setFillNote">Zet er willekeurig nummers bij tot de speelduur zo goed mogelijk gevuld is. Wat er al in staat, blijft staan.</p>
+          </div>
         </div>
         <p class="note" id="setNote" hidden></p>
         <ol class="songs setlist" id="setList" aria-label="Setlist in speelvolgorde"></ol>
         <p class="empty" id="setEmpty">Nog niets gekozen. Tik hieronder op de nummers die jullie willen spelen; versleep ze daarna in de goede volgorde.</p>
+        <h3 class="label set-sub" id="savedH" hidden>Bewaarde setlists</h3>
+        <ul class="songs saved" id="setSaved" aria-labelledby="savedH"></ul>
         <h3 class="label set-sub" id="pickH">Toevoegen</h3>
+        <div class="pick-tools" id="pickTools">
+          <input type="search" id="pickSearch" placeholder="Zoeken" aria-label="Zoek op titel of artiest" autocomplete="off" enterkeyhint="search">
+          <select id="pickSort" aria-label="Volgorde van de nummers">
+            <option value="title">Titel A tot Z</option>
+            <option value="artist">Artiest A tot Z</option>
+            <option value="short">Kortste eerst</option>
+            <option value="long">Langste eerst</option>
+          </select>
+        </div>
+        <p class="empty" id="pickNone" hidden></p>
         <ul class="songs pick" id="setPick" aria-labelledby="pickH"></ul>
       </section>
 
@@ -465,11 +528,35 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
 </div>
 
 <nav class="tabbar" aria-label="Onderdelen">
+  <p class="app-updated" id="appUpdated" hidden></p>
   <button type="button" data-tab="play" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 7.5v2a2.5 2.5 0 0 0 0 5v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5v-2a2.5 2.5 0 0 0 0-5z"/><path d="M15 6v12" stroke-dasharray="2 2"/></svg>Spelen</button>
   <button type="button" data-tab="setlist" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 8h6M9 12h6M9 16h3.5"/></svg><span>Setlist <span class="tcount" id="setTabCount"></span></span></button>
   <button type="button" data-tab="list" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Nummers <span class="tcount" id="tabCount"></span></span></button>
-  <button type="button" data-tab="tempo" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 18H5z"/><path d="M12 17 16 7"/></svg>Tempo</button>
+  <button type="button" data-tab="tempo" aria-current="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 18H5z"/><path d="M12 17 16 7"/></svg>Tempo</button>
 </nav>
+
+<div class="overlay center" id="askOverlay" hidden>
+  <form class="editor small" id="askForm" role="alertdialog" aria-labelledby="askTitle" aria-describedby="askText">
+    <h2 id="askTitle"></h2>
+    <p class="note" id="askText"></p>
+    <div class="row" style="justify-content:flex-end">
+      <button type="button" class="btn" id="askCancel">Annuleren</button>
+      <button type="submit" class="btn solid" id="askOk"></button>
+    </div>
+  </form>
+</div>
+<div class="overlay center" id="saveOverlay" hidden>
+  <form class="editor small" id="saveForm" novalidate>
+    <h2>Setlist bewaren</h2>
+    <label class="field"><span class="label">Naam</span><input type="text" id="setName" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="Bijv. Repetitie dinsdag"></label>
+    <p class="note" id="saveInfo"></p>
+    <div class="err" id="saveErr" hidden></div>
+    <div class="row" style="justify-content:flex-end">
+      <button type="button" class="btn" id="saveCancel">Annuleren</button>
+      <button type="submit" class="btn solid" id="setSave">Bewaar</button>
+    </div>
+  </form>
+</div>
 
 <div class="overlay" id="overlay" hidden>
   <form class="editor" id="editor" novalidate>
@@ -514,7 +601,7 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
 <script>
 (function(){
 const $ = id => document.getElementById(id);
-const LS_SONGS = "setlist-trekker-songs", LS_PLAYED = "setlist-trekker-played", LS_FONT = "setlist-trekker-font", LS_SET = "setlist-trekker-setlist";
+const LS_SONGS = "setlist-trekker-songs", LS_PLAYED = "setlist-trekker-played", LS_FONT = "setlist-trekker-font", LS_SET = "setlist-trekker-setlist", LS_SAVED = "setlist-trekker-saved", LS_TARGET = "setlist-trekker-target", LS_PICKSORT = "setlist-trekker-picksort";
 const ls = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -523,6 +610,7 @@ const ls = {
 let songs = [];          // {id,title,artist,bpm,key,lyrics}
 let played = new Set(ls.get(LS_PLAYED, []));
 let setlist = ls.get(LS_SET, []); // id's in speelvolgorde
+let savedSets = ls.get(LS_SAVED, []); // [{id, name, ids, savedAt}]
 let currentId = null;
 let mode = "pending";    // db | local
 let db = null, readOnly = false;
@@ -535,7 +623,6 @@ function useLocal(){
   mode = "local";
   songs = ls.get(LS_SONGS, []);
   sortSongs();
-  updateNet();
   renderAll();
 }
 async function initStore(){
@@ -584,7 +671,6 @@ function writeError(e){
 }
 
 /* ---------- rendering ---------- */
-function setStatus(t){ $("status").textContent = t; }
 function songNo(id){ return songs.findIndex(s => s.id === id) + 1; }
 function pad(n){ return String(n).padStart(2, "0"); }
 
@@ -633,9 +719,7 @@ function renderList(){
       e.addEventListener("click", () => openEditor(s.id));
       meta.append(e);
     }
-    const bar = document.createElement("span"); bar.className = "durbar"; bar.setAttribute("aria-hidden", "true");
-    const fill = document.createElement("i"); fill.style.width = durPct(s.duration) + "%"; bar.append(fill);
-    li.append(idx, main, meta, bar); ul.append(li);
+    li.append(idx, main, meta); ul.append(li);
   });
   if(songs.length && !list.length){
     const li = document.createElement("li"); li.style.gridTemplateColumns = "1fr";
@@ -650,7 +734,6 @@ function revealCurrent(){
   const cr = col.getBoundingClientRect(), lr = li.getBoundingClientRect();
   if(lr.top < cr.top || lr.bottom > cr.bottom) col.scrollBy({top: lr.top - cr.top - 120, behavior: reduced() ? "auto" : "smooth"});
 }
-function durPct(sec){ return sec ? Math.max(6, Math.min(100, Math.round(sec / 420 * 100))) : 0; } // 7:00 = volle balk
 function pool(){ return songs.filter(s => !played.has(s.id)); }
 function renderPot(){
   const left = pool().length, total = songs.length;
@@ -667,16 +750,17 @@ function renderNow(){
     $("nowFacts").hidden = true; $("lyricsWrap").hidden = true;
     return;
   }
-  const seq = issueNo(s.id);
+  $("ticket").classList.remove("blank");
+  const setIdx = setPlay.active ? setlist.indexOf(s.id) : -1;
+  const seq = setIdx >= 0 ? setIdx + 1 : issueNo(s.id);
   $("nowStub").textContent = seq ? pad(seq) : "–";
-  $("nowStubOf").textContent = seq ? "/" + pad(songs.length) : "";
+  $("nowStubOf").textContent = seq ? "/" + pad(setIdx >= 0 ? setlist.length : songs.length) : "";
   $("nowTitle").textContent = s.title || "Zonder titel";
   $("nowArtist").textContent = titleCase(s.artist);
   $("nowFacts").hidden = false;
   renderTempoFact();
   $("nowKey").textContent = s.key || "–";
   $("nowDur").textContent = s.duration ? fmtDur(s.duration) : "–";
-  $("nowDurBar").style.width = durPct(s.duration) + "%";
   $("nowMet").disabled = !s.bpm;
   $("nowEdit").hidden = readOnly;
   updateTapSave();
@@ -769,7 +853,8 @@ function tearStub(){
   c.addEventListener("animationend", () => c.remove(), {once: true});
   setTimeout(() => c.remove(), 1200);
 }
-$("resetPot").addEventListener("click", () => { played.clear(); ls.set(LS_PLAYED, []); renderAll(); toast("Alle nummers zitten weer in de pot"); });
+// Terug naar het beginscherm: pot vol, geen nummer getrokken, Spelen-tab bovenaan
+$("resetPot").addEventListener("click", () => { stopScroll(true); resetTempo(); endSetPlay(); currentId = null; played.clear(); ls.set(LS_PLAYED, []); renderAll(); setTab("play"); toast("Alle nummers zitten weer in de pot"); });
 $("search").addEventListener("input", renderList);
 $("fontUp").addEventListener("click", () => { fontScale = Math.min(2, +(fontScale + .1).toFixed(1)); ls.set(LS_FONT, fontScale); renderNow(); });
 $("fontDown").addEventListener("click", () => { fontScale = Math.max(.7, +(fontScale - .1).toFixed(1)); ls.set(LS_FONT, fontScale); renderNow(); });
@@ -856,11 +941,13 @@ $("fLyrics").addEventListener("blur", () => { const v = $("fLyrics").value; cons
 // Tijdens spelen en op groot scherm vult de tekst precies de ruimte tot boven de tabbalk
 function fitLyrics(){
   const root = document.documentElement.style;
-  if(!document.body.classList.contains("playing") && !document.body.classList.contains("stagemode")){ root.removeProperty("--ly-max"); return; }
+  const b = document.body.classList;
+  if(!b.contains("playing") && !b.contains("stagemode") && !b.contains("setmode")){ root.removeProperty("--ly-max"); return; }
   requestAnimationFrame(() => {
     const top = $("nowLyrics").getBoundingClientRect().top + window.scrollY;
     const bar = document.querySelector(".tabbar").getBoundingClientRect().height;
-    root.setProperty("--ly-max", Math.max(140, Math.floor(window.innerHeight - top - bar - 12)) + "px");
+    const nx = $("setNext").hidden ? 0 : $("setNext").getBoundingClientRect().height + 14;
+    root.setProperty("--ly-max", Math.max(nx ? 72 : 120, Math.floor(window.innerHeight - top - bar - nx - (nx ? 24 : 12))) + "px");
   });
 }
 window.addEventListener("resize", fitLyrics);
@@ -913,6 +1000,7 @@ function startPlayAlong(){
     scroller.speed = max / scroller.total; scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
     scroller.paused = false; scroller.last = performance.now();
     setPlayBtn("stop");
+    setProg(0); $("songProg").hidden = false; fitLyrics();
     scroller.raf = requestAnimationFrame(step);
   };
   showCount(s.title);
@@ -939,9 +1027,15 @@ function step(now){
     scroller.elapsed += dt * speedFactor;
     lyr.scrollTop = scroller.pos; scroller.lastSet = lyr.scrollTop;
     $("timer").textContent = fmtDur(scroller.elapsed) + " / " + fmtDur(scroller.total);
-    if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); toast("Einde van het nummer"); return; }
+    setProg(scroller.elapsed / scroller.total);
+    if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); if(setPlay.active) setSongEnded(); else toast("Einde van het nummer"); return; }
   }
   scroller.raf = requestAnimationFrame(step);
+}
+function setProg(f){
+  const pct = Math.max(0, Math.min(100, f * 100));
+  $("songProgFill").style.transform = `scaleX(${pct / 100})`;
+  const r = Math.round(pct); if($("songProg").getAttribute("aria-valuenow") != r) $("songProg").setAttribute("aria-valuenow", r);
 }
 function showCount(title){
   $("ciTitle").textContent = title || ""; $("ciNum").textContent = ""; $("ciNum").className = "ci-num";
@@ -967,6 +1061,7 @@ function stopScroll(silent){
   cancelAnimationFrame(scroller.raf);
   scroller.active = false; scroller.paused = false; scroller.speed = 0;
   $("nowLyrics").classList.remove("playing");
+  $("songProg").hidden = true; setProg(0);
   document.body.classList.remove("playing"); fitLyrics();
   setPlayBtn("idle");
   const s = songs.find(x => x.id === currentId); $("timer").textContent = s && s.duration ? fmtDur(s.duration) : "";
@@ -1165,16 +1260,18 @@ function setTab(t){
   document.querySelectorAll(".tabbar button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"));
   window.scrollTo(0, 0);
 }
-document.querySelectorAll(".tabbar button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
+document.querySelectorAll(".tabbar button").forEach(b => b.addEventListener("click", () => { endSetPlay(); setTab(b.dataset.tab); }));
 setTab("play");
 
-/* ---------- online/offline ---------- */
-function updateNet(){
-  const on = navigator.onLine;
-  $("status").innerHTML = '<span class="net' + (on ? " on" : "") + '"></span>' + (on ? "Online" : "Offline") + " \u00b7 opgeslagen op dit apparaat";
-}
-window.addEventListener("online", updateNet);
-window.addEventListener("offline", updateNet);
+/* ---------- laatste update (datum zet scripts/build-sw.mjs in de meta-tag) ---------- */
+(function(){
+  const d = (document.querySelector('meta[name="app-updated"]') || {}).content;
+  if(!d) return;
+  const t = document.createElement("time"); t.dateTime = d;
+  t.textContent = new Date(d + "T12:00:00").toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
+  $("appUpdated").append("Laatste update ", t);
+  $("appUpdated").hidden = false;
+})();
 
 
 /* ---------- setlist ---------- */
@@ -1198,10 +1295,6 @@ function durCell(s){
   const d = document.createElement("span"); d.className = "dur" + (s.duration ? "" : " none");
   d.textContent = s.duration ? fmtDur(s.duration) : "–"; return d;
 }
-function durBar(s){
-  const bar = document.createElement("span"); bar.className = "durbar"; bar.setAttribute("aria-hidden", "true");
-  const fill = document.createElement("i"); fill.style.width = durPct(s.duration) + "%"; bar.append(fill); return bar;
-}
 function renderSetlist(){
   const ol = $("setList"), pick = $("setPick");
   ol.textContent = ""; pick.textContent = "";
@@ -1210,11 +1303,14 @@ function renderSetlist(){
   const missing = chosen.filter(s => !s.duration).length;
   $("setCount").textContent = chosen.length;
   $("setTotal").textContent = fmtTotal(total);
+  $("setPlay").disabled = !chosen.length;
+  if(typeof renderSaved === "function" && savedSets) renderSaved();
   $("setTabCount").textContent = chosen.length ? "(" + chosen.length + ")" : "";
   $("setNote").hidden = !missing;
   $("setNote").textContent = missing === 1 ? "1 nummer heeft nog geen duur en telt niet mee in de speeltijd." : `${missing} nummers hebben nog geen duur en tellen niet mee in de speeltijd.`;
   $("setEmpty").hidden = chosen.length > 0;
   $("setClear").hidden = !chosen.length;
+  $("setSaveOpen").hidden = !chosen.length;
   chosen.forEach((s, i) => {
     const li = document.createElement("li"); li.dataset.id = s.id;
     if(s.id === currentId) li.className = "current";
@@ -1224,22 +1320,171 @@ function renderSetlist(){
     const rm = document.createElement("button"); rm.type = "button"; rm.className = "btn small ghost iconbtn"; rm.innerHTML = ICON_X;
     rm.setAttribute("aria-label", `Haal ${s.title} uit de setlist`); rm.title = "Uit de setlist halen";
     rm.addEventListener("click", () => { setlist = setlist.filter(id => id !== s.id); saveSet(); });
-    li.append(h, idx, songMain(s, () => showSong(s.id), "Toon dit nummer"), durCell(s), rm, durBar(s));
+    li.append(h, idx, songMain(s, () => showSong(s.id), "Toon dit nummer"), durCell(s), rm);
     ol.append(li);
   });
-  const rest = songs.filter(s => !setlist.includes(s.id));
-  $("pickH").hidden = !rest.length;
+  const allRest = songs.filter(s => !setlist.includes(s.id));
+  $("pickH").hidden = $("pickTools").hidden = !allRest.length;
+  const q = normQ($("pickSearch").value);
+  const rest = allRest.filter(s => !q || normQ((s.title || "") + " " + (s.artist || "")).includes(q));
+  const sort = $("pickSort").value, byTitle = (a, b) => (a.title || "").localeCompare(b.title || "", "nl", { sensitivity: "base" });
+  if(sort === "artist") rest.sort((a, b) => (a.artist || "~").localeCompare(b.artist || "~", "nl", { sensitivity: "base" }) || byTitle(a, b));
+  else if(sort === "short") rest.sort((a, b) => (a.duration || 1e9) - (b.duration || 1e9) || byTitle(a, b));
+  else if(sort === "long") rest.sort((a, b) => (b.duration || 0) - (a.duration || 0) || byTitle(a, b));
+  else rest.sort(byTitle);
+  $("pickNone").hidden = !(allRest.length && !rest.length);
+  $("pickNone").textContent = `Geen nummers gevonden voor "${$("pickSearch").value.trim()}".`;
   rest.forEach(s => {
     const li = document.createElement("li");
     const add = () => { setlist.push(s.id); saveSet(); toast(`${s.title} staat in de setlist`); };
     const b = document.createElement("button"); b.type = "button"; b.className = "btn small iconbtn"; b.innerHTML = ICON_PLUS;
     b.setAttribute("aria-label", `Zet ${s.title} in de setlist`); b.title = "In de setlist zetten"; b.addEventListener("click", add);
-    li.append(songMain(s, add, "In de setlist zetten"), durCell(s), b, durBar(s));
+    li.append(songMain(s, add, "In de setlist zetten"), durCell(s), b);
     pick.append(li);
   });
 }
-$("setClear").addEventListener("click", () => {
-  if(!setlist.length || !confirm("De setlist leegmaken? De nummers zelf blijven gewoon bestaan.")) return;
+/* ---------- setlist afspelen ---------- */
+const setPlay = { active: false, idx: 0 };
+$("setPlay").innerHTML = ICON_PLAY;
+function setSongs(){ return setlist.filter(id => songs.some(s => s.id === id)); }
+function renderNext(){
+  const box = $("setNext"), list = setSongs();
+  if(!setPlay.active){ box.hidden = true; fitLyrics(); return; }
+  const next = songs.find(s => s.id === list[setPlay.idx + 1]);
+  box.hidden = false; box.classList.toggle("last", !next);
+  $("nxTitle").textContent = next ? (next.title || "Zonder titel") : "Laatste nummer van de setlist";
+  fitLyrics();
+}
+function playSetAt(i, count){
+  const list = setSongs(); if(!list[i]) return;
+  setPlay.active = true; setPlay.idx = i;
+  document.body.classList.add("setmode");
+  showSong(list[i]);
+  renderNext();
+  const s = songs.find(x => x.id === list[i]);
+  if(count && s && s.lyrics) startPlayAlong();
+}
+function setSongEnded(){
+  const list = setSongs();
+  if(setPlay.idx + 1 < list.length){
+    playSetAt(setPlay.idx + 1, false);
+    toast("Tik op afspelen om af te tellen");
+  } else {
+    endSetPlay();
+    toast("Einde van de setlist");
+  }
+}
+function endSetPlay(){
+  if(!setPlay.active) return;
+  setPlay.active = false;
+  document.body.classList.remove("setmode");
+  renderNext(); renderNow();
+}
+$("setPlay").addEventListener("click", () => playSetAt(0, true));
+/* ---------- setlist vullen tot de speelduur ---------- */
+$("setTarget").value = ls.get(LS_TARGET, "") || "";
+$("setTarget").addEventListener("change", () => { const m = parseInt($("setTarget").value, 10); ls.set(LS_TARGET, m > 0 ? m : ""); });
+function fillSetlist(){
+  const minutes = parseInt($("setTarget").value, 10);
+  if(!(minutes > 0)){ $("setTarget").focus(); toast("Vul eerst de speelduur in minuten in"); return; }
+  ls.set(LS_TARGET, minutes);
+  const target = minutes * 60;
+  const chosen = setSongs(), used = new Set(chosen);
+  const have = chosen.reduce((n, id) => n + ((songs.find(s => s.id === id) || {}).duration || 0), 0);
+  const room = target - have;
+  const pool = songs.filter(s => !used.has(s.id) && s.duration > 0);
+  if(room <= 0){ toast("De setlist is al " + fmtTotal(have) + ", dat is de speelduur of langer"); return; }
+  if(!pool.length){ toast("Er zijn geen nummers met een duur meer over om toe te voegen"); return; }
+  // Willekeurig vullen; van een aantal pogingen de best gevulde houden
+  let best = [], bestSum = 0;
+  for(let k = 0; k < 400; k++){
+    const order = pool.slice();
+    for(let i = order.length - 1; i > 0; i--){ const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+    const take = []; let sum = 0;
+    for(const s of order) if(sum + s.duration <= room){ take.push(s); sum += s.duration; }
+    if(sum > bestSum){ best = take; bestSum = sum; if(room - sum < 20) break; }
+  }
+  if(!best.length){ toast("Geen enkel nummer past nog in de " + fmtTotal(room) + " die over is"); return; }
+  setlist = chosen.concat(best.map(s => s.id)); saveSet();
+  const left = room - bestSum;
+  toast(`${best.length} nummers toegevoegd, totaal ${fmtTotal(have + bestSum)}` + (left >= 30 ? `, ${fmtTotal(left)} over` : ""));
+}
+$("setFill").addEventListener("click", fillSetlist);
+
+/* ---------- setlists bewaren ---------- */
+function saveSaved(){ ls.set(LS_SAVED, savedSets); renderSaved(); }
+function setTotalOf(ids){ return ids.reduce((n, id) => n + ((songs.find(s => s.id === id) || {}).duration || 0), 0); }
+function renderSaved(){
+  const ul = $("setSaved"); ul.textContent = "";
+  $("savedH").hidden = !savedSets.length;
+  const cur = setSongs().join(",");
+  savedSets.slice().sort((a, b) => b.savedAt - a.savedAt).forEach(set => {
+    const ids = set.ids.filter(id => songs.some(s => s.id === id));
+    const li = document.createElement("li"); li.classList.toggle("on", ids.length && ids.join(",") === cur);
+    const main = songMain({ title: set.name }, () => loadSaved(set), "Deze setlist laden");
+    main.querySelector(".a").textContent = `${ids.length} ${ids.length === 1 ? "nummer" : "nummers"} · ${fmtTotal(setTotalOf(ids))}`;
+    const load = document.createElement("button"); load.type = "button"; load.className = "btn small"; load.textContent = "Laden";
+    load.setAttribute("aria-label", `Laad setlist ${set.name}`); load.addEventListener("click", () => loadSaved(set));
+    const rm = document.createElement("button"); rm.type = "button"; rm.className = "btn small ghost iconbtn"; rm.innerHTML = ICON_X;
+    rm.setAttribute("aria-label", `Verwijder bewaarde setlist ${set.name}`); rm.title = "Bewaarde setlist verwijderen";
+    rm.addEventListener("click", async () => {
+      if(!await ask("Verwijderen?", `Bewaarde setlist "${set.name}" verwijderen? De nummers zelf blijven bestaan.`, "Verwijderen", true)) return;
+      savedSets = savedSets.filter(x => x.id !== set.id); saveSaved(); toast("Bewaarde setlist verwijderd");
+    });
+    li.append(main, load, rm); ul.append(li);
+  });
+}
+async function loadSaved(set){
+  const ids = set.ids.filter(id => songs.some(s => s.id === id));
+  const cur = setSongs();
+  if(cur.length && cur.join(",") !== ids.join(",") && !await ask("Setlist laden?", `De huidige setlist vervangen door "${set.name}"? Bewaar hem eerst als je hem wilt houden.`, "Laden")) return;
+  setlist = ids; currentSetName = set.name; saveSet(); renderSaved();
+  toast(`Setlist "${set.name}" geladen`);
+}
+/* Eigen bevestigingsvenster: window.confirm geeft in sommige webviews direct "nee" zonder iets te tonen */
+let askDone = null;
+function ask(title, text, okLabel, danger){
+  return new Promise(res => {
+    askDone = v => { $("askOverlay").hidden = true; askDone = null; res(v); };
+    $("askTitle").textContent = title; $("askText").textContent = text;
+    $("askOk").textContent = okLabel; $("askOk").classList.toggle("danger", !!danger);
+    $("askOverlay").hidden = false; $("askOk").focus();
+  });
+}
+$("askForm").addEventListener("submit", e => { e.preventDefault(); askDone && askDone(true); });
+$("askCancel").addEventListener("click", () => askDone && askDone(false));
+$("askOverlay").addEventListener("click", e => { if(e.target === $("askOverlay") && askDone) askDone(false); });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && askDone) askDone(false); });
+let currentSetName = "";
+function openSaveDialog(){
+  const ids = setSongs(); if(!ids.length) return;
+  $("setName").value = currentSetName;
+  $("saveInfo").textContent = `${ids.length} ${ids.length === 1 ? "nummer" : "nummers"} · ${fmtTotal(setTotalOf(ids))}. Bestaat de naam al, dan wordt die setlist overschreven.`;
+  $("saveErr").hidden = true;
+  $("saveOverlay").hidden = false; $("setName").focus(); $("setName").select();
+}
+function closeSaveDialog(){ $("saveOverlay").hidden = true; }
+$("setSaveOpen").addEventListener("click", openSaveDialog);
+$("saveCancel").addEventListener("click", closeSaveDialog);
+$("saveOverlay").addEventListener("click", e => { if(e.target === $("saveOverlay")) closeSaveDialog(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("saveOverlay").hidden) closeSaveDialog(); });
+$("saveForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const name = $("setName").value.trim();
+  if(!name){ $("saveErr").textContent = "Geef de setlist een naam."; $("saveErr").hidden = false; $("setName").focus(); return; }
+  const ids = setSongs();
+  const same = savedSets.find(x => x.name.toLowerCase() === name.toLowerCase());
+  if(same){ same.name = name; same.ids = ids; same.savedAt = Date.now(); }
+  else savedSets.push({ id: "set" + Date.now().toString(36), name, ids, savedAt: Date.now() });
+  currentSetName = name; closeSaveDialog(); saveSaved();
+  toast(same ? `Setlist "${name}" bijgewerkt` : `Setlist "${name}" bewaard`);
+});
+function normQ(t){ return String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\u2019'`]/g, "").replace(/\s+/g, " ").trim(); }
+$("pickSort").value = ls.get(LS_PICKSORT, "title");
+$("pickSort").addEventListener("change", () => { ls.set(LS_PICKSORT, $("pickSort").value); renderSetlist(); });
+$("pickSearch").addEventListener("input", () => renderSetlist());
+$("setClear").addEventListener("click", async () => {
+  if(!setlist.length || !await ask("Setlist leegmaken?", "Alle nummers gaan uit de setlist. De nummers zelf blijven gewoon bestaan.", "Leegmaken", true)) return;
   setlist = []; saveSet(); toast("Setlist leeggemaakt");
 });
 // Volgorde: slepen aan het greepje (aanraken of muis), of pijltjestoetsen op het greepje
@@ -1297,7 +1542,7 @@ $("setList").addEventListener("keydown", e => {
 
 /* ---------- exporteren / importeren ---------- */
 function exportData(){
-  return JSON.stringify({app:"switchbone-setlist", version:1, exportedAt:new Date().toISOString(), songs, setlist}, null, 2);
+  return JSON.stringify({app:"switchbone-setlist", version:1, exportedAt:new Date().toISOString(), songs, setlist, savedSets}, null, 2);
 }
 $("exportBtn").addEventListener("click", async () => {
   const name = "switchbone-setlist-" + new Date().toISOString().slice(0,10) + ".json";
@@ -1338,6 +1583,18 @@ $("importFile").addEventListener("change", async e => {
     if(!Array.isArray(j) && Array.isArray(j.setlist) && j.setlist.length){
       const next = [...new Set(j.setlist.map(id => idMap[id]).filter(Boolean))];
       if(next.length){ setlist = next; ls.set(LS_SET, setlist); setMsg = `, setlist met ${next.length} nummers`; }
+    }
+    // Bewaarde setlists samenvoegen op naam
+    if(!Array.isArray(j) && Array.isArray(j.savedSets)){
+      let n = 0;
+      j.savedSets.forEach(x => {
+        if(!x || !x.name || !Array.isArray(x.ids)) return;
+        const ids = [...new Set(x.ids.map(id => idMap[id]).filter(Boolean))]; if(!ids.length) return;
+        const same = savedSets.find(y => y.name.toLowerCase() === String(x.name).toLowerCase());
+        if(same){ same.ids = ids; same.savedAt = x.savedAt || Date.now(); } else savedSets.push({ id: x.id || ("set" + Date.now().toString(36) + n), name: String(x.name), ids, savedAt: x.savedAt || Date.now() });
+        n++;
+      });
+      if(n){ ls.set(LS_SAVED, savedSets); setMsg += `, ${n} bewaarde ${n === 1 ? "setlist" : "setlists"}`; }
     }
     sortSongs(); ls.set(LS_SONGS, songs); renderAll();
     toast(`${added} toegevoegd, ${updated} bijgewerkt${setMsg}`);
