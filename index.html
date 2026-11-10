@@ -72,6 +72,8 @@ h1.brand .sub{font-size:var(--t-s);font-weight:800;font-stretch:125%;letter-spac
 a.btn{text-decoration:none;color:var(--paper)}
 a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 .iconbtn svg{width:20px;height:20px;display:block}
+.btn.iconbtn{padding:0;min-width:44px}
+.head-actions{gap:8px;flex-wrap:nowrap}
 
 .grid{display:grid;grid-template-columns:minmax(0,1.75fr) minmax(320px,1fr);gap:24px;align-items:start}
 .col{display:flex;flex-direction:column;gap:18px;min-width:0}
@@ -117,12 +119,8 @@ a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 .playfact .cnt{font-size:46px;font-weight:900;font-stretch:125%;line-height:1}
 .playfact.stop{background:var(--paper);color:var(--on-stock)}
 .playfact:disabled{opacity:.35;cursor:not-allowed}
-/* Nog niets getrokken: een leeg kaartje */
-.ticket.blank{background:var(--ink-2);color:var(--paper);outline:2px dashed var(--line-2);outline-offset:-2px;grid-template-columns:minmax(0,1fr)}
-.ticket.blank::before,.ticket.blank::after,.ticket.blank .tk-stub{display:none}
-.ticket.blank .now h2{font-size:clamp(40px,5vw,64px)}
-.ticket.blank .now .artist{font-size:var(--t-m);color:var(--mute)}
-.ticket.blank .label{color:var(--mute)}
+/* Nog niets getrokken: geen kaartje. De trekbalk zegt al hoeveel er in de pot zit. */
+.ticket.blank{display:none}
 /* Signatuur: het kaartje komt onder de trekbalk vandaan; de oude strook scheurt af */
 @keyframes issue{from{transform:translateY(-18px);clip-path:inset(0 0 100% 0 round 12px)}to{transform:none;clip-path:inset(-20px -20px -20px -20px round 12px)}}
 .ticket.issued{animation:issue .6s var(--ease)}
@@ -160,7 +158,6 @@ select,input[type=text],input[type=number],input[type=search],textarea{backgroun
 select:focus,input:focus,textarea:focus{border-color:var(--stock);outline:none}
 ::placeholder{color:var(--mute);opacity:1}
 textarea{min-height:240px;resize:vertical;line-height:1.5}
-.listtools{display:flex;gap:8px;flex-wrap:wrap}
 
 /* De rol: alle nummers, duur als lengte */
 .songs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
@@ -219,7 +216,6 @@ textarea{min-height:240px;resize:vertical;line-height:1.5}
 /* Aanraakschermen */
 button,a.btn,.chip,.tabbar button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 @media (hover:none){.btn:hover{border-color:var(--line-2)}.btn.primary:hover{background:var(--stock);border-color:var(--stock)}}
-.tabbar{display:none}
 
 /* Groot scherm en meelopen: het nummer bezit het scherm */
 body.stagemode,body.playing{--stage:1.5}
@@ -247,16 +243,23 @@ body.stagemode .lyrics,body.playing .lyrics{max-height:calc(100dvh - 230px);max-
 body.playing .lyrics{-webkit-mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5));mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5))}
 body.playing{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 
-/* iPad en groter: twee kolommen, rechterkolom blijft in beeld */
+/* Op elk formaat één onderdeel tegelijk, gekozen met de tabbalk onderin: Spelen, Nummers, Tempo */
+body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
+.grid{grid-template-columns:minmax(0,1fr)}
+[data-view]{display:none}
+body:not([data-tab]) [data-view="play"],body[data-tab="play"] [data-view="play"],body[data-tab="tempo"] [data-view="tempo"],body[data-tab="list"] [data-view="list"]{display:flex}
+body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:last-child,body[data-tab="list"] .grid > .col:first-child,body[data-tab="tempo"] .grid > .col:first-child{display:none}
+.grid > .col:last-child .panel{width:100%;max-width:880px;margin-inline:auto}
+.tabbar{display:grid;grid-template-columns:repeat(3,minmax(0,240px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
+  padding:6px max(8px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px, env(safe-area-inset-left,0px))}
+.tabbar button{background:none;border:0;border-radius:8px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--t-xs);font-weight:800;font-stretch:112%;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);cursor:pointer}
+.tabbar svg{width:22px;height:22px;display:block}
+.tabbar button[aria-current="page"]{color:var(--paper);background:var(--ink-3)}
+.tcount{font-weight:700}
+.toast{bottom:calc(88px + env(safe-area-inset-bottom,0px))}
+/* iPad: de tekst vult de hoogte tussen kaartje en tabbalk */
 @media (min-width:700px) and (min-height:521px), (min-width:1001px){
-  .grid > .col:last-child{position:sticky;top:calc(16px + env(safe-area-inset-top,0px));max-height:calc(100dvh - 32px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px));overflow:auto;overscroll-behavior:contain;border-radius:var(--r)}
-  .lyrics{max-height:max(280px, calc(100dvh - 590px))}
-}
-/* Tablet staand: één kolom; tempo en de rol naast elkaar onder de tekst */
-@media (min-width:700px) and (orientation:portrait) and (min-height:521px){
-  .grid{grid-template-columns:minmax(0,1fr)}
-  .grid > .col:last-child{position:static;max-height:none;overflow:visible;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr);align-items:start;gap:18px}
-  .lyrics{max-height:max(320px, calc(100dvh - 600px))}
+  .lyrics{max-height:max(300px, calc(100dvh - 660px))}
 }
 @media (min-width:700px) and (max-width:900px) and (orientation:portrait){
   :root{--stub:150px}
@@ -270,15 +273,16 @@ body.playing{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   .lyrics{font-size:calc(32px * var(--ls,1) * var(--stage,1))}
 }
 
-/* iPhone (staand en liggend): één onderdeel tegelijk met een tabbalk */
+/* iPhone (staand en liggend): kleinere maten */
 @media (max-width:699px), (max-height:520px) and (max-width:1000px){
   body{padding-block:12px calc(88px + env(safe-area-inset-bottom,0px));padding-left:max(14px, env(safe-area-inset-left,0px));padding-right:max(14px, env(safe-area-inset-right,0px))}
   .wrap{gap:14px}
   h1.brand .logo{height:34px}
-  .grid{grid-template-columns:minmax(0,1fr);gap:14px}
+  .grid{gap:14px}
   .col{gap:14px}
-  [data-view]{display:none}
-  body:not([data-tab]) [data-view="play"],body[data-tab="play"] [data-view="play"],body[data-tab="tempo"] [data-view="tempo"],body[data-tab="list"] [data-view="list"]{display:flex}
+  .tabbar{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tabbar button{min-height:54px}
+  .toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
   .draw-row{padding:8px;gap:10px}
   .draw-btn{flex:1 1 100%;min-width:0;min-height:58px;padding:0 14px;font-size:22px;font-stretch:100%;white-space:normal}
   .pot{flex:1 1 auto}
@@ -304,13 +308,6 @@ body.playing{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
   body.stagemode .tk-main,body.playing .tk-main{padding:12px 14px;gap:8px 18px}
   body.stagemode .now,body.playing .now{flex-basis:100%}
   body.stagemode .fact b,body.playing .fact b{font-size:24px}
-  .tabbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
-    padding:6px max(8px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px, env(safe-area-inset-left,0px))}
-  .tabbar button{background:none;border:0;border-radius:8px;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--t-xs);font-weight:800;font-stretch:112%;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);cursor:pointer}
-  .tabbar svg{width:22px;height:22px;display:block}
-  .tabbar button[aria-current="page"]{color:var(--paper);background:var(--ink-3)}
-  .tcount{font-weight:700}
-  .toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
   .overlay{padding:0;align-items:stretch}
   .editor{max-width:none;min-height:100%;border:0;border-radius:0;box-shadow:none;
     padding:calc(16px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px))}
@@ -398,6 +395,20 @@ body.playing{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
     </div>
 
     <div class="col">
+      <section class="panel" aria-labelledby="listH" data-view="list">
+        <div class="panel-head"><h2 id="listH">Nummers</h2>
+          <div class="row head-actions">
+            <button class="btn small iconbtn" id="exportBtn" type="button" aria-label="Exporteren" title="Exporteren"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 14v4.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V14"/></svg></button>
+            <label class="btn small iconbtn" for="importFile" aria-label="Importeren" title="Importeren" style="cursor:pointer"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4 14v4.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V14"/></svg></label>
+            <input type="file" id="importFile" accept=".json,application/json" hidden>
+            <button class="btn solid small" id="addBtn">+ Nummer</button>
+          </div>
+        </div>
+        <input type="search" id="search" placeholder="Zoek op titel of artiest" aria-label="Zoeken">
+        <ul class="songs" id="songList"></ul>
+        <p class="empty" id="listEmpty" hidden>Nog geen nummers. Voeg het eerste nummer toe met <b>+ Nummer</b>: titel, tempo en de tekst.</p>
+      </section>
+
       <section class="panel" aria-labelledby="tempoH" data-view="tempo">
         <div class="panel-head"><h2 id="tempoH">Tempo</h2></div>
         <div class="file-drop">
@@ -415,26 +426,14 @@ body.playing{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
           <button class="btn small" id="assignBtn" disabled>Opslaan</button>
         </div>
       </section>
-
-      <section class="panel" aria-labelledby="listH" data-view="list">
-        <div class="panel-head"><h2 id="listH">Nummers</h2><button class="btn solid small" id="addBtn">+ Nummer</button></div>
-        <div class="listtools">
-          <button class="btn small" id="exportBtn" type="button">Exporteren</button>
-          <label class="btn small" for="importFile" style="cursor:pointer">Importeren</label>
-          <input type="file" id="importFile" accept=".json,application/json" hidden>
-        </div>
-        <input type="search" id="search" placeholder="Zoek op titel of artiest" aria-label="Zoeken">
-        <ul class="songs" id="songList"></ul>
-        <p class="empty" id="listEmpty" hidden>Nog geen nummers. Voeg het eerste nummer toe met <b>+ Nummer</b>: titel, tempo en de tekst.</p>
-      </section>
     </div>
   </div>
 </div>
 
 <nav class="tabbar" aria-label="Onderdelen">
   <button type="button" data-tab="play" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 7.5v2a2.5 2.5 0 0 0 0 5v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5v-2a2.5 2.5 0 0 0 0-5z"/><path d="M15 6v12" stroke-dasharray="2 2"/></svg>Spelen</button>
-  <button type="button" data-tab="tempo" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 18H5z"/><path d="M12 17 16 7"/></svg>Tempo</button>
   <button type="button" data-tab="list" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Nummers <span class="tcount" id="tabCount"></span></span></button>
+  <button type="button" data-tab="tempo" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 18H5z"/><path d="M12 17 16 7"/></svg>Tempo</button>
 </nav>
 
 <div class="overlay" id="overlay" hidden>
@@ -682,8 +681,7 @@ function showSong(id){
   if(id !== currentId){ stopScroll(true); resetTempo(); }
   currentId = id;
   renderNow(); renderList(); renderAssign(); revealCurrent();
-  if(isPhone()){ setTab("play"); }
-  else if(window.scrollY > 200) window.scrollTo({top:0, behavior: reduced() ? "auto" : "smooth"});
+  setTab("play");
 }
 function reduced(){ return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
 
@@ -707,6 +705,7 @@ $("drawBtn").addEventListener("click", () => {
   };
   if(reduced() || songs.length < 2){ finish(); return; }
   drawing = true; $("now").classList.add("shuffling");
+  $("ticket").classList.remove("blank"); // eerste trekking: het kaartje verschijnt bij het schudden
   $("nowFacts").hidden = true; $("lyricsWrap").hidden = true;
   let n = 0; const steps = 12;
   const tick = () => {
@@ -1106,13 +1105,11 @@ $("assignBtn").addEventListener("click", async () => {
   catch(err){ toast(writeError(err)); }
 });
 
-/* ---------- iPhone-tabs ---------- */
-const phoneMQ = window.matchMedia("(max-width:699px), (max-height:520px) and (max-width:1000px)");
-function isPhone(){ return phoneMQ.matches; }
+/* ---------- tabs (op elk formaat) ---------- */
 function setTab(t){
   document.body.dataset.tab = t;
   document.querySelectorAll(".tabbar button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"));
-  if(isPhone()) window.scrollTo(0, 0);
+  window.scrollTo(0, 0);
 }
 document.querySelectorAll(".tabbar button").forEach(b => b.addEventListener("click", () => setTab(b.dataset.tab)));
 setTab("play");
