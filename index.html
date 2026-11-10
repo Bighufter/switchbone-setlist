@@ -345,7 +345,7 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
 body.practicing .grid > .col:first-child,body.practicing [data-view="play"]{display:flex}
 body.practicing .grid > .col:last-child{display:none}
 .grid > .col:last-child .panel{width:100%;max-width:880px;margin-inline:auto}
-.tabbar{display:grid;grid-template-columns:repeat(var(--tabs,4),minmax(0,200px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
+.tabbar{display:grid;grid-template-columns:repeat(var(--tabs,4),minmax(0,200px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-3);border-top:0;
   padding:6px max(8px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px, env(safe-area-inset-left,0px))}
 .tabbar button{background:none;border:0;border-radius:8px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--t-xs);font-weight:800;font-stretch:112%;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);cursor:pointer}
 .tabbar svg{width:22px;height:22px;display:block}
@@ -356,7 +356,7 @@ body.tabicons{--tab-save:14px}
 body.tabicons .tabbar button{min-height:44px;gap:0}
 body.tabicons .tabbar svg{width:24px;height:24px}
 body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
-.tabbar button[aria-current="page"]{color:var(--stock-fg);background:var(--ink-3)}
+.tabbar button[aria-current="page"]{color:var(--stock-fg)}
 .tcount{font-weight:700}
 .toast{bottom:calc(88px - var(--tab-save,0px) + env(safe-area-inset-bottom,0px))}
 /* iPad: de tekst vult de hoogte tussen kaartje en tabbalk */
@@ -375,19 +375,23 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
 @media (min-width:700px) and (min-height:521px), (min-width:1001px){
   body{--pad-h:calc(100dvh - 176px + var(--tab-save,0px) - env(safe-area-inset-bottom,0px))}
   /* Scherm 1 */
-  .stage:not(.picked) .draw-row{flex-direction:column;flex-wrap:nowrap;justify-content:center;gap:16px;min-height:var(--pad-h);padding:40px;position:relative}
+  .stage:not(.picked) .draw-row{flex-direction:column;flex-wrap:nowrap;justify-content:center;gap:16px;min-height:calc(var(--pad-h) - 46px);padding:40px;position:relative;background:none;border:0}
+  /* Scherm 1: groot logo in het midden (90px i.p.v. 44px; het paneel is daarom 46px lager) */
+  body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) header.top{justify-content:center}
+  body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) h1.brand .logo{height:90px;max-width:min(100%,560px)}
+  body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) h1.brand .logo.squarish{height:118px}
   .stage:not(.picked) .draw-btn{min-height:116px;padding:0 52px;border-radius:16px}
   .stage:not(.picked) .pot{font-size:20px;font-weight:400}
   .stage:not(.picked) #resetPot{position:absolute;right:12px;bottom:12px;margin:0}
   /* Scherm 2: geen kaartje maar het nummer los op het paneel */
-  body:not(.playing) .stage.picked{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);padding:48px 40px 72px;min-height:var(--pad-h);position:relative;gap:32px}
+  body:not(.playing) .stage.picked{background:none;border:0;border-radius:var(--r);padding:48px 40px 72px;min-height:var(--pad-h);position:relative;gap:32px}
   body:not(.playing) .stage.picked .draw-row{display:none}
   body:not(.playing) .stage.picked .ticket{flex:1;display:flex;flex-direction:column;justify-content:center;gap:48px;background:none;color:var(--paper);width:100%;max-width:724px;margin-inline:auto}
   body:not(.playing) .stage.picked .ticket::before,body:not(.playing) .stage.picked .ticket::after{display:none}
   body:not(.playing) .stage.picked .tk-main{padding:0;gap:22px}
   body:not(.playing) .stage.picked .now h2{font-size:clamp(56px,8.75vw,104px);color:var(--paper)}
   body:not(.playing) .stage.picked .now .artist{color:var(--stock-fg)}
-  body:not(.playing) .stage.picked .facts{border-top:1px solid color-mix(in srgb,var(--paper) 50%,transparent)}
+  body:not(.playing) .stage.picked .facts{border-top:1px solid color-mix(in srgb,var(--paper) 50%,transparent);opacity:.5}
   body:not(.playing) .stage.picked .fact{border-left:1px solid color-mix(in srgb,var(--paper) 50%,transparent)}
   body:not(.playing) .stage.picked .fact:first-child{border-left:0}
   body:not(.playing) .stage.picked .fact .label,body:not(.playing) .stage.picked .tempofact .unit{color:var(--stock-fg)}

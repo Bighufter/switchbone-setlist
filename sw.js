@@ -1,5 +1,5 @@
 // AUTOMATISCH GEGENEREERD door scripts/build-sw.mjs. Niet met de hand aanpassen.
-const VERSION = "bc85febc80";
+const VERSION = "c0b767f2c2";
 const CACHE = "switchbone-setlist-" + VERSION;
 const ASSETS = [
   "./",
