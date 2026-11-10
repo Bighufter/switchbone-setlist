@@ -210,7 +210,8 @@ body.setmode #nowFacts,body.setmode .lyrics-bar{display:none!important}
 @media (min-width:700px){.songs.pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
 .saved li.on{box-shadow:inset 3px 0 0 var(--stock)}
 body.setmode .draw-row,body.setmode #playHint{display:none!important}
-body.setmode .lyrics{max-height:var(--ly-max,60vh)}
+/* setlist-modus: vaste hoogte, zodat "Volgende" ook bij een korte tekst onderaan staat */
+body.setmode .lyrics{max-height:var(--ly-max,60vh);height:var(--ly-max,60vh)}
 body.setmode .toast{bottom:auto;top:calc(16px + env(safe-area-inset-top,0px))}
 body.setmode.playing #nowArtist,body.setmode.stagemode #nowArtist{display:block!important}
 .set-sum .fact{border-left-color:var(--line-2);padding-bottom:4px}
@@ -950,7 +951,17 @@ function fitLyrics(){
     root.setProperty("--ly-max", Math.max(nx ? 72 : 120, Math.floor(window.innerHeight - top - bar - nx - (nx ? 24 : 12))) + "px");
   });
 }
-window.addEventListener("resize", fitLyrics);
+// Kantelen: iOS meldt de nieuwe hoogte vaak pas na de draai-animatie, dus een paar keer opnieuw meten
+let fitTimers = [];
+function refit(){
+  const b = document.body.classList;
+  if(b.contains("playing") || b.contains("stagemode") || b.contains("setmode")) window.scrollTo(0, 0);
+  fitLyrics(); fitTimers.forEach(clearTimeout);
+  fitTimers = [150, 400, 800].map(ms => setTimeout(fitLyrics, ms));
+}
+window.addEventListener("resize", refit);
+window.addEventListener("orientationchange", refit);
+if(window.visualViewport) window.visualViewport.addEventListener("resize", refit);
 function setStage(on){
   document.body.classList.toggle("stagemode", on);
   $("stageBtn").textContent = on ? "Klein scherm" : "Groot scherm";
@@ -1048,7 +1059,12 @@ function countBeat(i, label){
   $("ciBeats").querySelectorAll("i").forEach((d, k) => d.classList.toggle("on", k <= i));
 }
 function hideCount(){ $("countin").hidden = true; }
-$("countin").addEventListener("click", () => stopScroll(false));
+// Zelf stoppen: in de setlist-modus terug naar de Setlist-tab, anders blijf je op Spelen
+function userStop(){
+  stopScroll(false);
+  if(setPlay.active){ endSetPlay(); setTab("setlist"); toast("Setlist gestopt"); }
+}
+$("countin").addEventListener("click", userStop);
 function togglePause(){
   if(!scroller.active || scroller.countTimers.length && scroller.speed === 0) return;
   scroller.paused = !scroller.paused; scroller.last = performance.now();
@@ -1070,7 +1086,7 @@ function stopScroll(silent){
 $("playBtn").addEventListener("click", () => {
   if(!scroller.active){ startPlayAlong(); return; }
   if(scroller.paused && scroller.speed){ togglePause(); return; }
-  stopScroll(false);
+  userStop();
 });
 $("nowLyrics").addEventListener("click", () => { if(scroller.active && scroller.speed) togglePause(); });
 function setSpeed(f){ speedFactor = Math.min(2, Math.max(.5, Math.round(f * 10) / 10)); $("speedLbl").textContent = "×" + speedFactor.toFixed(1); }
@@ -1370,7 +1386,7 @@ function setSongEnded(){
     playSetAt(setPlay.idx + 1, false);
     toast("Tik op afspelen om af te tellen");
   } else {
-    endSetPlay();
+    endSetPlay(); setTab("setlist");
     toast("Einde van de setlist");
   }
 }
