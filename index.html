@@ -182,6 +182,25 @@ textarea{min-height:240px;resize:vertical;line-height:1.5}
 .songs li.current .durbar{background:color-mix(in srgb,var(--on-stock) 20%,transparent)}
 .songs li.current .durbar i{background:var(--on-stock)}
 .songs li.current .btn{background:transparent;border-color:color-mix(in srgb,var(--on-stock) 45%,transparent);color:var(--on-stock)}
+
+/* Setlist: eigen keuze en volgorde, tijd per nummer en totale speeltijd */
+.set-sum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));border-top:2px solid var(--line-2)}
+.set-sum .fact{border-left-color:var(--line-2);padding-bottom:4px}
+.set-sum .fact .label{color:var(--mute)}
+.set-sum .fact b{color:var(--paper)}
+.setlist li{grid-template-columns:44px 2em minmax(0,1fr) auto 44px;padding-left:4px;touch-action:pan-y}
+.setlist .durbar{grid-column:3 / -2}
+.songs .dur{font-size:var(--t-m);font-weight:800;font-stretch:112%;white-space:nowrap}
+.songs .dur.none{color:var(--faint)}
+.drag{width:44px;height:44px;display:grid;place-items:center;background:none;border:0;padding:0;color:var(--mute);cursor:grab;touch-action:none;border-radius:var(--r-sm);-webkit-user-select:none;user-select:none}
+.drag svg{width:20px;height:20px;display:block}
+.drag:active{cursor:grabbing}
+.setlist li.dragging{position:relative;z-index:2;background:var(--line);box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.setlist li.current .drag{color:var(--on-stock)}
+.setlist li.current .dur{color:var(--on-stock)}
+.pick li{grid-template-columns:minmax(0,1fr) auto 44px}
+.pick .durbar{grid-column:1 / -2}
+.set-sub{margin:10px 0 -4px}
 .linkish{background:none;border:0;padding:0;cursor:pointer;text-align:left;color:inherit;min-width:0}
 
 /* Bewerken */
@@ -243,14 +262,14 @@ body.stagemode .lyrics,body.playing .lyrics{max-height:calc(100dvh - 230px);max-
 body.playing .lyrics{-webkit-mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5));mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5))}
 body.playing{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 
-/* Op elk formaat één onderdeel tegelijk, gekozen met de tabbalk onderin: Spelen, Nummers, Tempo */
+/* Op elk formaat één onderdeel tegelijk, gekozen met de tabbalk onderin: Spelen, Setlist, Nummers, Tempo */
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .grid{grid-template-columns:minmax(0,1fr)}
 [data-view]{display:none}
-body:not([data-tab]) [data-view="play"],body[data-tab="play"] [data-view="play"],body[data-tab="tempo"] [data-view="tempo"],body[data-tab="list"] [data-view="list"]{display:flex}
-body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:last-child,body[data-tab="list"] .grid > .col:first-child,body[data-tab="tempo"] .grid > .col:first-child{display:none}
+body:not([data-tab]) [data-view="play"],body[data-tab="play"] [data-view="play"],body[data-tab="setlist"] [data-view="setlist"],body[data-tab="tempo"] [data-view="tempo"],body[data-tab="list"] [data-view="list"]{display:flex}
+body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:last-child,body[data-tab="setlist"] .grid > .col:first-child,body[data-tab="list"] .grid > .col:first-child,body[data-tab="tempo"] .grid > .col:first-child{display:none}
 .grid > .col:last-child .panel{width:100%;max-width:880px;margin-inline:auto}
-.tabbar{display:grid;grid-template-columns:repeat(3,minmax(0,240px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
+.tabbar{display:grid;grid-template-columns:repeat(4,minmax(0,200px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
   padding:6px max(8px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px, env(safe-area-inset-left,0px))}
 .tabbar button{background:none;border:0;border-radius:8px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--t-xs);font-weight:800;font-stretch:112%;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);cursor:pointer}
 .tabbar svg{width:22px;height:22px;display:block}
@@ -280,7 +299,10 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
   h1.brand .logo{height:34px}
   .grid{gap:14px}
   .col{gap:14px}
-  .tabbar{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .tabbar{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+  .tabbar button{letter-spacing:.03em}
+  .setlist li{grid-template-columns:40px 1.6em minmax(0,1fr) auto 40px;gap:2px 8px}
+  .setlist .drag,.setlist .iconbtn{width:40px;min-width:40px}
   .tabbar button{min-height:54px}
   .toast{bottom:calc(80px + env(safe-area-inset-bottom,0px))}
   .draw-row{padding:8px;gap:10px}
@@ -395,6 +417,19 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
     </div>
 
     <div class="col">
+      <section class="panel" aria-labelledby="setH" data-view="setlist">
+        <div class="panel-head"><h2 id="setH">Setlist</h2><button class="btn ghost small" id="setClear" type="button" hidden>Leegmaken</button></div>
+        <div class="set-sum" aria-live="polite">
+          <div class="fact"><span class="label">Nummers</span><b id="setCount">0</b></div>
+          <div class="fact"><span class="label">Speeltijd</span><b id="setTotal">0:00</b></div>
+        </div>
+        <p class="note" id="setNote" hidden></p>
+        <ol class="songs setlist" id="setList" aria-label="Setlist in speelvolgorde"></ol>
+        <p class="empty" id="setEmpty">Nog niets gekozen. Tik hieronder op de nummers die jullie willen spelen; versleep ze daarna in de goede volgorde.</p>
+        <h3 class="label set-sub" id="pickH">Toevoegen</h3>
+        <ul class="songs pick" id="setPick" aria-labelledby="pickH"></ul>
+      </section>
+
       <section class="panel" aria-labelledby="listH" data-view="list">
         <div class="panel-head"><h2 id="listH">Nummers</h2>
           <div class="row head-actions">
@@ -432,6 +467,7 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
 
 <nav class="tabbar" aria-label="Onderdelen">
   <button type="button" data-tab="play" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 7.5v2a2.5 2.5 0 0 0 0 5v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5v-2a2.5 2.5 0 0 0 0-5z"/><path d="M15 6v12" stroke-dasharray="2 2"/></svg>Spelen</button>
+  <button type="button" data-tab="setlist" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 8h6M9 12h6M9 16h3.5"/></svg><span>Setlist <span class="tcount" id="setTabCount"></span></span></button>
   <button type="button" data-tab="list" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Nummers <span class="tcount" id="tabCount"></span></span></button>
   <button type="button" data-tab="tempo" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 18H5z"/><path d="M12 17 16 7"/></svg>Tempo</button>
 </nav>
@@ -479,7 +515,7 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
 <script>
 (function(){
 const $ = id => document.getElementById(id);
-const LS_SONGS = "setlist-trekker-songs", LS_PLAYED = "setlist-trekker-played", LS_FONT = "setlist-trekker-font";
+const LS_SONGS = "setlist-trekker-songs", LS_PLAYED = "setlist-trekker-played", LS_FONT = "setlist-trekker-font", LS_SET = "setlist-trekker-setlist";
 const ls = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
@@ -487,6 +523,7 @@ const ls = {
 
 let songs = [];          // {id,title,artist,bpm,key,lyrics}
 let played = new Set(ls.get(LS_PLAYED, []));
+let setlist = ls.get(LS_SET, []); // id's in speelvolgorde
 let currentId = null;
 let mode = "pending";    // db | local
 let db = null, readOnly = false;
@@ -555,8 +592,12 @@ function pad(n){ return String(n).padStart(2, "0"); }
 function renderAll(){
   // forget played ids that no longer exist
   const ids = new Set(songs.map(s => s.id));
-  for(const p of [...played]) if(!ids.has(p)) played.delete(p);
-  renderList(); renderPot(); renderNow(); renderAssign();
+  // Pas opschonen als de lijst geladen is; bij de eerste weergave is songs nog leeg
+  if(mode !== "pending"){
+    for(const p of [...played]) if(!ids.has(p)) played.delete(p);
+    if(setlist.some(id => !ids.has(id))){ setlist = setlist.filter(id => ids.has(id)); ls.set(LS_SET, setlist); }
+  }
+  renderList(); renderPot(); renderNow(); renderAssign(); renderSetlist();
   $("addBtn").disabled = readOnly;
 }
 function renderList(){
@@ -680,7 +721,7 @@ function resetTempo(){
 function showSong(id){
   if(id !== currentId){ stopScroll(true); resetTempo(); }
   currentId = id;
-  renderNow(); renderList(); renderAssign(); revealCurrent();
+  renderNow(); renderList(); renderAssign(); renderSetlist(); revealCurrent();
   setTab("play");
 }
 function reduced(){ return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
@@ -1122,9 +1163,128 @@ function updateNet(){
 window.addEventListener("online", updateNet);
 window.addEventListener("offline", updateNet);
 
+
+/* ---------- setlist ---------- */
+const ICON_GRIP = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+const ICON_X = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg>';
+const ICON_PLUS = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+function fmtTotal(sec){
+  sec = Math.round(sec || 0);
+  if(sec < 3600) return fmtDur(sec);
+  return Math.floor(sec / 3600) + ":" + String(Math.floor(sec % 3600 / 60)).padStart(2, "0") + ":" + String(sec % 60).padStart(2, "0");
+}
+function saveSet(){ ls.set(LS_SET, setlist); renderSetlist(); }
+function songMain(s, onClick, label){
+  const main = document.createElement("button"); main.className = "linkish"; main.type = "button"; main.title = label;
+  const t = document.createElement("div"); t.className = "t"; t.textContent = s.title || "Zonder titel";
+  const a = document.createElement("div"); a.className = "a"; a.textContent = titleCase(s.artist) || "";
+  main.append(t, a); main.addEventListener("click", onClick);
+  return main;
+}
+function durCell(s){
+  const d = document.createElement("span"); d.className = "dur" + (s.duration ? "" : " none");
+  d.textContent = s.duration ? fmtDur(s.duration) : "–"; return d;
+}
+function durBar(s){
+  const bar = document.createElement("span"); bar.className = "durbar"; bar.setAttribute("aria-hidden", "true");
+  const fill = document.createElement("i"); fill.style.width = durPct(s.duration) + "%"; bar.append(fill); return bar;
+}
+function renderSetlist(){
+  const ol = $("setList"), pick = $("setPick");
+  ol.textContent = ""; pick.textContent = "";
+  const chosen = setlist.map(id => songs.find(s => s.id === id)).filter(Boolean);
+  const total = chosen.reduce((n, s) => n + (s.duration || 0), 0);
+  const missing = chosen.filter(s => !s.duration).length;
+  $("setCount").textContent = chosen.length;
+  $("setTotal").textContent = fmtTotal(total);
+  $("setTabCount").textContent = chosen.length ? "(" + chosen.length + ")" : "";
+  $("setNote").hidden = !missing;
+  $("setNote").textContent = missing === 1 ? "1 nummer heeft nog geen duur en telt niet mee in de speeltijd." : `${missing} nummers hebben nog geen duur en tellen niet mee in de speeltijd.`;
+  $("setEmpty").hidden = chosen.length > 0;
+  $("setClear").hidden = !chosen.length;
+  chosen.forEach((s, i) => {
+    const li = document.createElement("li"); li.dataset.id = s.id;
+    if(s.id === currentId) li.className = "current";
+    const h = document.createElement("button"); h.type = "button"; h.className = "drag"; h.innerHTML = ICON_GRIP;
+    h.setAttribute("aria-label", `Verplaats ${s.title}. Sleep, of gebruik pijl omhoog en omlaag.`); h.title = "Slepen om de volgorde te veranderen";
+    const idx = document.createElement("span"); idx.className = "idx"; idx.textContent = pad(i + 1);
+    const rm = document.createElement("button"); rm.type = "button"; rm.className = "btn small ghost iconbtn"; rm.innerHTML = ICON_X;
+    rm.setAttribute("aria-label", `Haal ${s.title} uit de setlist`); rm.title = "Uit de setlist halen";
+    rm.addEventListener("click", () => { setlist = setlist.filter(id => id !== s.id); saveSet(); });
+    li.append(h, idx, songMain(s, () => showSong(s.id), "Toon dit nummer"), durCell(s), rm, durBar(s));
+    ol.append(li);
+  });
+  const rest = songs.filter(s => !setlist.includes(s.id));
+  $("pickH").hidden = !rest.length;
+  rest.forEach(s => {
+    const li = document.createElement("li");
+    const add = () => { setlist.push(s.id); saveSet(); toast(`${s.title} staat in de setlist`); };
+    const b = document.createElement("button"); b.type = "button"; b.className = "btn small iconbtn"; b.innerHTML = ICON_PLUS;
+    b.setAttribute("aria-label", `Zet ${s.title} in de setlist`); b.title = "In de setlist zetten"; b.addEventListener("click", add);
+    li.append(songMain(s, add, "In de setlist zetten"), durCell(s), b, durBar(s));
+    pick.append(li);
+  });
+}
+$("setClear").addEventListener("click", () => {
+  if(!setlist.length || !confirm("De setlist leegmaken? De nummers zelf blijven gewoon bestaan.")) return;
+  setlist = []; saveSet(); toast("Setlist leeggemaakt");
+});
+// Volgorde: slepen aan het greepje (aanraken of muis), of pijltjestoetsen op het greepje
+let setDrag = null;
+function setOrderFromDom(){ setlist = [...$("setList").children].map(li => li.dataset.id); saveSet(); }
+function dragPlace(){
+  const d = setDrag, ol = $("setList");
+  const sibs = [...ol.children].filter(x => x !== d.li);
+  let target = null;
+  for(const s of sibs){ const r = s.getBoundingClientRect(); if(d.y < r.top + r.height / 2){ target = s; break; } }
+  if(target !== d.li.nextElementSibling || (!target && d.li !== ol.lastElementChild)){
+    const before = d.li.getBoundingClientRect().top;
+    ol.insertBefore(d.li, target);
+    d.startY += d.li.getBoundingClientRect().top - before;
+    [...ol.children].forEach((li, i) => { li.querySelector(".idx").textContent = pad(i + 1); });
+  }
+  d.li.style.transform = `translateY(${d.y - d.startY}px)`;
+}
+function dragTick(){
+  if(!setDrag) return;
+  const edge = 90, y = setDrag.y, vh = window.innerHeight - 90; // 90: tabbalk
+  const v = y < edge ? -Math.ceil((edge - y) / 6) : (y > vh - edge ? Math.ceil((y - (vh - edge)) / 6) : 0);
+  if(v){ const was = window.scrollY; window.scrollBy(0, v); setDrag.startY -= window.scrollY - was; dragPlace(); }
+  setDrag.raf = requestAnimationFrame(dragTick);
+}
+$("setList").addEventListener("pointerdown", e => {
+  const h = e.target.closest(".drag"); if(!h || setDrag) return;
+  e.preventDefault();
+  const li = h.closest("li");
+  try{ h.setPointerCapture(e.pointerId); }catch(err){}
+  setDrag = {li, handle: h, pid: e.pointerId, startY: e.clientY, y: e.clientY, raf: 0};
+  li.classList.add("dragging");
+  setDrag.raf = requestAnimationFrame(dragTick);
+});
+$("setList").addEventListener("pointermove", e => {
+  if(!setDrag || e.pointerId !== setDrag.pid) return;
+  setDrag.y = e.clientY; dragPlace();
+});
+function dragEnd(e){
+  if(!setDrag || (e && e.pointerId !== setDrag.pid)) return;
+  cancelAnimationFrame(setDrag.raf);
+  const li = setDrag.li; li.style.transform = ""; li.classList.remove("dragging");
+  setDrag = null; setOrderFromDom();
+}
+$("setList").addEventListener("pointerup", dragEnd);
+$("setList").addEventListener("pointercancel", dragEnd);
+$("setList").addEventListener("keydown", e => {
+  const h = e.target.closest(".drag"); if(!h || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+  e.preventDefault();
+  const id = h.closest("li").dataset.id, i = setlist.indexOf(id), j = i + (e.key === "ArrowUp" ? -1 : 1);
+  if(i < 0 || j < 0 || j >= setlist.length) return;
+  [setlist[i], setlist[j]] = [setlist[j], setlist[i]]; saveSet();
+  const moved = $("setList").querySelector(`li[data-id="${CSS.escape(id)}"] .drag`); if(moved) moved.focus();
+});
+
 /* ---------- exporteren / importeren ---------- */
 function exportData(){
-  return JSON.stringify({app:"switchbone-setlist", version:1, exportedAt:new Date().toISOString(), songs}, null, 2);
+  return JSON.stringify({app:"switchbone-setlist", version:1, exportedAt:new Date().toISOString(), songs, setlist}, null, 2);
 }
 $("exportBtn").addEventListener("click", async () => {
   const name = "switchbone-setlist-" + new Date().toISOString().slice(0,10) + ".json";
@@ -1144,7 +1304,7 @@ $("importFile").addEventListener("change", async e => {
     const list = Array.isArray(j) ? j : (j.songs || []);
     if(!Array.isArray(list) || !list.length) throw new Error("leeg");
     const keyOf = s => ((s.title || "") + "|" + (s.artist || "")).toLowerCase().replace(/[\u2019']/g, "").trim();
-    let added = 0, updated = 0;
+    let added = 0, updated = 0; const idMap = {};
     list.forEach(raw => {
       if(!raw || !raw.title) return;
       const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, lyrics:raw.lyrics || "", updatedAt:raw.updatedAt || Date.now()};
@@ -1152,14 +1312,22 @@ $("importFile").addEventListener("change", async e => {
       if(i >= 0){
         const cur = songs[i];
         songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: inc.lyrics || cur.lyrics || "", bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, key: inc.key || cur.key || ""});
+        if(raw.id) idMap[raw.id] = cur.id;
         updated++;
       } else {
         inc.id = inc.id || ("s" + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
+        if(raw.id) idMap[raw.id] = inc.id;
         songs.push(inc); added++;
       }
     });
+    // Een back-up met setlist zet ook de setlist terug (in dezelfde volgorde)
+    let setMsg = "";
+    if(!Array.isArray(j) && Array.isArray(j.setlist) && j.setlist.length){
+      const next = [...new Set(j.setlist.map(id => idMap[id]).filter(Boolean))];
+      if(next.length){ setlist = next; ls.set(LS_SET, setlist); setMsg = `, setlist met ${next.length} nummers`; }
+    }
     sortSongs(); ls.set(LS_SONGS, songs); renderAll();
-    toast(`${added} toegevoegd, ${updated} bijgewerkt`);
+    toast(`${added} toegevoegd, ${updated} bijgewerkt${setMsg}`);
   }catch(err){ toast("Dit bestand kon niet worden ingelezen. Kies een export van de Setlist-app."); }
   e.target.value = "";
 });
