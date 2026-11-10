@@ -238,8 +238,8 @@ button,a.btn,.chip,.tabbar button{-webkit-tap-highlight-color:transparent;touch-
 
 /* Groot scherm en meelopen: het nummer bezit het scherm */
 body.stagemode,body.playing{--stage:1.5}
-body.stagemode header.top,body.stagemode .grid > .col:last-child,body.stagemode .draw-row,body.stagemode #playHint,body.stagemode .tabbar,
-body.playing header.top,body.playing .draw-row,body.playing #playHint,body.playing .grid > .col:last-child,body.playing .tabbar,
+body.stagemode header.top,body.stagemode .grid > .col:last-child,body.stagemode .draw-row,body.stagemode #playHint,
+body.playing header.top,body.playing .draw-row,body.playing #playHint,body.playing .grid > .col:last-child,
 body.stagemode #nowArtist,body.stagemode .stub-no,body.stagemode .stub-of,body.stagemode .tk-stub .label,body.stagemode .durfact,body.stagemode #tapHint,body.stagemode #tapSave,
 body.playing #nowArtist,body.playing .stub-no,body.playing .stub-of,body.playing .tk-stub .label,body.playing .durfact,body.playing #tapHint,body.playing #tapSave{display:none!important}
 body.stagemode .grid,body.playing .grid{grid-template-columns:minmax(0,1fr)}
@@ -257,10 +257,9 @@ body.stagemode .now h2,body.playing .now h2{font-size:clamp(30px,4vw,48px)}
 body.stagemode .tk-stub,body.playing .tk-stub{padding:10px}
 body.stagemode .playfact,body.playing .playfact{width:76px;height:76px}
 body.stagemode .playfact svg,body.playing .playfact svg{width:30px;height:30px}
-body.stagemode .lyrics,body.playing .lyrics{max-height:calc(100dvh - 230px);max-width:none}
+body.stagemode .lyrics,body.playing .lyrics{max-height:var(--ly-max, calc(100dvh - 310px - env(safe-area-inset-bottom,0px)));max-width:none}
 /* Meelopen: de regels onder de leeshoogte zakken iets terug */
 body.playing .lyrics{-webkit-mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5));mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5))}
-body.playing{padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
 
 /* Op elk formaat één onderdeel tegelijk, gekozen met de tabbalk onderin: Spelen, Setlist, Nummers, Tempo */
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
@@ -342,7 +341,7 @@ body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:
   .now h2{font-size:30px}
   .lyrics{max-height:max(160px, calc(100dvh - 170px))}
   body.playing .now{display:none}
-  body.playing .lyrics{max-height:calc(100dvh - 120px)}
+  body.playing .lyrics{max-height:var(--ly-max, calc(100dvh - 190px - env(safe-area-inset-bottom,0px)))}
 }
 @media (prefers-reduced-motion: reduce){*{transition:none!important}.ci-num.pop,.ticket.issued{animation:none}.stub-torn{display:none}}
 </style>
@@ -854,6 +853,17 @@ function renderLyrics(el, txt){
   });
 }
 $("fLyrics").addEventListener("blur", () => { const v = $("fLyrics").value; const c = cleanLyrics(v); if(c !== v.replace(/\s+$/, "")) $("fLyrics").value = c; });
+// Tijdens spelen en op groot scherm vult de tekst precies de ruimte tot boven de tabbalk
+function fitLyrics(){
+  const root = document.documentElement.style;
+  if(!document.body.classList.contains("playing") && !document.body.classList.contains("stagemode")){ root.removeProperty("--ly-max"); return; }
+  requestAnimationFrame(() => {
+    const top = $("nowLyrics").getBoundingClientRect().top + window.scrollY;
+    const bar = document.querySelector(".tabbar").getBoundingClientRect().height;
+    root.setProperty("--ly-max", Math.max(140, Math.floor(window.innerHeight - top - bar - 12)) + "px");
+  });
+}
+window.addEventListener("resize", fitLyrics);
 function setStage(on){
   document.body.classList.toggle("stagemode", on);
   $("stageBtn").textContent = on ? "Klein scherm" : "Groot scherm";
@@ -861,7 +871,7 @@ function setStage(on){
     if(on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
     if(!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
   }catch(e){}
-  window.scrollTo(0, 0);
+  window.scrollTo(0, 0); fitLyrics();
 }
 $("stageBtn").addEventListener("click", () => setStage(!document.body.classList.contains("stagemode")));
 document.addEventListener("fullscreenchange", () => { if(!document.fullscreenElement && document.body.classList.contains("stagemode")) setStage(false); });
@@ -896,7 +906,7 @@ function startPlayAlong(){
   const lyr = $("nowLyrics"); lyr.classList.add("playing"); lyr.scrollTop = 0;
   scroller.active = true; scroller.paused = true; scroller.total = s.duration || 210; scroller.elapsed = 0;
   wakeOn();
-  document.body.classList.add("playing"); window.scrollTo(0, 0);
+  document.body.classList.add("playing"); window.scrollTo(0, 0); fitLyrics();
   const go = () => {
     hideCount();
     const max = Math.max(0, lyr.scrollHeight - lyr.clientHeight);
@@ -957,7 +967,7 @@ function stopScroll(silent){
   cancelAnimationFrame(scroller.raf);
   scroller.active = false; scroller.paused = false; scroller.speed = 0;
   $("nowLyrics").classList.remove("playing");
-  document.body.classList.remove("playing");
+  document.body.classList.remove("playing"); fitLyrics();
   setPlayBtn("idle");
   const s = songs.find(x => x.id === currentId); $("timer").textContent = s && s.duration ? fmtDur(s.duration) : "";
   wakeOff();
@@ -1148,6 +1158,9 @@ $("assignBtn").addEventListener("click", async () => {
 
 /* ---------- tabs (op elk formaat) ---------- */
 function setTab(t){
+  // De tabbalk blijft ook tijdens het meelopen staan: een tik stopt het nummer en gaat terug naar het gewone scherm
+  if(scroller.active) stopScroll(true);
+  if(document.body.classList.contains("stagemode")) setStage(false);
   document.body.dataset.tab = t;
   document.querySelectorAll(".tabbar button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"));
   window.scrollTo(0, 0);
