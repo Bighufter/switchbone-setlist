@@ -1716,7 +1716,16 @@ function refit(){
   const b = document.body.classList;
   if(b.contains("playing") || b.contains("stagemode") || b.contains("setmode")) window.scrollTo(0, 0);
   fitLyrics(); fitTimers.forEach(clearTimeout);
-  fitTimers = [150, 400, 800].map(ms => setTimeout(fitLyrics, ms));
+  fitTimers = [150, 400, 800].map(ms => setTimeout(() => { fitLyrics(); settleBar(); }, ms));
+}
+// iOS: scrolde de pagina voor het draaien en past hij er daarna in zijn geheel op (bv. Oefenen
+// van liggend naar staand), dan bleef de vaste tabbalk op de oude scrollpositie hangen.
+// Scroll terug binnen bereik en laat de balk opnieuw plaatsen.
+function settleBar(){
+  const max = Math.max(0, document.documentElement.scrollHeight - innerHeight);
+  if(scrollY > max || max === 0) window.scrollTo(0, max);
+  const bar = document.querySelector(".tabbar"); if(!bar) return;
+  bar.style.transform = "translateZ(0)"; void bar.offsetHeight; bar.style.transform = "";
 }
 window.addEventListener("resize", refit);
 window.addEventListener("orientationchange", refit);
