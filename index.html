@@ -1129,6 +1129,7 @@ const I18N = {
   "pbAgain": ["Nog een keer", "Play again"],
   "otherSong": ["Ander nummer", "Change song"],
   "nextSong": ["Volgende nummer", "Next song"],
+  "playPrev": ["Vorige nog een keer", "Play previous again"],
   "noOther": ["Er zit geen ander nummer in de pot", "There is no other song in the pot"],
   "time": ["Tijd", "Time"],
   "songEnd": ["Einde van het nummer", "End of the song"],
@@ -1483,7 +1484,7 @@ function renderNow(){
   const s = songs.find(x => x.id === currentId);
   $("ticket").classList.toggle("blank", !s);
   if(!$("now").classList.contains("shuffling")) document.querySelector(".stage").classList.toggle("picked", !!s);
-  $("nextBtn").textContent = t(nextIsNext() ? "nextSong" : "otherSong");
+  $("nextBtn").textContent = nextLabel();
   document.querySelector(".stage").classList.toggle("nolyr", !!s && !(s.lyrics || "").trim());
   if(!s){
     $("nowTitle").textContent = songs.length ? t("readyNext") : t("nothingYet");
@@ -1544,7 +1545,7 @@ function resetTempo(){
   setSpeed(1);
 }
 function showSong(id, stay){
-  if(id !== currentId){ songDone = false; stopScroll(true); resetTempo(); }
+  if(id !== currentId){ songDone = false; prevId = null; stopScroll(true); resetTempo(); }
   currentId = id;
   renderNow(); renderList(); renderAssign(); renderSetlist(); revealCurrent();
   if(!stay) setTab("play");
@@ -1556,6 +1557,24 @@ let drawing = false;
 // Zonder tekst valt er niets af te spelen: het nummer telt meteen als gespeeld en de knop eronder wordt "Volgende nummer"
 function curNoLyrics(){ const s = songs.find(x => x.id === currentId); return !!(s && !(s.lyrics || "").trim()); }
 function nextIsNext(){ return songDone || curNoLyrics(); }
+// iPad: na afloop of stoppen staat meteen een volgend nummer klaar (autoNext). prevId is het nummer
+// dat net klaar is; de knop eronder wordt dan "Vorige nog een keer" (zolang het nieuwe nummer tekst heeft).
+let prevId = null;
+function showPrev(){ return !!prevId && !curNoLyrics() && songs.some(x => x.id === prevId); }
+function nextLabel(){ return t(showPrev() ? "playPrev" : nextIsNext() ? "nextSong" : "otherSong"); }
+function autoNext(){
+  if(!isPad() || !songDone || setPlay.active || document.body.classList.contains("practicing")) return;
+  const done = currentId; prevId = done; drawSong(false);
+  if(!drawing && currentId === done) prevId = null;
+  $("nextBtn").textContent = nextLabel();
+}
+function playPrev(){
+  const id = prevId; prevId = null;
+  if(currentId) played.delete(currentId); // het klaargezette nummer gaat terug in de pot
+  played.delete(id); played.add(id); ls.set(LS_PLAYED, [...played]);
+  showSong(id, true); renderPot(); startPlayAlong();
+}
+
 function drawSong(skip){
   const deck = playable();
   if(drawing || !deck.length) return;
@@ -1594,7 +1613,7 @@ function drawSong(skip){
   tick();
 }
 $("drawBtn").addEventListener("click", () => drawSong(false));
-$("nextBtn").addEventListener("click", () => drawSong(!nextIsNext()));
+$("nextBtn").addEventListener("click", () => { if(showPrev()) playPrev(); else { prevId = null; drawSong(!nextIsNext()); } });
 // Signatuur: de strook van het vorige kaartje scheurt af en valt weg
 function tearStub(){
   const t = $("ticket");
@@ -1610,7 +1629,7 @@ function tearStub(){
   setTimeout(() => c.remove(), 1200);
 }
 // Terug naar het beginscherm: pot vol, geen nummer getrokken, Spelen-tab bovenaan
-$("resetPot").addEventListener("click", () => { songDone = false; stopScroll(true); resetTempo(); endSetPlay(); currentId = null; played.clear(); ls.set(LS_PLAYED, []); renderAll(); setTab("play"); toast(t("allBack")); });
+$("resetPot").addEventListener("click", () => { songDone = false; prevId = null; stopScroll(true); resetTempo(); endSetPlay(); currentId = null; played.clear(); ls.set(LS_PLAYED, []); renderAll(); setTab("play"); toast(t("allBack")); });
 $("resetPot2").addEventListener("click", () => $("resetPot").click());
 $("search").addEventListener("input", renderList);
 $("listFilter").value = ls.get(LS_LISTFILTER, "all");
@@ -1773,7 +1792,7 @@ function setPlayBtn(state, n){
   else if(state === "resume"){ label = t("pbResume"); }
   b.innerHTML = html; b.setAttribute("aria-label", label); b.title = label; b.classList.toggle("stop", stop);
   $("playCap").classList.toggle("on", state === "idle" && songDone);
-  $("nextBtn").textContent = t(nextIsNext() ? "nextSong" : "otherSong");
+  $("nextBtn").textContent = nextLabel();
   setPauseBtn();
 }
 function setPauseBtn(){
@@ -1805,7 +1824,7 @@ function startPlayAlong(){
     const max = Math.max(0, lyr.scrollHeight - lyr.clientHeight);
     scroller.speed = max / scroller.total; scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
     scroller.paused = false; scroller.last = performance.now();
-    songDone = true;
+    songDone = true; prevId = null;
     setPlayBtn("stop");
     $("nowTotal").textContent = "/ " + fmtDur(scroller.total); $("nowElapsed").textContent = "0:00";
     setProg(0); $("songProg").hidden = false; fitLyrics();
@@ -1839,7 +1858,7 @@ function step(now){
     $("timer").textContent = fmtDur(scroller.elapsed) + " / " + fmtDur(scroller.total);
     $("nowElapsed").textContent = fmtDur(scroller.elapsed);
     setProg(scroller.elapsed / scroller.total);
-    if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); if(setPlay.active) setSongEnded(); else toast(t("songEnd")); return; }
+    if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); if(setPlay.active) setSongEnded(); else { toast(t("songEnd")); autoNext(); } return; }
   }
   scroller.raf = requestAnimationFrame(step);
 }
@@ -1863,6 +1882,7 @@ function hideCount(){ $("countin").hidden = true; }
 function userStop(){
   stopScroll(false);
   if(setPlay.active){ endSetPlay(); setTab("setlist"); toast(t("setStopped")); }
+  else autoNext();
 }
 $("countin").addEventListener("click", userStop);
 function togglePause(){
