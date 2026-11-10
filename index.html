@@ -397,6 +397,8 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   body:not(.playing) .stage.picked .tempofact.hit{background:color-mix(in srgb,var(--paper) 8%,transparent)}
   body:not(.playing) .stage.picked .tk-stub{border-left:0;padding:0;gap:12px}
   body:not(.playing) .stage.picked .tk-stub .label,body:not(.playing) .stage.picked .stub-no,body:not(.playing) .stage.picked .stub-of{display:none}
+  /* Nummer zonder tekst: geen afspeelknop, alleen "Volgende nummer" eronder */
+  body:not(.playing) .stage.picked.nolyr .tk-stub{display:none}
   body:not(.playing) .stage.picked .playfact{background:var(--stock);color:var(--on-stock)}
   body:not(.playing) .stage.picked .play-cap.on{display:block;font-size:var(--t-s);font-weight:700;color:var(--mute)}
   body:not(.playing) .stage.picked #lyricsWrap > :not(#playHint){display:none}
@@ -803,6 +805,10 @@ label.opt{cursor:pointer}
               <label><input type="radio" name="optTabs" value="icons"><span data-i18n="opt.tabsIcons">Alleen icoon</span></label>
             </div>
           </div>
+          <label class="opt">
+            <span class="opt-txt"><span class="opt-name" data-i18n="opt.awake">Scherm altijd aan</span><span class="note" data-i18n="opt.awakeNote">Het scherm gaat niet op zwart zolang de app open is. Uit: alleen aan tijdens het spelen van een nummer. Kost meer batterij.</span></span>
+            <input type="checkbox" class="switch" id="optAwake" role="switch">
+          </label>
           <div class="opt opt-color">
             <div class="opt-txt"><span class="opt-name" id="optColorL" data-i18n="opt.color">Hoofdkleur</span><span class="note" data-i18n="opt.colorNote">De kleur van het kaartje en de knoppen. De tekst erop wordt vanzelf licht of donker.</span></div>
             <div class="color-pick">
@@ -976,7 +982,7 @@ const ls = {
 
 /* ---------- instellingen en taal ---------- */
 const LS_OPTS = "setlist-trekker-settings", LS_BACKUP = "setlist-trekker-lastbackup", LS_LOGO = "setlist-trekker-logo";
-const OPT_DEFAULT = {band:"", theme:"dark", accent:"#F26B1D", lang:"nl", countBars:1, countClick:true, showTempo:false, tabLabels:"full"};
+const OPT_DEFAULT = {band:"", theme:"dark", accent:"#F26B1D", lang:"nl", countBars:1, countClick:true, showTempo:false, tabLabels:"full", keepAwake:false};
 let opts = Object.assign({}, OPT_DEFAULT, ls.get(LS_OPTS, {}));
 function saveOpts(){ ls.set(LS_OPTS, opts); }
 // Elke tekst als [Nederlands, Engels]. {naam} wordt ingevuld door t().
@@ -1203,6 +1209,8 @@ const I18N = {
   "opt.play": ["Spelen", "Playing"],
   "opt.count": ["Aftellen", "Count-in"],
   "opt.tabs": ["Menubalk", "Menu bar"],
+  "opt.awake": ["Scherm altijd aan", "Keep screen on"],
+  "opt.awakeNote": ["Het scherm gaat niet op zwart zolang de app open is. Uit: alleen aan tijdens het spelen van een nummer. Kost meer batterij.", "The screen won't go dark while the app is open. Off: only while a song is playing. Uses more battery."],
   "opt.tabsNote": ["Alleen iconen maakt de balk onderin lager, zodat er meer ruimte is voor de tekst.", "Icons only makes the bar at the bottom lower, leaving more room for the lyrics."],
   "opt.tabsFull": ["Icoon en tekst", "Icon and text"],
   "opt.tabsIcons": ["Alleen icoon", "Icon only"],
@@ -1460,7 +1468,8 @@ function renderNow(){
   const s = songs.find(x => x.id === currentId);
   $("ticket").classList.toggle("blank", !s);
   if(!$("now").classList.contains("shuffling")) document.querySelector(".stage").classList.toggle("picked", !!s);
-  $("nextBtn").textContent = t(songDone ? "nextSong" : "otherSong");
+  $("nextBtn").textContent = t(nextIsNext() ? "nextSong" : "otherSong");
+  document.querySelector(".stage").classList.toggle("nolyr", !!s && !(s.lyrics || "").trim());
   if(!s){
     $("nowTitle").textContent = songs.length ? t("readyNext") : t("nothingYet");
     $("nowArtist").textContent = !songs.length ? t("addFirst") : (playable().length ? t("readyHint") : t("noPlayable"));
@@ -1529,6 +1538,9 @@ function reduced(){ return window.matchMedia("(prefers-reduced-motion: reduce)")
 
 /* ---------- drawing ---------- */
 let drawing = false;
+// Zonder tekst valt er niets af te spelen: het nummer telt meteen als gespeeld en de knop eronder wordt "Volgende nummer"
+function curNoLyrics(){ const s = songs.find(x => x.id === currentId); return !!(s && !(s.lyrics || "").trim()); }
+function nextIsNext(){ return songDone || curNoLyrics(); }
 function drawSong(skip){
   const deck = playable();
   if(drawing || !deck.length) return;
@@ -1567,7 +1579,7 @@ function drawSong(skip){
   tick();
 }
 $("drawBtn").addEventListener("click", () => drawSong(false));
-$("nextBtn").addEventListener("click", () => drawSong(!songDone));
+$("nextBtn").addEventListener("click", () => drawSong(!nextIsNext()));
 // Signatuur: de strook van het vorige kaartje scheurt af en valt weg
 function tearStub(){
   const t = $("ticket");
@@ -1737,7 +1749,7 @@ function setPlayBtn(state, n){
   else if(state === "resume"){ label = t("pbResume"); }
   b.innerHTML = html; b.setAttribute("aria-label", label); b.title = label; b.classList.toggle("stop", stop);
   $("playCap").classList.toggle("on", state === "idle" && songDone);
-  $("nextBtn").textContent = t(songDone ? "nextSong" : "otherSong");
+  $("nextBtn").textContent = t(nextIsNext() ? "nextSong" : "otherSong");
   setPauseBtn();
 }
 function setPauseBtn(){
@@ -1747,8 +1759,16 @@ function setPauseBtn(){
   p.disabled = !(scroller.active && scroller.speed);
 }
 setPlayBtn("idle");
-async function wakeOn(){ try{ if(navigator.wakeLock) scroller.wake = await navigator.wakeLock.request("screen"); }catch(e){} }
-function wakeOff(){ try{ scroller.wake && scroller.wake.release(); }catch(e){} scroller.wake = null; }
+// Scherm wakker houden: tijdens het spelen, of altijd als "Scherm altijd aan" (opts.keepAwake) aan staat
+async function wakeOn(){
+  if(scroller.wake && !scroller.wake.released) return;
+  try{ if(navigator.wakeLock) scroller.wake = await navigator.wakeLock.request("screen"); }catch(e){}
+}
+function wakeOff(){
+  if(opts.keepAwake) return;
+  try{ scroller.wake && scroller.wake.release(); }catch(e){} scroller.wake = null;
+}
+function applyAwake(){ if(opts.keepAwake) wakeOn(); else if(!scroller.active) wakeOff(); }
 function startPlayAlong(){
   const s = songs.find(x => x.id === currentId); if(!s || !s.lyrics) return;
   stopScroll(true); stopMet();
@@ -1850,7 +1870,8 @@ $("nowLyrics").addEventListener("click", () => { if(scroller.active && scroller.
 function setSpeed(f){ speedFactor = Math.min(2, Math.max(.5, Math.round(f * 10) / 10)); $("speedLbl").textContent = "×" + speedFactor.toFixed(1); }
 $("slower").addEventListener("click", () => setSpeed(speedFactor - .1));
 $("faster").addEventListener("click", () => setSpeed(speedFactor + .1));
-document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && scroller.active) wakeOn(); });
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible" && (scroller.active || opts.keepAwake)) wakeOn(); });
+applyAwake();
 
 /* ---------- metronome ---------- */
 let actx = null, metTimer = null, nextTime = 0, beatN = 0, metBpm = 0, metOwner = null;
@@ -2555,7 +2576,7 @@ function renderSettings(){
   $("optBand").value = opts.band || "";
   $("optBand").placeholder = "Switchbone";
   setRadio("optTheme", opts.theme); setRadio("optLang", opts.lang); setRadio("optCount", opts.countBars); setRadio("optTabs", opts.tabLabels);
-  $("optClick").checked = !!opts.countClick; $("optTempo").checked = !!opts.showTempo;
+  $("optClick").checked = !!opts.countClick; $("optAwake").checked = !!opts.keepAwake; $("optTempo").checked = !!opts.showTempo;
   $("optFontVal").textContent = Math.round(fontScale * 100) + "%";
   renderSwatches(); renderBackupInfo(); renderVersion();
 }
@@ -2579,6 +2600,7 @@ document.querySelectorAll('input[name="optLang"]').forEach(r => r.addEventListen
 document.querySelectorAll('input[name="optTabs"]').forEach(r => r.addEventListener("change", () => { opts.tabLabels = r.value; saveOpts(); applyTabs(); refit(); }));
 document.querySelectorAll('input[name="optCount"]').forEach(r => r.addEventListener("change", () => { opts.countBars = +r.value; saveOpts(); renderNow(); }));
 $("optClick").addEventListener("change", () => { opts.countClick = $("optClick").checked; saveOpts(); });
+$("optAwake").addEventListener("change", () => { opts.keepAwake = $("optAwake").checked; saveOpts(); applyAwake(); });
 $("optTempo").addEventListener("change", () => { opts.showTempo = $("optTempo").checked; saveOpts(); applyTabs(); });
 $("optFontDown").addEventListener("click", () => setFont(fontScale - .1));
 $("optFontUp").addEventListener("click", () => setFont(fontScale + .1));
@@ -2623,7 +2645,7 @@ $("optReset").addEventListener("click", async () => {
   if(!await ask(t("opt.resetAsk"), t("opt.resetNote"), t("opt.resetBtn"), true)) return;
   opts = Object.assign({}, OPT_DEFAULT); saveOpts();
   logoData = ""; try{ await storeLogo(""); }catch(e){}
-  applyLook(); applyLogo(); applyTabs(); relabel(); toast(t("opt.resetDone"));
+  applyLook(); applyLogo(); applyTabs(); applyAwake(); relabel(); toast(t("opt.resetDone"));
 });
 
 /* ---------- opstarten ---------- */
