@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-10 881790c237">
+<meta name="app-updated" content="2026-11-10 d1909a5614">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -347,6 +347,9 @@ body.practicing .grid > .col:last-child{display:none}
 .grid > .col:last-child .panel{width:100%;max-width:880px;margin-inline:auto}
 .tabbar{display:grid;grid-template-columns:repeat(var(--tabs,4),minmax(0,200px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-3);border-top:0;
   padding:6px max(8px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px, env(safe-area-inset-left,0px))}
+/* De grond van de tabbalk loopt door tot onder de rand: iOS (beginscherm-app) rekent na het draaien soms de
+   strook van de thuisbalk niet meer mee, waardoor de balk 20 pt boven de onderkant bleef hangen met een gat eronder */
+.tabbar::after{content:"";position:absolute;left:0;right:0;top:100%;height:120px;background:inherit;pointer-events:none}
 .tabbar button{background:none;border:0;border-radius:8px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--t-xs);font-weight:800;font-stretch:112%;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);cursor:pointer}
 .tabbar svg{width:22px;height:22px;display:block}
 .tabbar button > span{white-space:nowrap}
@@ -408,9 +411,14 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   body:not(.playing) .stage.picked #lyricsWrap > :not(#playHint){display:none}
   body:not(.playing) .stage.picked #playHint{text-align:center;margin-inline:auto}
   body:not(.playing) .stage.picked .next-row{display:flex;flex-direction:column;align-items:center;gap:12px}
+  /* De hint staat los onderin, zodat de knoppen niet verspringen als hij er wel of niet is (of tijdens het schudden) */
+  body:not(.playing) .stage.picked #lyricsWrap{position:absolute;left:210px;right:210px;bottom:24px}
+  .next-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
   body.practicing .stage .next-row,body.setmode .stage .next-row{display:none!important}
   .next-btn{min-height:64px;min-width:316px;padding:0 30px;border-radius:9px;background:color-mix(in srgb,var(--stock) 26%,var(--ink));border-color:var(--stock-fg);color:var(--stock-fg);font-size:var(--t-l);font-weight:900;font-stretch:125%;letter-spacing:.06em;text-transform:uppercase}
   .next-btn:hover{background:color-mix(in srgb,var(--stock) 36%,var(--ink));border-color:var(--stock-fg)}
+  .skip-btn{min-width:0;background:none;border-color:color-mix(in srgb,var(--paper) 40%,transparent);color:var(--paper)}
+  .skip-btn:hover{background:color-mix(in srgb,var(--paper) 8%,transparent);border-color:var(--paper)}
   .next-row .pot{font-weight:600}
   #resetPot2{position:absolute;right:12px;bottom:12px}
   /* Scherm 3: strook met titel en verstreken tijd, pauze en stop */
@@ -675,7 +683,10 @@ label.opt{cursor:pointer}
         </article>
 
         <div class="next-row" id="nextRow">
-          <button class="btn next-btn" id="nextBtn" type="button" data-i18n="otherSong">Ander nummer</button>
+          <div class="next-btns">
+            <button class="btn next-btn" id="nextBtn" type="button" data-i18n="otherSong">Ander nummer</button>
+            <button class="btn next-btn skip-btn" id="skipBtn" type="button" data-i18n="skipSong">Overslaan</button>
+          </div>
           <div class="pot" id="potInfo2"></div>
           <button class="btn ghost small" id="resetPot2" type="button" data-i18n="resetPot" hidden>Alles terug in de pot</button>
         </div>
@@ -1142,6 +1153,7 @@ const I18N = {
   "otherSong": ["Ander nummer", "Change song"],
   "nextSong": ["Volgende nummer", "Next song"],
   "playPrev": ["Vorige nog een keer", "Play previous again"],
+  "skipSong": ["Overslaan", "Skip song"],
   "noOther": ["Er zit geen ander nummer in de pot", "There is no other song in the pot"],
   "time": ["Tijd", "Time"],
   "songEnd": ["Einde van het nummer", "End of the song"],
@@ -1626,6 +1638,18 @@ function drawSong(skip){
 }
 $("drawBtn").addEventListener("click", () => drawSong(false));
 $("nextBtn").addEventListener("click", () => { if(showPrev()) playPrev(); else { prevId = null; drawSong(!nextIsNext()); } });
+// Overslaan: het nummer gaat op Passen (uit de pot, terugzetten kan bij Nummers) en er wordt een ander getrokken.
+// "Vorige nog een keer" blijft staan als die er was.
+function skipSong(){
+  const id = currentId; if(!id || drawing) return;
+  const keep = prevId;
+  played.delete(id); ls.set(LS_PLAYED, [...played]);
+  setStatus(id, "pass", true);
+  prevId = keep;
+  if(!playable().length){ currentId = null; prevId = null; renderAll(); return; }
+  drawSong(false);
+}
+$("skipBtn").addEventListener("click", skipSong);
 // Signatuur: de strook van het vorige kaartje scheurt af en valt weg
 function tearStub(){
   const t = $("ticket");
