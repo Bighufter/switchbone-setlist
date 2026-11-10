@@ -25,6 +25,7 @@
   --paper:#F4EFE4; --mute:#A6A9B0; --faint:#82868E;
   --stock:#F26B1D; --stock-hi:#FF8740; --on-stock:#140A04; --on-stock-2:#4A2108;
   --ok:#7DD39A; --danger:#FF8A70;
+  --stock-fg:var(--stock); --paper-hi:#FFFFFF; --shade:var(--shade); --scrim:color-mix(in srgb,var(--ink) 82%,transparent);
   --f:"Archivo","Helvetica Neue",Arial,sans-serif;
   --r:12px; --r-sm:7px;
   --t-xs:13px; --t-s:15px; --t-m:18px; --t-l:24px; --t-xl:34px; --t-2xl:clamp(34px,3.6vw,52px); --t-3xl:clamp(52px,7vw,96px);
@@ -33,9 +34,20 @@
   color-scheme:dark;
   padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
 }
+/* Licht scherm (Instellingen > Scherm). Zelfde rollen, omgekeerd; contrast blijft leesbaar op een meter afstand. */
+:root[data-theme="light"]{
+  --ink:#ECE8DF; --ink-2:#F7F5F0; --ink-3:#FFFFFF; --line:#D9D3C7; --line-2:#BDB6A8;
+  --paper:#17181B; --paper-hi:#000000; --mute:#4D5057; --faint:#64676E;
+  --ok:#1D7A44; --danger:#B3261E;
+  --shade:rgba(40,30,10,.16); --scrim:rgba(23,24,27,.42);
+  color-scheme:light;
+}
+/* De statusbalk van de geïnstalleerde app heeft witte tekst; in het lichte scherm een donkere strook erachter */
+:root[data-theme="light"] body::before{content:"";position:fixed;left:0;right:0;top:0;height:env(safe-area-inset-top,0px);background:#17181B;z-index:60;pointer-events:none}
+.i18n-wait body{visibility:hidden}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scrollbar-color:var(--line-2) transparent}
-body{margin:0;overscroll-behavior-y:none;background:var(--ink);color:var(--paper);font:400 var(--t-m)/1.45 var(--f);font-variant-numeric:tabular-nums;caret-color:var(--stock);
+body{margin:0;overscroll-behavior-y:none;background:var(--ink);color:var(--paper);font:400 var(--t-m)/1.45 var(--f);font-variant-numeric:tabular-nums;caret-color:var(--stock-fg);
   padding-left:max(20px, env(safe-area-inset-left,0px));padding-right:max(20px, env(safe-area-inset-right,0px));padding-block:18px 40px}
 img{max-width:100%}
 [hidden]{display:none!important}
@@ -43,14 +55,15 @@ img{max-width:100%}
 .wrap{max-width:1320px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
 h1,h2,h3{margin:0;text-wrap:balance}
 button,input,textarea,select{font:inherit;color:inherit}
-:focus-visible{outline:3px solid var(--stock);outline-offset:3px}
+:focus-visible{outline:3px solid var(--stock-fg);outline-offset:3px}
 .label{font-size:var(--t-xs);font-weight:800;font-stretch:125%;letter-spacing:.12em;text-transform:uppercase;color:var(--mute)}
 .mono{font-variant-numeric:tabular-nums}
 
 /* Kop */
 header.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
 h1.brand{display:flex;align-items:center;gap:14px;min-width:0}
-h1.brand .logo{display:block;height:44px;width:auto;border-radius:3px}
+h1.brand .logo{display:block;height:44px;width:auto;max-width:min(100%,520px);object-fit:contain;border-radius:3px}
+h1.brand .logo.squarish{height:72px}
 
 /* Knoppen */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;border:1px solid var(--line-2);background:var(--ink-3);border-radius:var(--r-sm);padding:10px 16px;cursor:pointer;font-weight:700;font-size:var(--t-s);line-height:1.15;white-space:nowrap;transition:background-color .15s,border-color .15s}
@@ -60,7 +73,7 @@ h1.brand .logo{display:block;height:44px;width:auto;border-radius:3px}
 .btn.primary:hover{background:var(--stock-hi);border-color:var(--stock-hi)}
 /* Oranje hoort bij het kaartje; overige hoofdknoppen zijn papier op inkt */
 .btn.solid{background:var(--paper);border-color:var(--paper);color:var(--ink)}
-.btn.solid:hover{background:#FFFFFF;border-color:#FFFFFF}
+.btn.solid:hover{background:var(--paper-hi);border-color:var(--paper-hi)}
 .btn.ghost{background:transparent}
 .btn.small{min-height:44px;padding:8px 14px}
 .btn .ico{width:14px;height:14px;display:block;flex:none}
@@ -130,7 +143,7 @@ a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 /* Voortgang: alleen zichtbaar zodra de tekst loopt */
 .song-prog{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:0 0 12px}
 .song-prog[hidden]{display:none}
-.song-prog i{display:block;height:100%;width:100%;background:var(--stock);transform-origin:left;transform:scaleX(0)}
+.song-prog i{display:block;height:100%;width:100%;background:var(--stock-fg);transform-origin:left;transform:scaleX(0)}
 .lyrics-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .lyrics-bar .row{gap:6px}
 .timer{font-size:var(--t-s);font-weight:700;color:var(--mute);min-width:3.4em;text-align:center}
@@ -143,6 +156,8 @@ a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 
 /* Rechterkolom */
 .panel{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+/* Ruimere binnenmarge op de iPad (Nummers, Tempo, Instellingen); Setlist houdt 20px */
+@media (min-width:700px){.panel{padding:36px}.panel[data-view="setlist"]{padding:20px}}
 .panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .panel-head h2{font-size:var(--t-l);font-weight:900;font-stretch:125%;letter-spacing:.05em;text-transform:uppercase}
 .file-drop{display:flex;flex-direction:column;align-items:flex-start;gap:10px;padding:14px;border:1px dashed var(--line-2);border-radius:var(--r-sm)}
@@ -152,10 +167,10 @@ a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 .chip.sel{background:var(--paper);color:var(--ink);border-color:var(--paper)}
 .beats{display:flex;gap:8px;align-items:center}
 .beat{width:14px;height:14px;border-radius:50%;border:2px solid var(--faint);transition:background-color .05s}
-.beat.on{background:var(--stock);border-color:var(--stock)}
+.beat.on{background:var(--stock-fg);border-color:var(--stock-fg)}
 .beat.first.on{background:var(--paper);border-color:var(--paper)}
 select,input[type=text],input[type=number],input[type=search],textarea{background:var(--ink);border:1px solid var(--line-2);border-radius:var(--r-sm);padding:11px 12px;width:100%;min-width:0;font-size:var(--t-m)}
-select:focus,input:focus,textarea:focus{border-color:var(--stock);outline:none}
+select:focus,input:focus,textarea:focus{border-color:var(--stock-fg);outline:none}
 ::placeholder{color:var(--mute);opacity:1}
 textarea{min-height:240px;resize:vertical;line-height:1.5}
 
@@ -207,8 +222,29 @@ body.setmode #nowFacts,body.setmode .lyrics-bar{display:none!important}
 .pick-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}
 .pick-tools select{width:auto;max-width:44vw}
 .pick-tools[hidden]{display:none}
+.list-tools{grid-template-columns:minmax(0,1fr) auto auto}
+@media (max-width:699px){.list-tools{grid-template-columns:1fr 1fr}.list-tools input{grid-column:1 / -1}.list-tools select{max-width:none;width:100%}}
+/* Nummers: geen volgnummer en geen tempo in de rij; een actief filter krijgt een gekleurde rand */
+#songList li{grid-template-columns:minmax(0,1fr) auto}
+#songList li.st-pass .t,#songList li.st-pass .a{color:var(--faint)}
+/* Status per nummer: Spelen (papier), Oefenen (hoofdkleur), Passen (lijn) */
+.status{display:inline-flex;gap:3px;padding:3px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r-sm)}
+.status button{flex:1 1 0;min-height:40px;padding:4px 12px;border:0;border-radius:5px;background:none;color:var(--mute);font-size:var(--t-s);font-weight:700;cursor:pointer;white-space:nowrap}
+.status button[aria-pressed="true"]{background:var(--paper);color:var(--ink)}
+.status button[data-v="practice"][aria-pressed="true"]{background:var(--stock);color:var(--on-stock)}
+.status button[data-v="pass"][aria-pressed="true"]{background:var(--line-2);color:var(--paper)}
+.practice li{grid-template-columns:minmax(0,1fr) auto auto}
+.practice li.current{background:var(--stock);color:var(--on-stock)}
+.practice li.current .a,.practice li.current .dur{color:var(--on-stock-2)}
+.row-actions{display:flex;gap:6px}
+.field .seg{align-self:flex-start}
+/* Oefenscherm: het speelscherm zonder trekbalk en zonder volgnummer, met een knop terug naar de oefenlijst */
+.practice-bar{display:none;align-items:center;gap:12px}
+body.practicing .practice-bar{display:flex}
+body.practicing .draw-row,body.practicing .tk-stub .label,body.practicing .stub-no,body.practicing .stub-of,body.playing .practice-bar,body.stagemode .practice-bar{display:none!important}
+#listFilter.on{border-color:var(--stock-fg);color:var(--paper)}
 @media (min-width:700px){.songs.pick{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}}
-.saved li.on{box-shadow:inset 3px 0 0 var(--stock)}
+.saved li.on{box-shadow:inset 3px 0 0 var(--stock-fg)}
 body.setmode .draw-row,body.setmode #playHint{display:none!important}
 /* setlist-modus: vaste hoogte, zodat "Volgende" ook bij een korte tekst onderaan staat */
 body.setmode .lyrics{max-height:var(--ly-max,60vh);height:var(--ly-max,60vh)}
@@ -223,7 +259,7 @@ body.setmode.playing #nowArtist,body.setmode.stagemode #nowArtist{display:block!
 .drag{width:44px;height:44px;display:grid;place-items:center;background:none;border:0;padding:0;color:var(--mute);cursor:grab;touch-action:none;border-radius:var(--r-sm);-webkit-user-select:none;user-select:none}
 .drag svg{width:20px;height:20px;display:block}
 .drag:active{cursor:grabbing}
-.setlist li.dragging{position:relative;z-index:2;background:var(--line);box-shadow:0 12px 30px rgba(0,0,0,.45)}
+.setlist li.dragging{position:relative;z-index:2;background:var(--line);box-shadow:0 12px 30px var(--shade)}
 .setlist li.current .drag{color:var(--on-stock)}
 .setlist li.current .dur{color:var(--on-stock)}
 .pick li{grid-template-columns:minmax(0,1fr) auto 44px}
@@ -231,33 +267,33 @@ body.setmode.playing #nowArtist,body.setmode.stagemode #nowArtist{display:block!
 .linkish{background:none;border:0;padding:0;cursor:pointer;text-align:left;color:inherit;min-width:0}
 
 /* Bewerken */
-.overlay{position:fixed;inset:0;background:color-mix(in srgb,var(--ink) 82%,transparent);display:flex;align-items:flex-start;justify-content:center;
+.overlay{position:fixed;inset:0;background:var(--scrim);display:flex;align-items:flex-start;justify-content:center;
   padding:max(24px, env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) 24px max(16px, env(safe-area-inset-left,0px));overflow:auto;z-index:20}
-.editor{width:100%;max-width:680px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 24px 60px rgba(0,0,0,.45)}
+.editor{width:100%;max-width:680px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r);padding:24px;display:flex;flex-direction:column;gap:14px;box-shadow:0 24px 60px var(--shade)}
 .editor h2{font-size:var(--t-xl);font-weight:900;font-stretch:112%;text-transform:uppercase}
 .fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:12px}
 @media (max-width:520px){.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fields .wide{grid-column:1 / -1}}
 .field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .err{color:var(--danger);font-size:var(--t-s)}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--paper);color:var(--ink);padding:12px 20px;border-radius:var(--r-sm);font-weight:800;z-index:30;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--paper);color:var(--ink);padding:12px 20px;border-radius:var(--r-sm);font-weight:800;z-index:30;box-shadow:0 10px 30px var(--shade)}
 
 /* Aftellen */
 .countin{position:fixed;inset:0;z-index:40;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3vh;cursor:pointer;
   padding:max(16px, env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) max(16px, env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-left,0px));user-select:none;-webkit-user-select:none}
-.ci-logo{width:min(360px,60vw);height:auto;max-width:100%;border-radius:3px;opacity:.9}
+.ci-logo{width:auto;height:auto;max-width:min(360px,60vw);max-height:16vh;border-radius:3px;opacity:.9}
 .ci-title{font-weight:900;font-stretch:62%;text-transform:uppercase;font-size:clamp(32px,6vw,76px);line-height:.95;text-align:center;text-wrap:balance;color:var(--paper);max-width:100%;overflow-wrap:anywhere}
-.ci-num{font-weight:900;font-stretch:125%;font-size:min(54vh,62vw);line-height:.85;color:var(--stock);min-height:.85em}
+.ci-num{font-weight:900;font-stretch:125%;font-size:min(54vh,62vw);line-height:.85;color:var(--stock-fg);min-height:.85em}
 .ci-num.first{color:var(--paper)}
 .ci-num.pop{animation:ciPop .3s var(--ease)}
 @keyframes ciPop{from{transform:scale(1.12);opacity:.4}to{transform:none;opacity:1}}
 .ci-beats{display:flex;gap:18px}
 .ci-beats i{width:26px;height:26px;border-radius:50%;border:3px solid var(--line-2)}
-.ci-beats i.on{background:var(--stock);border-color:var(--stock)}
+.ci-beats i.on{background:var(--stock-fg);border-color:var(--stock-fg)}
 .ci-beats i.on:first-child{background:var(--paper);border-color:var(--paper)}
 .ci-hint{font-size:var(--t-s);color:var(--mute)}
 
 /* Updatebalk */
-.updatebar{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));z-index:35;display:flex;gap:12px;align-items:center;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r);padding:8px 8px 8px 16px;box-shadow:0 12px 30px rgba(0,0,0,.45);font-weight:700;max-width:calc(100% - 32px)}
+.updatebar{position:fixed;left:50%;transform:translateX(-50%);top:calc(12px + env(safe-area-inset-top,0px));z-index:35;display:flex;gap:12px;align-items:center;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r);padding:8px 8px 8px 16px;box-shadow:0 12px 30px var(--shade);font-weight:700;max-width:calc(100% - 32px)}
 
 /* Aanraakschermen */
 button,a.btn,.chip,.tabbar button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
@@ -288,17 +324,20 @@ body.stagemode .lyrics,body.playing .lyrics{max-height:var(--ly-max, calc(100dvh
 /* Meelopen: de regels onder de leeshoogte zakken iets terug */
 body.playing .lyrics{-webkit-mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5));mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5))}
 
-/* Op elk formaat één onderdeel tegelijk, gekozen met de tabbalk onderin: Spelen, Setlist, Nummers, Tempo */
+/* Op elk formaat één onderdeel tegelijk, gekozen met de tabbalk onderin: Spelen, Setlist, Nummers, (Tempo), Instellingen */
 body{padding-bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 .grid{grid-template-columns:minmax(0,1fr)}
 [data-view]{display:none}
-body:not([data-tab]) [data-view="play"],body[data-tab="play"] [data-view="play"],body[data-tab="setlist"] [data-view="setlist"],body[data-tab="tempo"] [data-view="tempo"],body[data-tab="list"] [data-view="list"]{display:flex}
-body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:last-child,body[data-tab="setlist"] .grid > .col:first-child,body[data-tab="list"] .grid > .col:first-child,body[data-tab="tempo"] .grid > .col:first-child{display:none}
+body:not([data-tab]) [data-view="play"],body[data-tab="play"] [data-view="play"],body[data-tab="setlist"] [data-view="setlist"],body[data-tab="tempo"] [data-view="tempo"],body[data-tab="list"] [data-view="list"],body[data-tab="settings"] [data-view="settings"],body[data-tab="practice"] [data-view="practice"]{display:flex}
+body:not([data-tab]) .grid > .col:last-child,body[data-tab="play"] .grid > .col:last-child,body[data-tab="setlist"] .grid > .col:first-child,body[data-tab="list"] .grid > .col:first-child,body[data-tab="tempo"] .grid > .col:first-child,body[data-tab="settings"] .grid > .col:first-child,body[data-tab="practice"] .grid > .col:first-child{display:none}
+body.practicing .grid > .col:first-child,body.practicing [data-view="play"]{display:flex}
+body.practicing .grid > .col:last-child{display:none}
 .grid > .col:last-child .panel{width:100%;max-width:880px;margin-inline:auto}
-.tabbar{display:grid;grid-template-columns:repeat(3,minmax(0,200px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
+.tabbar{display:grid;grid-template-columns:repeat(var(--tabs,4),minmax(0,200px));justify-content:center;gap:6px;position:fixed;left:0;right:0;bottom:0;z-index:15;background:var(--ink-2);border-top:1px solid var(--line);
   padding:6px max(8px, env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(8px, env(safe-area-inset-left,0px))}
 .tabbar button{background:none;border:0;border-radius:8px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:var(--t-xs);font-weight:800;font-stretch:112%;letter-spacing:.06em;text-transform:uppercase;color:var(--mute);cursor:pointer}
 .tabbar svg{width:22px;height:22px;display:block}
+.tabbar button > span{white-space:nowrap}
 .app-updated{grid-column:1 / -1;margin:0;padding:2px 0 4px;text-align:center;font-size:var(--t-xs);color:var(--faint);letter-spacing:.02em}
 .app-updated[hidden],body:not([data-tab="play"]) .app-updated,body.playing .app-updated,body.setmode .app-updated,body.stagemode .app-updated{display:none}
 body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
@@ -327,15 +366,23 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
   body{padding-block:12px calc(88px + env(safe-area-inset-bottom,0px));padding-left:max(14px, env(safe-area-inset-left,0px));padding-right:max(14px, env(safe-area-inset-right,0px))}
   .wrap{gap:14px}
   h1.brand .logo{height:34px}
+  h1.brand .logo.squarish{height:52px}
   .grid{gap:14px}
   .col{gap:14px}
-  .tabbar{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}
+  .tabbar{grid-template-columns:repeat(var(--tabs,4),minmax(0,1fr));gap:4px}
   .set-next{padding:12px 14px;margin-top:10px;gap:10px}
   .set-next .nx-t{font-size:var(--t-m)}
   .set-tools{grid-template-columns:minmax(0,1fr)}
   .saved li{grid-template-columns:minmax(0,1fr) auto 40px}
   .set-play{width:56px;height:56px;margin-left:8px}
-  .tabbar button{letter-spacing:.03em}
+  .tabbar button{letter-spacing:.02em;font-stretch:75%}
+  .tabbar.many button{letter-spacing:0;font-stretch:62%}
+  .tabbar.lots button{font-size:11px}
+  #songList li{grid-template-columns:minmax(0,1fr);row-gap:10px}
+  .status{width:100%}
+  .practice li{grid-template-columns:minmax(0,1fr) auto;row-gap:10px}
+  .practice .row-actions{grid-column:1 / -1}
+  .practice .row-actions .btn{flex:1}
   .setlist li{grid-template-columns:40px 1.6em minmax(0,1fr) auto 40px;gap:2px 8px}
   .setlist .drag,.setlist .iconbtn{width:40px;min-width:40px}
   .tabbar button{min-height:54px}
@@ -371,7 +418,7 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
   .editor > .row:last-child{position:sticky;bottom:0;background:var(--ink-2);padding-block:10px}
   /* korte pop-up (naam bewaren): kaartje bovenin, ruimte voor het toetsenbord */
   .overlay.center{padding:calc(16px + env(safe-area-inset-top,0px)) max(16px, env(safe-area-inset-right,0px)) 16px max(16px, env(safe-area-inset-left,0px));align-items:flex-start}
-  .editor.small{min-height:0;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 24px 60px rgba(0,0,0,.45);padding:20px}
+  .editor.small{min-height:0;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 24px 60px var(--shade);padding:20px}
   .editor.small > .row:last-child{position:static;padding-block:0}
   textarea{min-height:40vh}
 }
@@ -383,23 +430,125 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
   body.playing .now{display:none}
   body.playing .lyrics{max-height:var(--ly-max, calc(100dvh - 190px - env(safe-area-inset-bottom,0px)))}
 }
+/* Instellingen: rijen zoals de nummerlijst, uitleg links en de keuze rechts */
+.settings .set-sub{margin-top:16px}
+.opt-group{display:flex;flex-direction:column;gap:6px}
+.opt{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 28px;align-items:center;padding:14px 16px;background:var(--ink-3);border-radius:var(--r-sm)}
+label.opt{cursor:pointer}
+.opt-txt{display:flex;flex-direction:column;gap:3px;min-width:0}
+.opt-name{font-size:var(--t-m);font-weight:800;line-height:1.25;color:var(--paper)}
+.opt .note{max-width:54ch}
+.opt-meta{color:var(--paper);font-weight:600;margin-top:4px}
+.opt input[type=text]{width:min(280px,100%);background:var(--ink-2)}
+.opt-actions{justify-content:flex-end}
+.opt-logo{display:flex;flex-direction:column;gap:10px;width:320px}
+.logo-prev{display:flex;align-items:center;justify-content:center;min-height:96px;padding:16px;background:var(--ink);border:1px dashed var(--line-2);border-radius:var(--r-sm)}
+.logo-prev img{display:block;width:auto;height:auto;max-width:100%;max-height:64px;border-radius:3px}
+.opt-color{align-items:start}
+.color-pick{display:flex;flex-direction:column;gap:14px;width:320px}
+.swatches{display:grid;grid-template-columns:repeat(5,44px);gap:12px;justify-content:space-between}
+.sw{position:relative;display:block;width:44px;height:44px;border-radius:50%;cursor:pointer}
+.sw input{position:absolute;inset:0;width:100%;height:100%;margin:0;padding:0;border:0;opacity:0;cursor:pointer}
+.sw i{display:block;width:100%;height:100%;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--paper) 16%,transparent);pointer-events:none}
+.sw input:checked + i,.sw.on i{box-shadow:0 0 0 3px var(--ink-3),0 0 0 5px var(--paper)}
+.sw input:focus-visible + i{outline:3px solid var(--paper);outline-offset:6px}
+.sw.custom i{background:conic-gradient(from 90deg,#F26B1D,#F5C518,#3DBE6E,#1FB5A8,#3B82F6,#8B5CF6,#EC4899,#F26B1D)}
+.sw.custom.on i{background:var(--c)}
+.mini-ticket{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 78px;min-height:80px;background:var(--stock);color:var(--on-stock);border-radius:10px}
+.mini-ticket::before,.mini-ticket::after{content:"";position:absolute;right:68px;width:20px;height:20px;border-radius:50%;background:var(--ink-3)}
+.mini-ticket::before{top:-10px}
+.mini-ticket::after{bottom:-10px}
+.mt-main{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:12px 16px;min-width:0}
+.mt-main b{font-size:30px;font-weight:900;font-stretch:62%;line-height:.9;text-transform:uppercase}
+.mt-main span{font-size:var(--t-s);font-weight:600;line-height:1.25;color:var(--on-stock-2)}
+.mt-stub{display:grid;place-items:center;border-left:2px dashed color-mix(in srgb,var(--on-stock) 50%,transparent)}
+.mt-play{width:46px;height:46px;border-radius:50%;background:var(--on-stock);color:var(--stock);display:grid;place-items:center}
+.mt-play svg{width:18px;height:18px;margin-left:2px;display:block}
+.opt-font{flex-wrap:nowrap;justify-content:flex-end}
+.seg{display:inline-flex;gap:3px;padding:3px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r-sm);justify-self:end}
+.seg label{position:relative;display:flex;flex:1 1 0}
+.seg input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:pointer}
+.seg span{display:flex;flex:1;align-items:center;justify-content:center;min-height:44px;padding:6px 16px;border-radius:5px;font-size:var(--t-s);font-weight:700;white-space:nowrap;color:var(--mute);pointer-events:none}
+.seg input:checked + span{background:var(--paper);color:var(--ink)}
+.seg input:focus-visible + span{outline:3px solid var(--stock-fg);outline-offset:2px}
+.switch{-webkit-appearance:none;appearance:none;flex:none;width:58px;height:34px;margin:0;border-radius:17px;background:var(--line-2);position:relative;cursor:pointer;transition:background-color .15s}
+.switch::after{content:"";position:absolute;top:4px;left:4px;width:26px;height:26px;border-radius:50%;background:var(--paper);transition:transform .2s var(--ease)}
+.switch:checked{background:var(--stock)}
+.switch:checked::after{transform:translateX(24px);background:var(--on-stock)}
+.switch:focus-visible{outline:3px solid var(--stock-fg);outline-offset:3px}
+@media (max-width:699px){
+  .opt{grid-template-columns:minmax(0,1fr);gap:12px;padding:14px}
+  label.opt:has(.switch){grid-template-columns:minmax(0,1fr) auto}
+  .opt input[type=text]{width:100%}
+  .opt-logo,.color-pick{width:100%}
+  .seg{justify-self:stretch}
+  .opt-font,.opt-actions{justify-content:flex-start}
+  .opt > .btn{justify-self:start}
+}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}.ci-num.pop,.ticket.issued{animation:none}.stub-torn{display:none}}
 </style>
+<script>
+/* Instellingen vóór de eerste weergave: scherm (licht/donker), hoofdkleur en taal, zodat er niets knippert.
+   De hoofdkleur zet vier tokens; de inkt op het kaartje wordt donker of licht, met minstens 4,5 : 1 contrast. */
+(function(){
+  var S = {};
+  try{ S = JSON.parse(localStorage.getItem("setlist-trekker-settings") || "{}") || {}; }catch(e){}
+  var root = document.documentElement;
+  function rgb(h){ h = String(h || "").replace("#", ""); if(h.length === 3) h = h.replace(/./g, "$&$&"); var n = parseInt(h, 16); return h.length !== 6 || isNaN(n) ? null : [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+  function lum(c){ var a = c.map(function(v){ v /= 255; return v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4); }); return .2126 * a[0] + .7152 * a[1] + .0722 * a[2]; }
+  function contrast(a, b){ var x = lum(a), y = lum(b); return (Math.max(x, y) + .05) / (Math.min(x, y) + .05); }
+  function mix(a, b, t){ return a.map(function(v, i){ return Math.round(v + (b[i] - v) * t); }); }
+  function hex(c){ return "#" + c.map(function(v){ return ("0" + v.toString(16)).slice(-2); }).join("").toUpperCase(); }
+  var DEFAULT = "#F26B1D", BLACK = [0, 0, 0], WHITE = [255, 255, 255];
+  var BG = { dark: [0x0F, 0x10, 0x12], light: [0xEC, 0xE8, 0xDF] };
+  var mq = window.matchMedia ? window.matchMedia("(prefers-color-scheme: light)") : null;
+  function apply(s){
+    s = s || {};
+    var theme = s.theme === "light" || (s.theme === "auto" && mq && mq.matches) ? "light" : "dark";
+    root.setAttribute("data-theme", theme);
+    var bg = BG[theme], st = root.style;
+    var acc = rgb(s.accent) || rgb(DEFAULT), isDefault = hex(acc) === DEFAULT;
+    if(isDefault){ ["--stock", "--stock-hi", "--on-stock", "--on-stock-2"].forEach(function(p){ st.removeProperty(p); }); }
+    else {
+      var dark = mix(acc, BLACK, .9), light = mix(acc, WHITE, .94);
+      var ink = contrast(dark, acc) >= contrast(light, acc) ? dark : light, ink2 = ink;
+      for(var k = .6; k > 0; k -= .05){ var c = mix(ink, acc, k); if(contrast(c, acc) >= 4.5){ ink2 = c; break; } }
+      st.setProperty("--stock", hex(acc));
+      st.setProperty("--stock-hi", hex(mix(acc, WHITE, .16)));
+      st.setProperty("--on-stock", hex(ink));
+      st.setProperty("--on-stock-2", hex(ink2));
+    }
+    // Kleur als voorgrond op de achtergrond (voortgang, aftellen, focusrand): minstens 3 : 1
+    var fg = acc, toward = theme === "light" ? BLACK : WHITE, step = 0;
+    while(contrast(fg, bg) < 3 && step < 20){ step++; fg = mix(acc, toward, step * .05); }
+    st.setProperty("--stock-fg", hex(fg));
+    var meta = document.querySelector('meta[name="theme-color"]'); if(meta) meta.setAttribute("content", hex(bg));
+    return { theme: theme, bgContrast: contrast(acc, bg) };
+  }
+  window.SBLook = { apply: apply, rgb: rgb, hex: hex, contrast: contrast, mq: mq, DEFAULT: DEFAULT };
+  apply(S);
+  // Engels: de pagina pas tonen als de teksten vertaald zijn
+  if(S.lang === "en"){ root.lang = "en"; root.classList.add("i18n-wait"); setTimeout(function(){ root.classList.remove("i18n-wait"); }, 1500); }
+})();
+</script>
 </head>
 <body>
 
 <div class="wrap">
   <header class="top">
-    <h1 class="brand"><img class="logo" src="assets/logo.png" alt="Switchbone Setlist" width="1200" height="228"></h1>
+    <h1 class="brand"><img class="logo" id="brandLogo" src="assets/logo.png" alt="Switchbone Setlist" width="1200" height="228"></h1>
   </header>
 
   <div class="grid">
     <div class="col">
       <section class="stage" aria-labelledby="nowTitle" data-view="play">
+        <div class="practice-bar" id="practiceBar">
+          <button class="btn small ghost" id="practiceBack" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span data-i18n="practiceBack">Oefenlijst</span></button>
+        </div>
         <div class="draw-row">
-          <button class="btn primary draw-btn" id="drawBtn">Trek een nummer</button>
+          <button class="btn primary draw-btn" id="drawBtn" data-i18n="draw">Trek een nummer</button>
           <div class="pot" id="potInfo"></div>
-          <button class="btn ghost small" id="resetPot" hidden>Alles terug in de pot</button>
+          <button class="btn ghost small" id="resetPot" data-i18n="resetPot" hidden>Alles terug in de pot</button>
         </div>
 
         <article class="ticket blank" id="ticket">
@@ -410,14 +559,14 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
             </div>
 
             <div class="facts" id="nowFacts" hidden>
-              <button type="button" class="fact tempofact" id="tap" aria-label="Tempo. Tik mee op de tel om het tempo te meten">
-                <span class="label">Tempo</span>
+              <button type="button" class="fact tempofact" id="tap" aria-label="Tempo. Tik mee op de tel om het tempo te meten" data-i18n-attr="aria-label:tapAria">
+                <span class="label" data-i18n="tempo">Tempo</span>
                 <b class="bpmbig"><span id="nowBpm">–</span><span class="unit">bpm</span></b>
                 <small id="tapHint">Tik mee op de tel</small>
                 <span id="tapBpm" hidden></span>
               </button>
-              <div class="fact keyfact"><span class="label">Toon</span><b id="nowKey">–</b></div>
-              <div class="fact durfact"><span class="label">Duur</span><b id="nowDur">–</b></div>
+              <div class="fact keyfact"><span class="label" data-i18n="key">Toon</span><b id="nowKey">–</b></div>
+              <div class="fact durfact"><span class="label" data-i18n="dur">Duur</span><b id="nowDur">–</b></div>
               <div class="fact" style="flex-direction:row;align-items:center;gap:12px" hidden>
                 <button class="btn small" id="nowMet">Klik</button>
                 <div class="beats" id="beatsNow" aria-hidden="true"><i class="beat first"></i><i class="beat"></i><i class="beat"></i><i class="beat"></i></div>
@@ -426,7 +575,7 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
             </div>
           </div>
           <div class="tk-stub">
-            <span class="label">Nr</span>
+            <span class="label" data-i18n="nr">Nr</span>
             <span class="stub-no" id="nowStub">–</span>
             <span class="stub-of" id="nowStubOf"></span>
             <button type="button" class="playfact" id="playBtn" aria-label="Start met aftellen" title="Start met aftellen"></button>
@@ -436,57 +585,57 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
         <div id="lyricsWrap" hidden>
           <div class="lyrics-bar">
             <div class="row">
-              <button class="btn small" id="slower" aria-label="Tekst langzamer laten lopen">−</button>
-              <span class="timer" id="speedLbl" title="Snelheid">×1.0</span>
-              <button class="btn small" id="faster" aria-label="Tekst sneller laten lopen">+</button>
+              <button class="btn small" id="slower" aria-label="Tekst langzamer laten lopen" data-i18n-attr="aria-label:slower">−</button>
+              <span class="timer" id="speedLbl" title="Snelheid" data-i18n-attr="title:speed">×1.0</span>
+              <button class="btn small" id="faster" aria-label="Tekst sneller laten lopen" data-i18n-attr="aria-label:faster">+</button>
               <span class="timer" id="timer"></span>
             </div>
             <div class="row">
               <button class="btn small" id="stageBtn">Groot scherm</button>
-              <button class="btn small" id="fontDown" aria-label="Kleinere tekst">A−</button>
-              <button class="btn small" id="fontUp" aria-label="Grotere tekst">A+</button>
-              <button class="btn small iconbtn" id="nowEdit" aria-label="Nummer bewerken" title="Nummer bewerken"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="3.5" stroke-dasharray="3.4 2.49"/><circle cx="12" cy="12" r="4.6" fill="none" stroke="currentColor" stroke-width="2.6"/></svg></button>
+              <button class="btn small" id="fontDown" aria-label="Kleinere tekst" data-i18n-attr="aria-label:fontDown">A−</button>
+              <button class="btn small" id="fontUp" aria-label="Grotere tekst" data-i18n-attr="aria-label:fontUp">A+</button>
+              <button class="btn small iconbtn" id="nowEdit" aria-label="Nummer bewerken" title="Nummer bewerken" data-i18n-attr="aria-label:edEdit;title:edEdit"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="3.5" stroke-dasharray="3.4 2.49"/><circle cx="12" cy="12" r="4.6" fill="none" stroke="currentColor" stroke-width="2.6"/></svg></button>
             </div>
           </div>
           <p class="play-hint" id="playHint"></p>
-          <div class="song-prog" id="songProg" role="progressbar" aria-label="Hoever je in het nummer bent" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i id="songProgFill"></i></div>
+          <div class="song-prog" id="songProg" role="progressbar" aria-label="Hoever je in het nummer bent" data-i18n-attr="aria-label:progAria" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i id="songProgFill"></i></div>
           <pre class="lyrics" id="nowLyrics"></pre>
-          <div class="set-next" id="setNext" aria-live="polite" hidden><span class="label">Volgende</span><span class="nx-t" id="nxTitle"></span></div>
+          <div class="set-next" id="setNext" aria-live="polite" hidden><span class="label" data-i18n="next">Volgende</span><span class="nx-t" id="nxTitle"></span></div>
         </div>
       </section>
     </div>
 
     <div class="col">
       <section class="panel" aria-labelledby="setH" data-view="setlist">
-        <div class="panel-head"><h2 id="setH">Setlist</h2><div class="row head-actions"><button class="btn small" id="setSaveOpen" type="button" hidden>Bewaar</button><button class="btn ghost small" id="setClear" type="button" hidden>Leegmaken</button></div></div>
+        <div class="panel-head"><h2 id="setH" data-i18n="setlist">Setlist</h2><div class="row head-actions"><button class="btn small" id="setSaveOpen" type="button" data-i18n="save" hidden>Bewaar</button><button class="btn ghost small" id="setClear" type="button" data-i18n="clear" hidden>Leegmaken</button></div></div>
         <div class="set-sum" aria-live="polite">
-          <div class="fact"><span class="label">Nummers</span><b id="setCount">0</b></div>
-          <div class="fact"><span class="label">Speeltijd</span><b id="setTotal">0:00</b></div>
-          <button type="button" class="set-play" id="setPlay" aria-label="Speel de setlist af" title="Speel de setlist af" disabled></button>
+          <div class="fact"><span class="label" data-i18n="songs">Nummers</span><b id="setCount">0</b></div>
+          <div class="fact"><span class="label" data-i18n="playtime">Speeltijd</span><b id="setTotal">0:00</b></div>
+          <button type="button" class="set-play" id="setPlay" aria-label="Speel de setlist af" title="Speel de setlist af" data-i18n-attr="aria-label:playSet;title:playSet" disabled></button>
         </div>
         <div class="set-tools">
           <div>
-            <label class="label" for="setTarget">Speelduur</label>
+            <label class="label" for="setTarget" data-i18n="setLen">Speelduur</label>
             <div class="row">
               <input type="number" id="setTarget" min="5" max="600" step="5" inputmode="numeric" placeholder="45" aria-describedby="setFillNote"><span class="unit">min</span>
-              <button type="button" class="btn small" id="setFill"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>Vul aan</button>
+              <button type="button" class="btn small" id="setFill"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg><span data-i18n="fill">Vul aan</span></button>
             </div>
-            <p class="note set-fill-note" id="setFillNote">Zet er willekeurig nummers bij tot de speelduur zo goed mogelijk gevuld is. Wat er al in staat, blijft staan.</p>
+            <p class="note set-fill-note" id="setFillNote" data-i18n="fillNote">Zet er willekeurig nummers bij tot de speelduur zo goed mogelijk gevuld is. Wat er al in staat, blijft staan.</p>
           </div>
         </div>
         <p class="note" id="setNote" hidden></p>
-        <ol class="songs setlist" id="setList" aria-label="Setlist in speelvolgorde"></ol>
-        <p class="empty" id="setEmpty">Nog niets gekozen. Tik hieronder op de nummers die jullie willen spelen; versleep ze daarna in de goede volgorde.</p>
-        <h3 class="label set-sub" id="savedH" hidden>Bewaarde setlists</h3>
+        <ol class="songs setlist" id="setList" aria-label="Setlist in speelvolgorde" data-i18n-attr="aria-label:setListAria"></ol>
+        <p class="empty" id="setEmpty" data-i18n="setEmpty">Nog niets gekozen. Tik hieronder op de nummers die jullie willen spelen; versleep ze daarna in de goede volgorde.</p>
+        <h3 class="label set-sub" id="savedH" data-i18n="savedSets" hidden>Bewaarde setlists</h3>
         <ul class="songs saved" id="setSaved" aria-labelledby="savedH"></ul>
-        <h3 class="label set-sub" id="pickH">Toevoegen</h3>
+        <h3 class="label set-sub" id="pickH" data-i18n="add">Toevoegen</h3>
         <div class="pick-tools" id="pickTools">
-          <input type="search" id="pickSearch" placeholder="Zoeken" aria-label="Zoek op titel of artiest" autocomplete="off" enterkeyhint="search">
-          <select id="pickSort" aria-label="Volgorde van de nummers">
-            <option value="title">Titel A tot Z</option>
-            <option value="artist">Artiest A tot Z</option>
-            <option value="short">Kortste eerst</option>
-            <option value="long">Langste eerst</option>
+          <input type="search" id="pickSearch" placeholder="Zoeken" aria-label="Zoek op titel of artiest" data-i18n-attr="placeholder:searchShort;aria-label:searchAria" autocomplete="off" enterkeyhint="search">
+          <select id="pickSort" aria-label="Volgorde van de nummers" data-i18n-attr="aria-label:sortAria">
+            <option value="title" data-i18n="sortTitle">Titel A tot Z</option>
+            <option value="artist" data-i18n="sortArtist">Artiest A tot Z</option>
+            <option value="short" data-i18n="sortShort">Kortste eerst</option>
+            <option value="long" data-i18n="sortLong">Langste eerst</option>
           </select>
         </div>
         <p class="empty" id="pickNone" hidden></p>
@@ -494,23 +643,45 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
       </section>
 
       <section class="panel" aria-labelledby="listH" data-view="list">
-        <div class="panel-head"><h2 id="listH">Nummers</h2>
+        <div class="panel-head"><h2 id="listH" data-i18n="songs">Nummers</h2>
           <div class="row head-actions">
-            <button class="btn small iconbtn" id="exportBtn" type="button" aria-label="Exporteren" title="Exporteren"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 14v4.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V14"/></svg></button>
-            <label class="btn small iconbtn" for="importFile" aria-label="Importeren" title="Importeren" style="cursor:pointer"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4 14v4.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V14"/></svg></label>
+            <button class="btn small iconbtn" id="exportBtn" type="button" aria-label="Exporteren" title="Exporteren" data-i18n-attr="aria-label:export;title:export"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5"/><path d="M4 14v4.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V14"/></svg></button>
+            <label class="btn small iconbtn" for="importFile" aria-label="Importeren" title="Importeren" data-i18n-attr="aria-label:import;title:import" style="cursor:pointer"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7.5 10.5 12 15l4.5-4.5"/><path d="M4 14v4.5A1.5 1.5 0 0 0 5.5 20h13a1.5 1.5 0 0 0 1.5-1.5V14"/></svg></label>
             <input type="file" id="importFile" accept=".json,application/json" hidden>
-            <button class="btn solid small" id="addBtn">+ Nummer</button>
+            <button class="btn solid small" id="addBtn" data-i18n="addSong">+ Nummer</button>
           </div>
         </div>
-        <input type="search" id="search" placeholder="Zoek op titel of artiest" aria-label="Zoeken">
+        <div class="pick-tools list-tools">
+          <input type="search" id="search" placeholder="Zoeken" aria-label="Zoek op titel of artiest" data-i18n-attr="placeholder:searchShort;aria-label:searchAria" autocomplete="off" enterkeyhint="search">
+          <select id="listFilter" aria-label="Welke nummers" data-i18n-attr="aria-label:filterAria">
+            <option value="all" data-i18n="f.all">Alle nummers</option>
+            <option value="play" data-i18n="st.play">Spelen</option>
+            <option value="practice" data-i18n="st.practice">Oefenen</option>
+            <option value="pass" data-i18n="st.pass">Passen</option>
+            <option value="noLyr" data-i18n="f.noLyr">Zonder tekst</option>
+            <option value="noBpm" data-i18n="f.noBpm">Zonder tempo</option>
+            <option value="noDur" data-i18n="f.noDur">Zonder duur</option>
+          </select>
+          <select id="listSort" aria-label="Volgorde van de nummers" data-i18n-attr="aria-label:sortAria">
+            <option value="title" data-i18n="sortTitle">Titel A tot Z</option>
+            <option value="artist" data-i18n="sortArtist">Artiest A tot Z</option>
+          </select>
+        </div>
         <ul class="songs" id="songList"></ul>
-        <p class="empty" id="listEmpty" hidden>Nog geen nummers. Voeg het eerste nummer toe met <b>+ Nummer</b>: titel, tempo en de tekst.</p>
+        <p class="empty" id="listEmpty" data-i18n-html="listEmpty" hidden>Nog geen nummers. Voeg het eerste nummer toe met <b>+ Nummer</b>: titel, tempo en de tekst.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="pracH" data-view="practice">
+        <div class="panel-head"><h2 id="pracH" data-i18n="tab.practice">Oefenen</h2></div>
+        <p class="note" data-i18n="practiceNote">Nummers die jullie nog instuderen, op alfabet. Tik op een nummer om het te oefenen, met tekst en aftellen.</p>
+        <ul class="songs practice" id="pracList" aria-labelledby="pracH"></ul>
+        <p class="empty" id="pracEmpty" data-i18n="practiceEmpty" hidden>Nog geen oefennummers. Zet bij Nummers een nummer op Oefenen.</p>
       </section>
 
       <section class="panel" aria-labelledby="tempoH" data-view="tempo">
-        <div class="panel-head"><h2 id="tempoH">Tempo</h2></div>
+        <div class="panel-head"><h2 id="tempoH" data-i18n="tempo">Tempo</h2></div>
         <div class="file-drop">
-          <label class="btn small" for="audioFile" style="cursor:pointer">Kies opname</label>
+          <label class="btn small" for="audioFile" style="cursor:pointer" data-i18n="chooseRec">Kies opname</label>
           <input type="file" id="audioFile" accept="audio/*,video/*" hidden>
           <div class="note" id="fileNote">Kies een opname van de repetitie of het origineel (mp3, m4a, wav). Het tempo wordt in je browser berekend.</div>
           <div class="row" id="fileChips" hidden></div>
@@ -520,20 +691,129 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
           <div class="beats" id="beatsTempo" aria-hidden="true"><i class="beat first"></i><i class="beat"></i><i class="beat"></i><i class="beat"></i></div>
         </div>
         <div class="row" style="flex-wrap:nowrap">
-          <select id="assignSel" aria-label="Kies nummer"></select>
-          <button class="btn small" id="assignBtn" disabled>Opslaan</button>
+          <select id="assignSel" aria-label="Kies nummer" data-i18n-attr="aria-label:chooseSong"></select>
+          <button class="btn small" id="assignBtn" data-i18n="saveBtn" disabled>Opslaan</button>
+        </div>
+      </section>
+
+      <section class="panel settings" aria-labelledby="optH" data-view="settings">
+        <div class="panel-head"><h2 id="optH" data-i18n="opt.title">Instellingen</h2></div>
+
+        <h3 class="label set-sub" id="optBandH" data-i18n="opt.band">Band</h3>
+        <div class="opt-group" role="group" aria-labelledby="optBandH">
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" data-i18n="opt.logo">Logo</span><span class="note" data-i18n="opt.logoNote">PNG, JPG of SVG. Breed werkt het best, zoals een spandoek. Het logo wordt op dit apparaat verkleind en bewaard.</span></div>
+            <div class="opt-logo">
+              <div class="logo-prev"><img id="logoPrev" src="assets/logo.png" alt="" width="1200" height="228"></div>
+              <div class="row">
+                <label class="btn small" for="logoFile" style="cursor:pointer" data-i18n="opt.logoPick">Kies logo</label>
+                <input type="file" id="logoFile" accept="image/*,.svg" hidden>
+                <button class="btn small ghost" id="logoReset" type="button" data-i18n="opt.logoReset" hidden>Standaardlogo</button>
+              </div>
+            </div>
+          </div>
+          <label class="opt">
+            <span class="opt-txt"><span class="opt-name" data-i18n="opt.name">Bandnaam</span><span class="note" data-i18n="opt.nameNote">Staat in de titel van de app en in de naam van een back-up.</span></span>
+            <input type="text" id="optBand" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="Switchbone">
+          </label>
+        </div>
+
+        <h3 class="label set-sub" id="optLookH" data-i18n="opt.look">Weergave</h3>
+        <div class="opt-group" role="group" aria-labelledby="optLookH">
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" id="optThemeL" data-i18n="opt.theme">Scherm</span><span class="note" data-i18n="opt.themeNote">Donker is het rustigst in een donkere oefenruimte.</span></div>
+            <div class="seg" role="radiogroup" aria-labelledby="optThemeL">
+              <label><input type="radio" name="optTheme" value="dark"><span data-i18n="opt.dark">Donker</span></label>
+              <label><input type="radio" name="optTheme" value="light"><span data-i18n="opt.light">Licht</span></label>
+              <label><input type="radio" name="optTheme" value="auto"><span data-i18n="opt.auto">Automatisch</span></label>
+            </div>
+          </div>
+          <div class="opt opt-color">
+            <div class="opt-txt"><span class="opt-name" id="optColorL" data-i18n="opt.color">Hoofdkleur</span><span class="note" data-i18n="opt.colorNote">De kleur van het kaartje en de knoppen. De tekst erop wordt vanzelf licht of donker.</span></div>
+            <div class="color-pick">
+              <div class="swatches" id="swatches" role="radiogroup" aria-labelledby="optColorL"></div>
+              <div class="mini-ticket" aria-hidden="true">
+                <div class="mt-main"><b data-i18n="opt.mtTitle">Voorbeeld</b><span data-i18n="opt.mtSub">Zo ziet het kaartje eruit</span></div>
+                <div class="mt-stub"><span class="mt-play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></svg></span></div>
+              </div>
+              <p class="note" id="colorLow" data-i18n="opt.colorLow" hidden>Deze kleur heeft weinig contrast met de achtergrond. De voortgangsbalk en het aftellen krijgen daarom een aangepaste tint.</p>
+            </div>
+          </div>
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" data-i18n="opt.text">Tekstgrootte</span><span class="note" data-i18n="opt.textNote">Grootte van de songtekst. Kan ook met A− en A+ naast de tekst.</span></div>
+            <div class="row opt-font">
+              <button class="btn small" id="optFontDown" type="button" aria-label="Kleinere tekst" data-i18n-attr="aria-label:fontDown">A−</button>
+              <span class="timer" id="optFontVal" aria-live="polite">100%</span>
+              <button class="btn small" id="optFontUp" type="button" aria-label="Grotere tekst" data-i18n-attr="aria-label:fontUp">A+</button>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="label set-sub" id="optLangH">Taal · Language</h3>
+        <div class="opt-group" role="group" aria-labelledby="optLangH">
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" id="optLangL" data-i18n="opt.lang">Taal van de app</span></div>
+            <div class="seg" role="radiogroup" aria-labelledby="optLangL">
+              <label><input type="radio" name="optLang" value="nl"><span lang="nl">Nederlands</span></label>
+              <label><input type="radio" name="optLang" value="en"><span lang="en">English</span></label>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="label set-sub" id="optPlayH" data-i18n="opt.play">Spelen</h3>
+        <div class="opt-group" role="group" aria-labelledby="optPlayH">
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" id="optCountL" data-i18n="opt.count">Aftellen</span><span class="note" data-i18n="opt.countNote">Hoeveel tikken de afspeelknop aftelt voordat de tekst gaat lopen.</span></div>
+            <div class="seg" role="radiogroup" aria-labelledby="optCountL">
+              <label><input type="radio" name="optCount" value="1"><span data-i18n="opt.bar1">1 maat</span></label>
+              <label><input type="radio" name="optCount" value="2"><span data-i18n="opt.bar2">2 maten</span></label>
+            </div>
+          </div>
+          <label class="opt">
+            <span class="opt-txt"><span class="opt-name" data-i18n="opt.click">Klik bij het aftellen</span><span class="note" data-i18n="opt.clickNote">Uit: alleen de cijfers op het scherm, zonder geluid.</span></span>
+            <input type="checkbox" class="switch" id="optClick" role="switch">
+          </label>
+          <label class="opt">
+            <span class="opt-txt"><span class="opt-name" data-i18n="opt.tempoTab">Tempo-tab</span><span class="note" data-i18n="opt.tempoNote">Tempo berekenen uit een opname van de repetitie of het origineel.</span></span>
+            <input type="checkbox" class="switch" id="optTempo" role="switch">
+          </label>
+        </div>
+
+        <h3 class="label set-sub" id="optDataH" data-i18n="opt.data">Gegevens</h3>
+        <div class="opt-group" role="group" aria-labelledby="optDataH">
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" data-i18n="opt.backup">Back-up</span><span class="note" data-i18n="opt.backupNote">Alles staat alleen op dit apparaat. Maak af en toe een back-up, of stuur hem naar een bandlid: dan heeft die dezelfde nummers, setlists, logo en kleur.</span><span class="note opt-meta" id="backupInfo"></span></div>
+            <div class="row opt-actions">
+              <button class="btn small solid" id="optExport" type="button" data-i18n="opt.backupMake">Back-up maken</button>
+              <label class="btn small" for="importFile" style="cursor:pointer" data-i18n="opt.backupRestore">Back-up terugzetten</label>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="label set-sub" id="optAboutH" data-i18n="opt.about">Over de app</h3>
+        <div class="opt-group" role="group" aria-labelledby="optAboutH">
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" data-i18n="opt.version">Versie</span><span class="note" id="optVersion"></span></div>
+            <button class="btn small" id="optUpdate" type="button" data-i18n="opt.updateCheck">Zoek naar update</button>
+          </div>
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" data-i18n="opt.reset">Instellingen terugzetten</span><span class="note" data-i18n="opt.resetNote">Logo, bandnaam, kleur, scherm, taal en aftellen terug naar standaard. Nummers en setlists blijven staan.</span></div>
+            <button class="btn small ghost danger" id="optReset" type="button" data-i18n="opt.resetBtn">Terugzetten</button>
+          </div>
         </div>
       </section>
     </div>
   </div>
 </div>
 
-<nav class="tabbar" aria-label="Onderdelen">
+<nav class="tabbar" aria-label="Onderdelen" data-i18n-attr="aria-label:tabs">
   <p class="app-updated" id="appUpdated" hidden></p>
-  <button type="button" data-tab="play" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 7.5v2a2.5 2.5 0 0 0 0 5v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5v-2a2.5 2.5 0 0 0 0-5z"/><path d="M15 6v12" stroke-dasharray="2 2"/></svg>Spelen</button>
-  <button type="button" data-tab="setlist" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 8h6M9 12h6M9 16h3.5"/></svg><span>Setlist <span class="tcount" id="setTabCount"></span></span></button>
-  <button type="button" data-tab="list" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span>Nummers <span class="tcount" id="tabCount"></span></span></button>
-  <button type="button" data-tab="tempo" aria-current="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 18H5z"/><path d="M12 17 16 7"/></svg>Tempo</button>
+  <button type="button" data-tab="play" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M3 7.5a1.5 1.5 0 0 1 1.5-1.5h15A1.5 1.5 0 0 1 21 7.5v2a2.5 2.5 0 0 0 0 5v2a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 16.5v-2a2.5 2.5 0 0 0 0-5z"/><path d="M15 6v12" stroke-dasharray="2 2"/></svg><span data-i18n="tab.play">Spelen</span></button>
+  <button type="button" data-tab="practice" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l3 3-3 3"/><path d="M4 12v-1a5 5 0 0 1 5-5h11"/><path d="M7 21l-3-3 3-3"/><path d="M20 12v1a5 5 0 0 1-5 5H4"/></svg><span><span data-i18n="tab.practice">Oefenen</span> <span class="tcount" id="pracTabCount"></span></span></button>
+  <button type="button" data-tab="setlist" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 8h6M9 12h6M9 16h3.5"/></svg><span><span data-i18n="setlist">Setlist</span> <span class="tcount" id="setTabCount"></span></span></button>
+  <button type="button" data-tab="list" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span><span data-i18n="songs">Nummers</span> <span class="tcount" id="tabCount"></span></span></button>
+  <button type="button" data-tab="tempo" aria-current="false" hidden><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6l4 18H5z"/><path d="M12 17 16 7"/></svg><span data-i18n="tempo">Tempo</span></button>
+  <button type="button" data-tab="settings" aria-current="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2.2"/><circle cx="9" cy="17" r="2.2"/></svg><span data-i18n="tab.settings">Instellingen</span></button>
 </nav>
 
 <div class="overlay center" id="askOverlay" hidden>
@@ -541,20 +821,20 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
     <h2 id="askTitle"></h2>
     <p class="note" id="askText"></p>
     <div class="row" style="justify-content:flex-end">
-      <button type="button" class="btn" id="askCancel">Annuleren</button>
+      <button type="button" class="btn" id="askCancel" data-i18n="cancel">Annuleren</button>
       <button type="submit" class="btn solid" id="askOk"></button>
     </div>
   </form>
 </div>
 <div class="overlay center" id="saveOverlay" hidden>
   <form class="editor small" id="saveForm" novalidate>
-    <h2>Setlist bewaren</h2>
-    <label class="field"><span class="label">Naam</span><input type="text" id="setName" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="Bijv. Repetitie dinsdag"></label>
+    <h2 data-i18n="saveSetTitle">Setlist bewaren</h2>
+    <label class="field"><span class="label" data-i18n="name">Naam</span><input type="text" id="setName" maxlength="60" autocomplete="off" enterkeyhint="done" placeholder="Bijv. Repetitie dinsdag" data-i18n-attr="placeholder:namePh"></label>
     <p class="note" id="saveInfo"></p>
     <div class="err" id="saveErr" hidden></div>
     <div class="row" style="justify-content:flex-end">
-      <button type="button" class="btn" id="saveCancel">Annuleren</button>
-      <button type="submit" class="btn solid" id="setSave">Bewaar</button>
+      <button type="button" class="btn" id="saveCancel" data-i18n="cancel">Annuleren</button>
+      <button type="submit" class="btn solid" id="setSave" data-i18n="save">Bewaar</button>
     </div>
   </form>
 </div>
@@ -563,50 +843,333 @@ body[data-tab="play"]:not(.playing):not(.setmode):not(.stagemode){padding-bottom
   <form class="editor" id="editor" novalidate>
     <h2 id="edTitle">Nummer toevoegen</h2>
     <div class="fields">
-      <label class="field wide"><span class="label">Titel</span><input type="text" id="fTitle" required></label>
+      <label class="field wide"><span class="label" data-i18n="fTitle">Titel</span><input type="text" id="fTitle" required></label>
       <label class="field"><span class="label">Tempo (BPM)</span><input type="number" id="fBpm" min="30" max="300" inputmode="numeric"></label>
-      <label class="field"><span class="label">Toonsoort</span><input type="text" id="fKey" placeholder="bv. Am"></label>
-      <label class="field wide" style="grid-column:span 2"><span class="label">Artiest / origineel</span><input type="text" id="fArtist"></label>
-      <label class="field"><span class="label">Duur (m:ss)</span><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"></label>
+      <label class="field"><span class="label" data-i18n="fKey">Toonsoort</span><input type="text" id="fKey" placeholder="bv. Am" data-i18n-attr="placeholder:fKeyPh"></label>
+      <label class="field wide" style="grid-column:span 2"><span class="label" data-i18n="fArtist">Artiest / origineel</span><input type="text" id="fArtist"></label>
+      <label class="field"><span class="label" data-i18n="fDur">Duur (m:ss)</span><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"></label>
+    </div>
+    <div class="field"><span class="label" id="fStatusL">Status</span>
+      <div class="seg" role="radiogroup" aria-labelledby="fStatusL">
+        <label><input type="radio" name="fStatus" value="play"><span data-i18n="st.play">Spelen</span></label>
+        <label><input type="radio" name="fStatus" value="practice"><span data-i18n="st.practice">Oefenen</span></label>
+        <label><input type="radio" name="fStatus" value="pass"><span data-i18n="st.pass">Passen</span></label>
+      </div>
     </div>
     <div class="row">
-      <a class="btn small" id="lkBpm" target="_blank" rel="noopener">Zoek origineel tempo ↗</a>
-      <a class="btn small" id="lkLyr" target="_blank" rel="noopener">Zoek tekst ↗</a>
-      <span class="note">Opent een zoekopdracht in een nieuw tabblad. Neem tempo en tekst daarna hier over.</span>
+      <a class="btn small" id="lkBpm" target="_blank" rel="noopener" data-i18n="lkBpm">Zoek origineel tempo ↗</a>
+      <a class="btn small" id="lkLyr" target="_blank" rel="noopener" data-i18n="lkLyr">Zoek tekst ↗</a>
+      <span class="note" data-i18n="lkNote">Opent een zoekopdracht in een nieuw tabblad. Neem tempo en tekst daarna hier over.</span>
     </div>
-    <label class="field"><span class="label">Tekst</span><textarea id="fLyrics" placeholder="Plak hier de tekst. Akkoorden mogen erbij."></textarea><span class="note">Bij opslaan worden dubbele lege regels en resten van tekstsites (zoals “Embed” en “You might also like”) weggehaald. Zet [Refrein] of [Couplet] op een eigen regel, dan valt het op tijdens het spelen.</span></label>
+    <label class="field"><span class="label" data-i18n="fLyrics">Tekst</span><textarea id="fLyrics" placeholder="Plak hier de tekst. Akkoorden mogen erbij." data-i18n-attr="placeholder:fLyricsPh"></textarea><span class="note" data-i18n="lyrNote">Bij opslaan worden dubbele lege regels en resten van tekstsites (zoals “Embed” en “You might also like”) weggehaald. Zet [Refrein] of [Couplet] op een eigen regel, dan valt het op tijdens het spelen.</span></label>
     <div class="err" id="edErr" hidden></div>
     <div class="row" style="justify-content:space-between">
       <button type="button" class="btn danger" id="edDelete" hidden>Verwijderen</button>
       <div class="row" style="margin-left:auto">
-        <button type="button" class="btn" id="edCancel">Annuleren</button>
-        <button type="submit" class="btn solid" id="edSave">Opslaan</button>
+        <button type="button" class="btn" id="edCancel" data-i18n="cancel">Annuleren</button>
+        <button type="submit" class="btn solid" id="edSave" data-i18n="saveBtn">Opslaan</button>
       </div>
     </div>
   </form>
 </div>
 <div class="countin" id="countin" role="status" aria-live="assertive" hidden>
-  <img class="ci-logo" src="assets/logo.png" alt="" width="1200" height="228">
+  <img class="ci-logo" id="ciLogo" src="assets/logo.png" alt="" width="1200" height="228">
   <div class="ci-title" id="ciTitle"></div>
   <div class="ci-num" id="ciNum"></div>
   <div class="ci-beats" id="ciBeats" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-  <div class="ci-hint">Tik om te annuleren</div>
+  <div class="ci-hint" data-i18n="tapCancel">Tik om te annuleren</div>
 </div>
 <div class="toast" id="toast" hidden></div>
 <div class="updatebar" id="updateBar" role="status" hidden>
-  <span>Nieuwe versie klaar</span>
-  <button class="btn solid small" id="updateNow" type="button">Bijwerken</button>
-  <button class="btn small" id="updateLater" type="button">Later</button>
+  <span data-i18n="newVersion">Nieuwe versie klaar</span>
+  <button class="btn solid small" id="updateNow" type="button" data-i18n="update">Bijwerken</button>
+  <button class="btn small" id="updateLater" type="button" data-i18n="later">Later</button>
 </div>
 
 <script>
 (function(){
 const $ = id => document.getElementById(id);
-const LS_SONGS = "setlist-trekker-songs", LS_PLAYED = "setlist-trekker-played", LS_FONT = "setlist-trekker-font", LS_SET = "setlist-trekker-setlist", LS_SAVED = "setlist-trekker-saved", LS_TARGET = "setlist-trekker-target", LS_PICKSORT = "setlist-trekker-picksort";
+const LS_SONGS = "setlist-trekker-songs", LS_PLAYED = "setlist-trekker-played", LS_FONT = "setlist-trekker-font", LS_SET = "setlist-trekker-setlist", LS_SAVED = "setlist-trekker-saved", LS_TARGET = "setlist-trekker-target", LS_PICKSORT = "setlist-trekker-picksort", LS_LISTFILTER = "setlist-trekker-listfilter", LS_LISTSORT = "setlist-trekker-listsort";
 const ls = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
   set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
 };
+
+/* ---------- instellingen en taal ---------- */
+const LS_OPTS = "setlist-trekker-settings", LS_BACKUP = "setlist-trekker-lastbackup", LS_LOGO = "setlist-trekker-logo";
+const OPT_DEFAULT = {band:"", theme:"dark", accent:"#F26B1D", lang:"nl", countBars:1, countClick:true, showTempo:false};
+let opts = Object.assign({}, OPT_DEFAULT, ls.get(LS_OPTS, {}));
+function saveOpts(){ ls.set(LS_OPTS, opts); }
+// Elke tekst als [Nederlands, Engels]. {naam} wordt ingevuld door t().
+const I18N = {
+  "draw": ["Trek een nummer", "Draw a song"],
+  "resetPot": ["Alles terug in de pot", "Put all songs back"],
+  "tapAria": ["Tempo. Tik mee op de tel om het tempo te meten", "Tempo. Tap along with the beat to measure the tempo"],
+  "tempo": ["Tempo", "Tempo"],
+  "tapHint": ["Tik mee op de tel", "Tap along with the beat"],
+  "key": ["Toon", "Key"],
+  "dur": ["Duur", "Length"],
+  "nr": ["Nr", "No"],
+  "slower": ["Tekst langzamer laten lopen", "Scroll the lyrics slower"],
+  "faster": ["Tekst sneller laten lopen", "Scroll the lyrics faster"],
+  "speed": ["Snelheid", "Speed"],
+  "stageOn": ["Groot scherm", "Full screen"],
+  "stageOff": ["Klein scherm", "Exit full screen"],
+  "fontDown": ["Kleinere tekst", "Smaller text"],
+  "fontUp": ["Grotere tekst", "Larger text"],
+  "progAria": ["Hoever je in het nummer bent", "How far into the song you are"],
+  "next": ["Volgende", "Next"],
+  "setlist": ["Setlist", "Setlist"],
+  "save": ["Bewaar", "Save"],
+  "clear": ["Leegmaken", "Clear"],
+  "songs": ["Nummers", "Songs"],
+  "playtime": ["Speeltijd", "Playing time"],
+  "playSet": ["Speel de setlist af", "Play the setlist"],
+  "setLen": ["Speelduur", "Set length"],
+  "fill": ["Vul aan", "Fill up"],
+  "fillNote": ["Zet er willekeurig nummers bij tot de speelduur zo goed mogelijk gevuld is. Wat er al in staat, blijft staan.", "Adds random songs until the set length is filled as closely as possible. Songs already in the setlist stay."],
+  "setListAria": ["Setlist in speelvolgorde", "Setlist in playing order"],
+  "setEmpty": ["Nog niets gekozen. Tik hieronder op de nummers die jullie willen spelen; versleep ze daarna in de goede volgorde.", "Nothing chosen yet. Tap the songs you want to play below, then drag them into the right order."],
+  "savedSets": ["Bewaarde setlists", "Saved setlists"],
+  "add": ["Toevoegen", "Add"],
+  "searchShort": ["Zoeken", "Search"],
+  "searchAria": ["Zoek op titel of artiest", "Search by title or artist"],
+  "sortAria": ["Volgorde van de nummers", "Order of the songs"],
+  "sortTitle": ["Titel A tot Z", "Title A to Z"],
+  "sortArtist": ["Artiest A tot Z", "Artist A to Z"],
+  "sortShort": ["Kortste eerst", "Shortest first"],
+  "sortLong": ["Langste eerst", "Longest first"],
+  "export": ["Exporteren", "Export"],
+  "import": ["Importeren", "Import"],
+  "addSong": ["+ Nummer", "+ Song"],
+  "listEmpty": ["Nog geen nummers. Voeg het eerste nummer toe met <b>+ Nummer</b>: titel, tempo en de tekst.", "No songs yet. Add the first one with <b>+ Song</b>: title, tempo and lyrics."],
+  "chooseRec": ["Kies opname", "Choose recording"],
+  "fileNote": ["Kies een opname van de repetitie of het origineel (mp3, m4a, wav). Het tempo wordt in je browser berekend.", "Choose a recording of the rehearsal or the original (mp3, m4a, wav). The tempo is calculated in your browser."],
+  "chooseSong": ["Kies nummer", "Choose song"],
+  "saveBtn": ["Opslaan", "Save"],
+  "tabs": ["Onderdelen", "Sections"],
+  "tab.play": ["Spelen", "Play"],
+  "tab.settings": ["Instellingen", "Settings"],
+  "cancel": ["Annuleren", "Cancel"],
+  "saveSetTitle": ["Setlist bewaren", "Save setlist"],
+  "name": ["Naam", "Name"],
+  "namePh": ["Bijv. Repetitie dinsdag", "E.g. Tuesday rehearsal"],
+  "fTitle": ["Titel", "Title"],
+  "fKey": ["Toonsoort", "Key"],
+  "fKeyPh": ["bv. Am", "e.g. Am"],
+  "fArtist": ["Artiest / origineel", "Artist / original"],
+  "fDur": ["Duur (m:ss)", "Length (m:ss)"],
+  "lkBpm": ["Zoek origineel tempo ↗", "Find original tempo ↗"],
+  "lkLyr": ["Zoek tekst ↗", "Find lyrics ↗"],
+  "lkNote": ["Opent een zoekopdracht in een nieuw tabblad. Neem tempo en tekst daarna hier over.", "Opens a search in a new tab. Then copy the tempo and lyrics here."],
+  "fLyrics": ["Tekst", "Lyrics"],
+  "fLyricsPh": ["Plak hier de tekst. Akkoorden mogen erbij.", "Paste the lyrics here. Chords are fine too."],
+  "lyrNote": ["Bij opslaan worden dubbele lege regels en resten van tekstsites (zoals “Embed” en “You might also like”) weggehaald. Zet [Refrein] of [Couplet] op een eigen regel, dan valt het op tijdens het spelen.", "When saving, double blank lines and leftovers from lyrics sites (such as “Embed” and “You might also like”) are removed. Put [Chorus] or [Verse] on its own line and it stands out while playing."],
+  "delete": ["Verwijderen", "Delete"],
+  "tapCancel": ["Tik om te annuleren", "Tap to cancel"],
+  "newVersion": ["Nieuwe versie klaar", "New version ready"],
+  "update": ["Bijwerken", "Update"],
+  "later": ["Later", "Later"],
+  "writeRO": ["Je kunt deze lijst alleen bekijken. Vraag de eigenaar om bewerkrechten.", "You can only view this list. Ask the owner for edit rights."],
+  "writeFull": ["De lijst zit vol. Verwijder eerst een paar nummers.", "The list is full. Delete a few songs first."],
+  "writeFail": ["Opslaan lukte niet. Probeer het zo nog eens.", "Saving failed. Try again in a moment."],
+  "played": ["Gespeeld", "Played"],
+  "untitled": ["Zonder titel", "Untitled"],
+  "noLyrics": ["Nog geen tekst", "No lyrics yet"],
+  "showSong": ["Toon dit nummer", "Show this song"],
+  "pickReady": ["Klaarzetten om te spelen", "Get ready to play"],
+  "tab.practice": ["Oefenen", "Practice"],
+  "st.play": ["Spelen", "Play"],
+  "st.practice": ["Oefenen", "Practice"],
+  "st.pass": ["Passen", "Pass"],
+  "statusAria": ["Status van {t}", "Status of {t}"],
+  "toPlay": ["{t} staat nu bij Spelen", "{t} moved to Play"],
+  "toPass": ["{t} is gepast", "{t} passed"],
+  "aPlay": ["Zet {t} op Spelen", "Move {t} to Play"],
+  "aPass": ["Pas {t}", "Pass {t}"],
+  "practiceNote": ["Nummers die jullie nog instuderen, op alfabet. Tik op een nummer om het te oefenen, met tekst en aftellen.", "Songs you are still learning, in alphabetical order. Tap a song to practise it, with lyrics and count-in."],
+  "practiceEmpty": ["Nog geen oefennummers. Zet bij Nummers een nummer op Oefenen.", "No practice songs yet. Set a song to Practice under Songs."],
+  "practiceOpen": ["Oefen dit nummer", "Practise this song"],
+  "practiceBack": ["Oefenlijst", "Practice list"],
+  "noPlayable": ["Zet eerst nummers op Spelen bij Nummers.", "Set some songs to Play under Songs first."],
+  "filterAria": ["Welke nummers", "Which songs"],
+  "f.all": ["Alle nummers", "All songs"],
+  "f.noLyr": ["Zonder tekst", "Without lyrics"],
+  "f.noBpm": ["Zonder tempo", "Without tempo"],
+  "f.noDur": ["Zonder duur", "Without length"],
+  "editBtn": ["Bewerk", "Edit"],
+  "noFound": ["Geen nummers gevonden.", "No songs found."],
+  "potEmpty": ["Pot is leeg, alles is gespeeld", "All songs have been played"],
+  "potLeft": ["Nog {left} van {total} in de pot", "{left} of {total} songs left to draw"],
+  "readyNext": ["Klaar voor de volgende", "Ready for the next one"],
+  "nothingYet": ["Nog niets getrokken", "Nothing drawn yet"],
+  "readyHint": ["Druk op Trek een nummer. Een nummer komt pas terug als de pot leeg is.", "Press Draw a song. A song only comes back once every song has been played."],
+  "addFirst": ["Voeg eerst nummers toe aan de lijst.", "Add some songs to the list first."],
+  "noLyricsSong": ["Nog geen tekst bij dit nummer.", "No lyrics for this song yet."],
+  "hintBpm": ["Vul een tempo in, dan telt de afspeelknop eerst {n} tikken af.", "Add a tempo and the play button counts in {n} beats first."],
+  "hintDur": ["Zonder ingevulde duur loopt de tekst mee alsof het nummer 3:30 duurt.", "Without a length, the lyrics scroll as if the song lasts 3:30."],
+  "assignPick": ["Tempo opslaan bij…", "Save tempo to…"],
+  "noSongs": ["Nog geen nummers", "No songs yet"],
+  "edAdd": ["Nummer toevoegen", "Add song"],
+  "edEdit": ["Nummer bewerken", "Edit song"],
+  "errTitle": ["Vul een titel in.", "Enter a title."],
+  "errBpm": ["Tempo moet tussen 30 en 300 BPM liggen.", "Tempo must be between 30 and 300 BPM."],
+  "errDur": ["Schrijf de duur als minuten:seconden, bijvoorbeeld 3:45.", "Write the length as minutes:seconds, for example 3:45."],
+  "added": ["Nummer toegevoegd", "Song added"],
+  "saved": ["Opgeslagen", "Saved"],
+  "sure": ["Zeker weten? Tik nog eens", "Sure? Tap again"],
+  "deleted": ["Nummer verwijderd", "Song deleted"],
+  "allBack": ["Alle nummers zitten weer in de pot", "All songs can be drawn again"],
+  "pbStart": ["Start met aftellen", "Start with count-in"],
+  "pbCount": ["Aftellen", "Counting in"],
+  "pbGo": ["Start", "Start"],
+  "pbStop": ["Stop", "Stop"],
+  "pbResume": ["Verder", "Resume"],
+  "songEnd": ["Einde van het nummer", "End of the song"],
+  "setStopped": ["Setlist gestopt", "Setlist stopped"],
+  "paused": ["Gepauzeerd, tik op de tekst om verder te gaan", "Paused, tap the lyrics to continue"],
+  "click": ["Klik", "Click"],
+  "clickAt": ["Klik op {bpm}", "Click at {bpm}"],
+  "clickTempo": ["Klik op dit tempo", "Click at this tempo"],
+  "saveBpm": ["Opslaan ({bpm})", "Save ({bpm})"],
+  "bpmSaved": ["{bpm} bpm opgeslagen", "{bpm} bpm saved"],
+  "keepTap": ["Blijf tikken…", "Keep tapping…"],
+  "taps": ["{n} tikken", "{n} taps"],
+  "analyzing": ["\"{f}\" analyseren…", "Analysing \"{f}\"…"],
+  "estimate": ["Geschat tempo voor \"{f}\". Klopt het niet, kies dan de halve of dubbele waarde.", "Estimated tempo for \"{f}\". If it is off, choose half or double."],
+  "fromRec": ["Uit opname", "From recording"],
+  "fileBad": ["Dit bestand kon niet worden gelezen. Probeer een mp3, m4a of wav.", "This file could not be read. Try an mp3, m4a or wav."],
+  "bpmSavedAt": ["{bpm} bpm opgeslagen bij {t}", "{bpm} bpm saved to {t}"],
+  "songWord": ["nummer", "song"],
+  "lastUpdate": ["Laatste update", "Last update"],
+  "moveAria": ["Verplaats {t}. Sleep, of gebruik pijl omhoog en omlaag.", "Move {t}. Drag, or use the up and down arrow keys."],
+  "dragTitle": ["Slepen om de volgorde te veranderen", "Drag to change the order"],
+  "rmAria": ["Haal {t} uit de setlist", "Remove {t} from the setlist"],
+  "rmTitle": ["Uit de setlist halen", "Remove from the setlist"],
+  "noDur1": ["1 nummer heeft nog geen duur en telt niet mee in de speeltijd.", "1 song has no length yet and does not count towards the playing time."],
+  "noDurN": ["{n} nummers hebben nog geen duur en tellen niet mee in de speeltijd.", "{n} songs have no length yet and do not count towards the playing time."],
+  "pickNone": ["Geen nummers gevonden voor \"{q}\".", "No songs found for \"{q}\"."],
+  "inSet": ["{t} staat in de setlist", "{t} added to the setlist"],
+  "addAria": ["Zet {t} in de setlist", "Add {t} to the setlist"],
+  "addTitle": ["In de setlist zetten", "Add to the setlist"],
+  "lastInSet": ["Laatste nummer van de setlist", "Last song of the setlist"],
+  "tapToCount": ["Tik op afspelen om af te tellen", "Tap play to count in"],
+  "setEnd": ["Einde van de setlist", "End of the setlist"],
+  "fillFirst": ["Vul eerst de speelduur in minuten in", "Enter the set length in minutes first"],
+  "fillAlready": ["De setlist is al {t}, dat is de speelduur of langer", "The setlist is already {t}, which is the set length or longer"],
+  "fillNone": ["Er zijn geen nummers met een duur meer over om toe te voegen", "There are no songs with a length left to add"],
+  "fillNoFit": ["Geen enkel nummer past nog in de {t} die over is", "No song fits in the {t} that is left"],
+  "fillDone": ["{n} nummers toegevoegd, totaal {t}", "{n} songs added, total {t}"],
+  "fillLeft": [", {t} over", ", {t} left"],
+  "song1": ["nummer", "song"],
+  "songN": ["nummers", "songs"],
+  "loadSet": ["Deze setlist laden", "Load this setlist"],
+  "load": ["Laden", "Load"],
+  "loadAria": ["Laad setlist {n}", "Load setlist {n}"],
+  "rmSavedAria": ["Verwijder bewaarde setlist {n}", "Delete saved setlist {n}"],
+  "rmSavedTitle": ["Bewaarde setlist verwijderen", "Delete saved setlist"],
+  "askDelTitle": ["Verwijderen?", "Delete?"],
+  "askDelText": ["Bewaarde setlist \"{n}\" verwijderen? De nummers zelf blijven bestaan.", "Delete saved setlist \"{n}\"? The songs themselves stay."],
+  "savedDeleted": ["Bewaarde setlist verwijderd", "Saved setlist deleted"],
+  "askLoadTitle": ["Setlist laden?", "Load setlist?"],
+  "askLoadText": ["De huidige setlist vervangen door \"{n}\"? Bewaar hem eerst als je hem wilt houden.", "Replace the current setlist with \"{n}\"? Save it first if you want to keep it."],
+  "loaded": ["Setlist \"{n}\" geladen", "Setlist \"{n}\" loaded"],
+  "saveInfo": ["{c} · {t}. Bestaat de naam al, dan wordt die setlist overschreven.", "{c} · {t}. If the name already exists, that setlist is overwritten."],
+  "nameErr": ["Geef de setlist een naam.", "Give the setlist a name."],
+  "setUpdated": ["Setlist \"{n}\" bijgewerkt", "Setlist \"{n}\" updated"],
+  "setSaved": ["Setlist \"{n}\" bewaard", "Setlist \"{n}\" saved"],
+  "askClearTitle": ["Setlist leegmaken?", "Clear setlist?"],
+  "askClearText": ["Alle nummers gaan uit de setlist. De nummers zelf blijven gewoon bestaan.", "All songs are removed from the setlist. The songs themselves stay."],
+  "cleared": ["Setlist leeggemaakt", "Setlist cleared"],
+  "exported": ["Back-up gemaakt", "Backup created"],
+  "importRes": ["{a} toegevoegd, {u} bijgewerkt", "{a} added, {u} updated"],
+  "importSet": [", setlist met {n} nummers", ", setlist with {n} songs"],
+  "importSaved1": [", 1 bewaarde setlist", ", 1 saved setlist"],
+  "importSavedN": [", {n} bewaarde setlists", ", {n} saved setlists"],
+  "importBand": [", logo en kleur", ", logo and colour"],
+  "importBad": ["Dit bestand kon niet worden ingelezen. Kies een back-up van de Setlist-app.", "This file could not be read. Choose a backup from the Setlist app."],
+  "opt.title": ["Instellingen", "Settings"],
+  "opt.band": ["Band", "Band"],
+  "opt.logo": ["Logo", "Logo"],
+  "opt.logoNote": ["PNG, JPG of SVG. Breed werkt het best, zoals een spandoek. Het logo wordt op dit apparaat verkleind en bewaard.", "PNG, JPG or SVG. Wide works best, like a banner. The logo is resized and stored on this device."],
+  "opt.logoPick": ["Kies logo", "Choose logo"],
+  "opt.logoReset": ["Standaardlogo", "Default logo"],
+  "opt.logoSaved": ["Logo opgeslagen", "Logo saved"],
+  "opt.logoBad": ["Dit bestand kon niet als logo worden gelezen. Kies een PNG, JPG of SVG.", "This file could not be read as a logo. Choose a PNG, JPG or SVG."],
+  "opt.logoBig": ["Dit bestand is te groot. Kies een kleiner bestand.", "This file is too large. Choose a smaller one."],
+  "opt.logoBack": ["Standaardlogo staat er weer", "Default logo restored"],
+  "opt.name": ["Bandnaam", "Band name"],
+  "opt.nameNote": ["Staat in de titel van de app en in de naam van een back-up.", "Used in the app title and the name of a backup."],
+  "opt.look": ["Weergave", "Display"],
+  "opt.theme": ["Scherm", "Screen"],
+  "opt.themeNote": ["Donker is het rustigst in een donkere oefenruimte.", "Dark is easiest on the eyes in a dark rehearsal room."],
+  "opt.dark": ["Donker", "Dark"],
+  "opt.light": ["Licht", "Light"],
+  "opt.auto": ["Automatisch", "Automatic"],
+  "opt.color": ["Hoofdkleur", "Accent colour"],
+  "opt.colorNote": ["De kleur van het kaartje en de knoppen. De tekst erop wordt vanzelf licht of donker.", "The colour of the ticket and buttons. The text on it turns light or dark by itself."],
+  "opt.colorLow": ["Deze kleur heeft weinig contrast met de achtergrond. De voortgangsbalk en het aftellen krijgen daarom een aangepaste tint.", "This colour has little contrast with the background, so the progress bar and count-in use an adjusted shade."],
+  "opt.mtTitle": ["Voorbeeld", "Preview"],
+  "opt.mtSub": ["Zo ziet het kaartje eruit", "This is how the ticket looks"],
+  "opt.text": ["Tekstgrootte", "Text size"],
+  "opt.textNote": ["Grootte van de songtekst. Kan ook met A− en A+ naast de tekst.", "Size of the lyrics. Also adjustable with A− and A+ next to the lyrics."],
+  "opt.lang": ["Taal van de app", "App language"],
+  "opt.play": ["Spelen", "Playing"],
+  "opt.count": ["Aftellen", "Count-in"],
+  "opt.countNote": ["Hoeveel tikken de afspeelknop aftelt voordat de tekst gaat lopen.", "How many beats the play button counts before the lyrics start."],
+  "opt.bar1": ["1 maat", "1 bar"],
+  "opt.bar2": ["2 maten", "2 bars"],
+  "opt.click": ["Klik bij het aftellen", "Click during count-in"],
+  "opt.clickNote": ["Uit: alleen de cijfers op het scherm, zonder geluid.", "Off: only the numbers on screen, no sound."],
+  "opt.tempoTab": ["Tempo-tab", "Tempo tab"],
+  "opt.tempoNote": ["Tempo berekenen uit een opname van de repetitie of het origineel.", "Calculate the tempo from a recording of the rehearsal or the original."],
+  "opt.data": ["Gegevens", "Data"],
+  "opt.backup": ["Back-up", "Backup"],
+  "opt.backupNote": ["Alles staat alleen op dit apparaat. Maak af en toe een back-up, of stuur hem naar een bandlid: dan heeft die dezelfde nummers, setlists, logo en kleur.", "Everything is stored on this device only. Make a backup now and then, or send it to a bandmate so they get the same songs, setlists, logo and colour."],
+  "opt.backupLast": ["Laatste back-up: {d}", "Last backup: {d}"],
+  "opt.backupNever": ["Nog geen back-up gemaakt op dit apparaat.", "No backup made on this device yet."],
+  "opt.backupMake": ["Back-up maken", "Make backup"],
+  "opt.backupRestore": ["Back-up terugzetten", "Restore backup"],
+  "opt.about": ["Over de app", "About"],
+  "opt.version": ["Versie", "Version"],
+  "opt.updated": ["Laatste update {d}", "Last update {d}"],
+  "opt.updateCheck": ["Zoek naar update", "Check for update"],
+  "opt.offline": ["Geen internet. Bijwerken kan alleen online.", "No internet. Updating only works online."],
+  "opt.upToDate": ["Je hebt de nieuwste versie", "You have the latest version"],
+  "opt.updating": ["Nieuwe versie wordt opgehaald", "Downloading the new version"],
+  "opt.updateNA": ["Bijwerken lukt alleen in de geïnstalleerde app", "Updating only works in the installed app"],
+  "opt.reset": ["Instellingen terugzetten", "Reset settings"],
+  "opt.resetNote": ["Logo, bandnaam, kleur, scherm, taal en aftellen terug naar standaard. Nummers en setlists blijven staan.", "Logo, band name, colour, screen, language and count-in back to default. Songs and setlists stay."],
+  "opt.resetBtn": ["Terugzetten", "Reset"],
+  "opt.resetAsk": ["Instellingen terugzetten?", "Reset settings?"],
+  "opt.resetDone": ["Instellingen teruggezet", "Settings reset"],
+  "c.orange": ["Oranje", "Orange"],
+  "c.red": ["Rood", "Red"],
+  "c.yellow": ["Geel", "Yellow"],
+  "c.green": ["Groen", "Green"],
+  "c.teal": ["Blauwgroen", "Teal"],
+  "c.blue": ["Blauw", "Blue"],
+  "c.purple": ["Paars", "Purple"],
+  "c.pink": ["Roze", "Pink"],
+  "c.custom": ["Eigen kleur", "Custom colour"]
+};
+function t(k, v){
+  const e = I18N[k]; let s = e ? (e[opts.lang === "en" ? 1 : 0] || e[0]) : k;
+  if(v) s = s.replace(/\{(\w+)\}/g, (m, n) => v[n] != null ? v[n] : m);
+  return s;
+}
+const loc = () => opts.lang === "en" ? "en-GB" : "nl-NL";
+const nSongs = n => n + " " + t(n === 1 ? "song1" : "songN");
+function fmtDate(ms){ return new Date(ms).toLocaleDateString(loc(), {day:"numeric", month:"long", year:"numeric"}); }
+// Vaste teksten in de HTML: data-i18n (tekst), data-i18n-html (met opmaak), data-i18n-attr ("attribuut:sleutel;...")
+function applyI18n(){
+  document.documentElement.lang = opts.lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = t(el.dataset.i18nHtml); });
+  document.querySelectorAll("[data-i18n-attr]").forEach(el => el.dataset.i18nAttr.split(";").forEach(p => { const [a, k] = p.split(":"); el.setAttribute(a, t(k)); }));
+  document.documentElement.classList.remove("i18n-wait");
+}
+let swReg = null;
 
 let songs = [];          // {id,title,artist,bpm,key,lyrics}
 let played = new Set(ls.get(LS_PLAYED, []));
@@ -619,7 +1182,7 @@ let fontScale = ls.get(LS_FONT, 1);
 let editingId = null;
 
 /* ---------- storage ---------- */
-function sortSongs(){ songs.sort((a,b)=> (a.title||"").localeCompare(b.title||"", "nl", {sensitivity:"base"})); }
+function sortSongs(){ songs.sort((a,b)=> (a.title||"").localeCompare(b.title||"", loc(), {sensitivity:"base"})); }
 function useLocal(){
   mode = "local";
   songs = ls.get(LS_SONGS, []);
@@ -641,7 +1204,7 @@ async function initStore(){
   useLocal();
 }
 async function saveSong(s){
-  const body = {title:s.title, artist:s.artist||"", bpm:s.bpm||null, key:s.key||"", duration:s.duration||null, lyrics:s.lyrics||"", updatedAt:Date.now()};
+  const body = {title:s.title, artist:s.artist||"", bpm:s.bpm||null, key:s.key||"", duration:s.duration||null, lyrics:s.lyrics||"", status:songStatus(s), updatedAt:Date.now()};
   if(mode === "db"){
     const ref = s.id ? db.collection("songs").doc(s.id) : db.collection("songs").doc();
     await ref.set(body);
@@ -666,9 +1229,9 @@ async function setBpm(id, bpm){
   else { s.bpm = bpm; ls.set(LS_SONGS, songs); renderAll(); }
 }
 function writeError(e){
-  if(e && e.code === "invalid_argument" && mode === "db"){ readOnly = true; renderAll(); return "Je kunt deze lijst alleen bekijken. Vraag de eigenaar om bewerkrechten."; }
-  if(e && e.code === "quota_exceeded") return "De lijst zit vol. Verwijder eerst een paar nummers.";
-  return "Opslaan lukte niet. Probeer het zo nog eens.";
+  if(e && e.code === "invalid_argument" && mode === "db"){ readOnly = true; renderAll(); return t("writeRO"); }
+  if(e && e.code === "quota_exceeded") return t("writeFull");
+  return t("writeFail");
 }
 
 /* ---------- rendering ---------- */
@@ -684,47 +1247,61 @@ function renderAll(){
     if(setlist.some(id => !ids.has(id))){ setlist = setlist.filter(id => ids.has(id)); ls.set(LS_SET, setlist); }
   }
   renderList(); renderPot(); renderNow(); renderAssign(); renderSetlist();
+  if(typeof renderPractice === "function") renderPractice();
   $("addBtn").disabled = readOnly;
 }
+// Status: "play" (in de pot en kiesbaar voor de setlist), "practice" (tab Oefenen) of "pass". Zonder status = play.
+function songStatus(s){ return s && (s.status === "practice" || s.status === "pass") ? s.status : "play"; }
+function playable(){ return songs.filter(s => songStatus(s) === "play"); }
+function setStatus(id, v, say){
+  const s = songs.find(x => x.id === id); if(!s || songStatus(s) === v) return;
+  s.status = v; s.updatedAt = Date.now(); ls.set(LS_SONGS, songs); renderAll();
+  if(say) toast(t(v === "play" ? "toPlay" : "toPass", {t: s.title || t("untitled")}));
+}
+function statusControl(s){
+  const g = document.createElement("div"); g.className = "status"; g.setAttribute("role", "group");
+  g.setAttribute("aria-label", t("statusAria", {t: s.title || t("untitled")}));
+  ["play", "practice", "pass"].forEach(v => {
+    const b = document.createElement("button"); b.type = "button"; b.dataset.v = v; b.textContent = t("st." + v);
+    b.setAttribute("aria-pressed", String(songStatus(s) === v)); b.disabled = readOnly;
+    b.addEventListener("click", () => {
+      setStatus(s.id, v);
+      const nb = $("songList").querySelector(`li[data-id="${CSS.escape(s.id)}"] .status button[data-v="${v}"]`); if(nb) nb.focus({preventScroll: true});
+    });
+    g.append(b);
+  });
+  return g;
+}
 function renderList(){
-  const q = $("search").value.trim().toLowerCase();
+  const q = normQ($("search").value);
   const ul = $("songList"); ul.textContent = "";
-  const match = s => !q || (s.title||"").toLowerCase().includes(q) || (s.artist||"").toLowerCase().includes(q);
-  // Volgorde op toestand: het huidige kaartje, dan de pot, dan wat vanavond al is uitgegeven (laatst uitgegeven bovenaan)
-  const cur = songs.filter(s => s.id === currentId && match(s));
-  const pot = songs.filter(s => s.id !== currentId && !played.has(s.id) && match(s));
-  const done = [...played].reverse().map(id => songs.find(s => s.id === id)).filter(s => s && s.id !== currentId && match(s));
-  const list = cur.concat(pot, done);
+  const f = $("listFilter").value;
+  $("listFilter").classList.toggle("on", f !== "all");
+  const pass = {all: () => true, play: s => songStatus(s) === "play", practice: s => songStatus(s) === "practice", pass: s => songStatus(s) === "pass",
+    noLyr: s => !(s.lyrics || "").trim(), noBpm: s => !s.bpm, noDur: s => !s.duration}[f] || (() => true);
+  const match = s => pass(s) && (!q || normQ((s.title || "") + " " + (s.artist || "")).includes(q));
+  // Overzicht van het hele repertoire, op titel of artiest; wat er vanavond gespeeld is, hoort bij Spelen
+  const list = songs.filter(match);
+  if($("listSort").value === "artist"){
+    const cmp = (x, y) => x.localeCompare(y, loc(), {sensitivity: "base"});
+    list.sort((a, b) => cmp(a.artist || "~", b.artist || "~") || cmp(a.title || "", b.title || ""));
+  }
   $("listEmpty").hidden = songs.length > 0 || mode === "pending";
   $("tabCount").textContent = songs.length ? "(" + songs.length + ")" : "";
-  list.forEach((s, i) => {
-    if(done.length && i === cur.length + pot.length){
-      const sep = document.createElement("li"); sep.className = "sep label"; sep.textContent = "Gespeeld"; ul.append(sep);
-    }
-    const li = document.createElement("li");
-    if(played.has(s.id)) li.className = "played";
-    if(s.id === currentId) li.classList.add("current");
-    const seq = issueNo(s.id);
-    const idx = document.createElement("span"); idx.className = "idx"; idx.textContent = seq ? pad(seq) : "";
+  list.forEach(s => {
+    const li = document.createElement("li"); li.dataset.id = s.id; li.className = "st-" + songStatus(s);
     const main = document.createElement("button"); main.className = "linkish"; main.type = "button";
-    const t = document.createElement("div"); t.className = "t"; t.textContent = s.title || "Zonder titel";
-    const a = document.createElement("div"); a.className = "a"; a.textContent = titleCase(s.artist) || (s.lyrics ? "" : "Nog geen tekst");
-    main.append(t, a);
-    main.addEventListener("click", () => { showSong(s.id); });
-    main.title = "Toon dit nummer";
-    const meta = document.createElement("div"); meta.className = "meta";
-    const b = document.createElement("span"); b.className = "bpmtag"; b.textContent = s.bpm ? s.bpm + " bpm" : "– bpm";
-    meta.append(b);
-    if(!readOnly){
-      const e = document.createElement("button"); e.className = "btn small ghost"; e.type = "button"; e.textContent = "Bewerk";
-      e.addEventListener("click", () => openEditor(s.id));
-      meta.append(e);
-    }
-    li.append(idx, main, meta); ul.append(li);
+    const tt = document.createElement("div"); tt.className = "t"; tt.textContent = s.title || t("untitled");
+    const a = document.createElement("div"); a.className = "a"; a.textContent = titleCase(s.artist) || (s.lyrics ? "" : t("noLyrics"));
+    main.append(tt, a);
+    // Tik op het nummer = bewerken
+    main.addEventListener("click", () => openEditor(s.id));
+    main.title = t("edEdit");
+    li.append(main, statusControl(s)); ul.append(li);
   });
   if(songs.length && !list.length){
     const li = document.createElement("li"); li.style.gridTemplateColumns = "1fr";
-    li.innerHTML = '<span class="empty">Geen nummers gevonden.</span>'; ul.append(li);
+    li.innerHTML = '<span class="empty"></span>'; li.firstChild.textContent = t("noFound"); ul.append(li);
   }
 }
 function issueNo(id){ const i = [...played].indexOf(id); return i < 0 ? 0 : i + 1; } // volgnummer van vanavond
@@ -735,19 +1312,19 @@ function revealCurrent(){
   const cr = col.getBoundingClientRect(), lr = li.getBoundingClientRect();
   if(lr.top < cr.top || lr.bottom > cr.bottom) col.scrollBy({top: lr.top - cr.top - 120, behavior: reduced() ? "auto" : "smooth"});
 }
-function pool(){ return songs.filter(s => !played.has(s.id)); }
+function pool(){ return playable().filter(s => !played.has(s.id)); }
 function renderPot(){
-  const left = pool().length, total = songs.length;
+  const left = pool().length, total = playable().length;
   $("drawBtn").disabled = total === 0;
-  $("potInfo").textContent = total === 0 ? "" : (left === 0 ? "Pot is leeg, alles is gespeeld" : `Nog ${left} van ${total} in de pot`);
+  $("potInfo").textContent = total === 0 ? "" : (left === 0 ? t("potEmpty") : t("potLeft", {left, total}));
   $("resetPot").hidden = played.size === 0;
 }
 function renderNow(){
   const s = songs.find(x => x.id === currentId);
   $("ticket").classList.toggle("blank", !s);
   if(!s){
-    $("nowTitle").textContent = songs.length ? "Klaar voor de volgende" : "Nog niets getrokken";
-    $("nowArtist").textContent = songs.length ? "Druk op Trek een nummer. Een nummer komt pas terug als de pot leeg is." : "Voeg eerst nummers toe aan de lijst.";
+    $("nowTitle").textContent = songs.length ? t("readyNext") : t("nothingYet");
+    $("nowArtist").textContent = !songs.length ? t("addFirst") : (playable().length ? t("readyHint") : t("noPlayable"));
     $("nowFacts").hidden = true; $("lyricsWrap").hidden = true;
     return;
   }
@@ -755,8 +1332,8 @@ function renderNow(){
   const setIdx = setPlay.active ? setlist.indexOf(s.id) : -1;
   const seq = setIdx >= 0 ? setIdx + 1 : issueNo(s.id);
   $("nowStub").textContent = seq ? pad(seq) : "–";
-  $("nowStubOf").textContent = seq ? "/" + pad(setIdx >= 0 ? setlist.length : songs.length) : "";
-  $("nowTitle").textContent = s.title || "Zonder titel";
+  $("nowStubOf").textContent = seq ? "/" + pad(setIdx >= 0 ? setlist.length : playable().length) : "";
+  $("nowTitle").textContent = s.title || t("untitled");
   $("nowArtist").textContent = titleCase(s.artist);
   $("nowFacts").hidden = false;
   renderTempoFact();
@@ -769,7 +1346,7 @@ function renderNow(){
   const lyr = $("nowLyrics");
   if(lyricsFor !== s.id && scroller.active) stopScroll(true);
   lyricsFor = s.id;
-  const txt = s.lyrics ? cleanLyrics(s.lyrics) : "Nog geen tekst bij dit nummer.";
+  const txt = s.lyrics ? cleanLyrics(s.lyrics) : t("noLyricsSong");
   if(lyr.dataset.raw !== txt){ renderLyrics(lyr, txt); lyr.dataset.raw = txt; }
   lyr.classList.toggle("empty", !s.lyrics);
   lyr.style.setProperty("--ls", fontScale);
@@ -777,15 +1354,15 @@ function renderNow(){
   if(!scroller.active) $("timer").textContent = s.duration ? fmtDur(s.duration) : "";
   // Alleen een hint als er iets ontbreekt voor het aftellen of het meelopen
   const hint = [];
-  if(s.lyrics && !s.bpm) hint.push("Vul een tempo in, dan telt de afspeelknop eerst 4 tikken af.");
-  if(s.lyrics && !s.duration) hint.push("Zonder ingevulde duur loopt de tekst mee alsof het nummer 3:30 duurt.");
+  if(s.lyrics && !s.bpm) hint.push(t("hintBpm", {n: countBeats()}));
+  if(s.lyrics && !s.duration) hint.push(t("hintDur"));
   $("playHint").textContent = hint.join(" ");
   $("playHint").hidden = !hint.length;
 }
 function renderAssign(){
   const sel = $("assignSel"); const prev = sel.value;
   sel.textContent = "";
-  const o0 = document.createElement("option"); o0.value = ""; o0.textContent = songs.length ? "Tempo opslaan bij…" : "Nog geen nummers"; sel.append(o0);
+  const o0 = document.createElement("option"); o0.value = ""; o0.textContent = songs.length ? t("assignPick") : t("noSongs"); sel.append(o0);
   songs.forEach(s => { const o = document.createElement("option"); o.value = s.id; o.textContent = s.title + (s.bpm ? ` (${s.bpm})` : ""); sel.append(o); });
   sel.value = songs.some(s => s.id === prev) ? prev : (currentId || "");
   sel.disabled = readOnly;
@@ -796,24 +1373,25 @@ function updateAssignBtn(){ $("assignBtn").disabled = readOnly || !$("assignSel"
 function resetTempo(){
   if(metOwner === "tempo") stopMet();
   taps = []; setDetected(null);
-  $("tapHint").textContent = "Tik mee op de tel";
+  $("tapHint").textContent = t("tapHint");
   $("fileChips").hidden = true; $("fileChips").textContent = "";
   try{ $("audioFile").value = ""; }catch(e){}
-  $("fileNote").textContent = "Kies een opname van de repetitie of het origineel (mp3, m4a, wav). Het tempo wordt in je browser berekend.";
+  $("fileNote").textContent = t("fileNote");
   setSpeed(1);
 }
-function showSong(id){
+function showSong(id, stay){
   if(id !== currentId){ stopScroll(true); resetTempo(); }
   currentId = id;
   renderNow(); renderList(); renderAssign(); renderSetlist(); revealCurrent();
-  setTab("play");
+  if(!stay) setTab("play");
 }
 function reduced(){ return window.matchMedia("(prefers-reduced-motion: reduce)").matches; }
 
 /* ---------- drawing ---------- */
 let drawing = false;
 $("drawBtn").addEventListener("click", () => {
-  if(drawing || !songs.length) return;
+  const deck = playable();
+  if(drawing || !deck.length) return;
   let p = pool();
   if(!p.length){ played.clear(); p = pool(); }
   const pick = p[Math.floor(Math.random() * p.length)];
@@ -828,13 +1406,13 @@ $("drawBtn").addEventListener("click", () => {
     const t = $("ticket"); t.classList.remove("issued");
     if(!reduced()){ void t.offsetWidth; t.classList.add("issued"); }
   };
-  if(reduced() || songs.length < 2){ finish(); return; }
+  if(reduced() || deck.length < 2){ finish(); return; }
   drawing = true; $("now").classList.add("shuffling");
   $("ticket").classList.remove("blank"); // eerste trekking: het kaartje verschijnt bij het schudden
   $("nowFacts").hidden = true; $("lyricsWrap").hidden = true;
   let n = 0; const steps = 12;
   const tick = () => {
-    const r = songs[Math.floor(Math.random() * songs.length)];
+    const r = deck[Math.floor(Math.random() * deck.length)];
     $("nowTitle").textContent = r.title; $("nowArtist").textContent = "";
     if(++n < steps) setTimeout(tick, 40 + n * 8); else finish();
   };
@@ -855,20 +1433,27 @@ function tearStub(){
   setTimeout(() => c.remove(), 1200);
 }
 // Terug naar het beginscherm: pot vol, geen nummer getrokken, Spelen-tab bovenaan
-$("resetPot").addEventListener("click", () => { stopScroll(true); resetTempo(); endSetPlay(); currentId = null; played.clear(); ls.set(LS_PLAYED, []); renderAll(); setTab("play"); toast("Alle nummers zitten weer in de pot"); });
+$("resetPot").addEventListener("click", () => { stopScroll(true); resetTempo(); endSetPlay(); currentId = null; played.clear(); ls.set(LS_PLAYED, []); renderAll(); setTab("play"); toast(t("allBack")); });
 $("search").addEventListener("input", renderList);
-$("fontUp").addEventListener("click", () => { fontScale = Math.min(2, +(fontScale + .1).toFixed(1)); ls.set(LS_FONT, fontScale); renderNow(); });
-$("fontDown").addEventListener("click", () => { fontScale = Math.max(.7, +(fontScale - .1).toFixed(1)); ls.set(LS_FONT, fontScale); renderNow(); });
+$("listFilter").value = ls.get(LS_LISTFILTER, "all");
+if(!$("listFilter").value) $("listFilter").value = "all";
+$("listFilter").addEventListener("change", () => { ls.set(LS_LISTFILTER, $("listFilter").value); renderList(); });
+$("listSort").value = ls.get(LS_LISTSORT, "title");
+if(!$("listSort").value) $("listSort").value = "title";
+$("listSort").addEventListener("change", () => { ls.set(LS_LISTSORT, $("listSort").value); renderList(); });
+function setFont(v){ fontScale = Math.min(2, Math.max(.7, +v.toFixed(1))); ls.set(LS_FONT, fontScale); renderNow(); $("optFontVal").textContent = Math.round(fontScale * 100) + "%"; }
+$("fontUp").addEventListener("click", () => setFont(fontScale + .1));
+$("fontDown").addEventListener("click", () => setFont(fontScale - .1));
 
 /* ---------- editor ---------- */
 function openEditor(id){
   if(readOnly) return;
   editingId = id || null;
   const s = songs.find(x => x.id === id) || {};
-  $("edTitle").textContent = id ? "Nummer bewerken" : "Nummer toevoegen";
+  $("edTitle").textContent = id ? t("edEdit") : t("edAdd");
   $("fTitle").value = s.title || ""; $("fArtist").value = s.artist || "";
-  $("fBpm").value = s.bpm || (id ? "" : (detectedBpm || "")); $("fKey").value = s.key || ""; $("fDur").value = s.duration ? fmtDur(s.duration) : ""; $("fLyrics").value = s.lyrics || "";
-  $("edDelete").hidden = !id; $("edDelete").dataset.armed = ""; $("edDelete").textContent = "Verwijderen";
+  $("fBpm").value = s.bpm || (id ? "" : (detectedBpm || "")); $("fKey").value = s.key || ""; $("fDur").value = s.duration ? fmtDur(s.duration) : ""; $("fLyrics").value = s.lyrics || ""; setRadio("fStatus", songStatus(s));
+  $("edDelete").hidden = !id; $("edDelete").dataset.armed = ""; $("edDelete").textContent = t("delete");
   $("edErr").hidden = true;
   updateLookups();
   $("overlay").hidden = false; $("fTitle").focus();
@@ -896,25 +1481,25 @@ $("editor").addEventListener("submit", async e => {
   const title = $("fTitle").value.trim();
   const bpmRaw = $("fBpm").value.trim();
   const bpm = bpmRaw ? Math.round(Number(bpmRaw)) : null;
-  if(!title){ showErr("Vul een titel in."); return; }
-  if(bpmRaw && (!bpm || bpm < 30 || bpm > 300)){ showErr("Tempo moet tussen 30 en 300 BPM liggen."); return; }
+  if(!title){ showErr(t("errTitle")); return; }
+  if(bpmRaw && (!bpm || bpm < 30 || bpm > 300)){ showErr(t("errBpm")); return; }
   const durRaw = $("fDur").value.trim();
   const duration = durRaw ? parseDur(durRaw) : null;
-  if(durRaw && !duration){ showErr("Schrijf de duur als minuten:seconden, bijvoorbeeld 3:45."); return; }
+  if(durRaw && !duration){ showErr(t("errDur")); return; }
   $("edSave").disabled = true;
   try{
-    const id = await saveSong({id:editingId, title, artist:titleCase($("fArtist").value.trim()), bpm, key:$("fKey").value.trim(), duration, lyrics:cleanLyrics($("fLyrics").value)});
+    const id = await saveSong({id:editingId, title, artist:titleCase($("fArtist").value.trim()), bpm, key:$("fKey").value.trim(), duration, lyrics:cleanLyrics($("fLyrics").value), status:(document.querySelector('input[name="fStatus"]:checked') || {}).value});
     const wasNew = !editingId;
     closeEditor();
-    toast(wasNew ? "Nummer toegevoegd" : "Opgeslagen");
+    toast(wasNew ? t("added") : t("saved"));
     if(!wasNew && id === currentId) renderNow();
   }catch(err){ showErr(writeError(err)); }
   finally{ $("edSave").disabled = false; }
 });
 $("edDelete").addEventListener("click", async () => {
   const b = $("edDelete");
-  if(!b.dataset.armed){ b.dataset.armed = "1"; b.textContent = "Zeker weten? Tik nog eens"; return; }
-  try{ await deleteSong(editingId); closeEditor(); toast("Nummer verwijderd"); renderAll(); }
+  if(!b.dataset.armed){ b.dataset.armed = "1"; b.textContent = t("sure"); return; }
+  try{ await deleteSong(editingId); closeEditor(); toast(t("deleted")); renderAll(); }
   catch(err){ showErr(writeError(err)); }
 });
 function showErr(t){ $("edErr").textContent = t; $("edErr").hidden = false; }
@@ -964,7 +1549,7 @@ window.addEventListener("orientationchange", refit);
 if(window.visualViewport) window.visualViewport.addEventListener("resize", refit);
 function setStage(on){
   document.body.classList.toggle("stagemode", on);
-  $("stageBtn").textContent = on ? "Klein scherm" : "Groot scherm";
+  $("stageBtn").textContent = on ? t("stageOff") : t("stageOn");
   try{
     if(on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
     if(!on && document.fullscreenElement && document.exitFullscreen) document.exitFullscreen().catch(() => {});
@@ -987,12 +1572,15 @@ const ICON_PLAY = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 4.5v1
 const ICON_STOP = '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="6" y="6" width="12" height="12" fill="currentColor"/></svg>';
 const ico = svg => svg.replace("<svg ", '<svg class="ico" ');
 // state: "idle" | "count" (met n) | "start" | "stop" | "resume"
+const pbState = {s: "idle", n: 0};
+function countBeats(){ return opts.countBars === 2 ? 8 : 4; } // 1 of 2 maten aftellen (Instellingen)
 function setPlayBtn(state, n){
-  const b = $("playBtn"); let label = "Start met aftellen"; let html = ICON_PLAY; let stop = false;
-  if(state === "count"){ html = '<span class="cnt">' + n + '</span>'; label = "Aftellen"; }
-  else if(state === "start"){ label = "Start"; }
-  else if(state === "stop"){ html = ICON_STOP; label = "Stop"; stop = true; }
-  else if(state === "resume"){ label = "Verder"; }
+  pbState.s = state; pbState.n = n;
+  const b = $("playBtn"); let label = t("pbStart"); let html = ICON_PLAY; let stop = false;
+  if(state === "count"){ html = '<span class="cnt">' + n + '</span>'; label = t("pbCount"); }
+  else if(state === "start"){ label = t("pbGo"); }
+  else if(state === "stop"){ html = ICON_STOP; label = t("pbStop"); stop = true; }
+  else if(state === "resume"){ label = t("pbResume"); }
   b.innerHTML = html; b.setAttribute("aria-label", label); b.title = label; b.classList.toggle("stop", stop);
 }
 setPlayBtn("idle");
@@ -1017,11 +1605,13 @@ function startPlayAlong(){
   showCount(s.title);
   if(s.bpm){
     const ctx = audio(), spb = 60 / s.bpm, t0 = ctx.currentTime + .15;
-    for(let i = 0; i < 4; i++){
-      click(t0 + i * spb, i === 0);
-      scroller.countTimers.push(setTimeout(() => { setPlayBtn("count", i + 1); flash($("beatsNow"), i); countBeat(i, String(i + 1)); }, (.15 + i * spb) * 1000));
+    const beats = countBeats();
+    for(let i = 0; i < beats; i++){
+      const b = i % 4; // bij 2 maten twee keer 1 tot 4
+      if(opts.countClick) click(t0 + i * spb, b === 0);
+      scroller.countTimers.push(setTimeout(() => { setPlayBtn("count", b + 1); flash($("beatsNow"), b); countBeat(b, String(b + 1)); }, (.15 + i * spb) * 1000));
     }
-    scroller.countTimers.push(setTimeout(go, (.15 + 4 * spb) * 1000));
+    scroller.countTimers.push(setTimeout(go, (.15 + beats * spb) * 1000));
   } else {
     setPlayBtn("start");
     ["3", "2", "1"].forEach((n, i) => scroller.countTimers.push(setTimeout(() => countBeat(i + 1, n), 100 + i * 700)));
@@ -1039,7 +1629,7 @@ function step(now){
     lyr.scrollTop = scroller.pos; scroller.lastSet = lyr.scrollTop;
     $("timer").textContent = fmtDur(scroller.elapsed) + " / " + fmtDur(scroller.total);
     setProg(scroller.elapsed / scroller.total);
-    if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); if(setPlay.active) setSongEnded(); else toast("Einde van het nummer"); return; }
+    if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); if(setPlay.active) setSongEnded(); else toast(t("songEnd")); return; }
   }
   scroller.raf = requestAnimationFrame(step);
 }
@@ -1062,14 +1652,14 @@ function hideCount(){ $("countin").hidden = true; }
 // Zelf stoppen: in de setlist-modus terug naar de Setlist-tab, anders blijf je op Spelen
 function userStop(){
   stopScroll(false);
-  if(setPlay.active){ endSetPlay(); setTab("setlist"); toast("Setlist gestopt"); }
+  if(setPlay.active){ endSetPlay(); setTab("setlist"); toast(t("setStopped")); }
 }
 $("countin").addEventListener("click", userStop);
 function togglePause(){
   if(!scroller.active || scroller.countTimers.length && scroller.speed === 0) return;
   scroller.paused = !scroller.paused; scroller.last = performance.now();
   setPlayBtn(scroller.paused ? "resume" : "stop");
-  if(scroller.paused) toast("Gepauzeerd, tik op de tekst om verder te gaan");
+  if(scroller.paused) toast(t("paused"));
 }
 function stopScroll(silent){
   scroller.countTimers.forEach(clearTimeout); scroller.countTimers = [];
@@ -1124,8 +1714,8 @@ function startMet(bpm, owner){
 }
 function stopMet(){ if(metTimer){ clearInterval(metTimer); metTimer = null; } metOwner = null; updateMetButtons(); }
 function updateMetButtons(){
-  $("nowMet").innerHTML = metOwner === "now" ? ico(ICON_STOP) + "Stop" : ico(ICON_PLAY) + "Klik";
-  $("tempoMet").innerHTML = metOwner === "tempo" ? ico(ICON_STOP) + "Stop" : ico(ICON_PLAY) + (detectedBpm ? `Klik op ${detectedBpm}` : "Klik op dit tempo");
+  $("nowMet").innerHTML = metOwner === "now" ? ico(ICON_STOP) + t("pbStop") : ico(ICON_PLAY) + t("click");
+  $("tempoMet").innerHTML = metOwner === "tempo" ? ico(ICON_STOP) + t("pbStop") : ico(ICON_PLAY) + (detectedBpm ? t("clickAt", {bpm: detectedBpm}) : t("clickTempo"));
 }
 $("nowMet").addEventListener("click", () => {
   const s = songs.find(x => x.id === currentId);
@@ -1152,7 +1742,7 @@ function renderTempoFact(){
   if(detectedBpm){ $("nowBpm").textContent = detectedBpm; el.classList.add("tapped"); }
   else { $("nowBpm").textContent = s && s.bpm ? s.bpm : "–"; el.classList.remove("tapped"); }
 }
-function updateTapSave(){ const b = $("tapSave"); b.hidden = !(detectedBpm && currentId && !readOnly); if(!b.hidden) b.textContent = `Opslaan (${detectedBpm})`; }
+function updateTapSave(){ const b = $("tapSave"); b.hidden = !(detectedBpm && currentId && !readOnly); if(!b.hidden) b.textContent = t("saveBpm", {bpm: detectedBpm}); }
 $("tapSave").addEventListener("click", async () => {
   if(!detectedBpm || !currentId) return;
   const bpm = detectedBpm;
@@ -1160,8 +1750,8 @@ $("tapSave").addEventListener("click", async () => {
     await setBpm(currentId, bpm);
     const s = songs.find(x => x.id === currentId); if(s) s.bpm = bpm;
     taps = []; setDetected(null);
-    $("tapHint").textContent = "Opgeslagen";
-    toast(`${bpm} bpm opgeslagen`); renderNow(); renderList();
+    $("tapHint").textContent = t("saved");
+    toast(t("bpmSaved", {bpm})); renderNow(); renderList();
   }
   catch(err){ toast(writeError(err)); }
 });
@@ -1170,12 +1760,12 @@ function doTap(){
   if(taps.length && now - taps[taps.length - 1] > 2000) taps = [];
   taps.push(now); if(taps.length > 9) taps.shift();
   const el = $("tap"); el.classList.add("hit"); setTimeout(() => el.classList.remove("hit"), 90);
-  if(taps.length < 2){ $("tapHint").textContent = "Blijf tikken…"; return; }
+  if(taps.length < 2){ $("tapHint").textContent = t("keepTap"); return; }
   const iv = []; for(let i = 1; i < taps.length; i++) iv.push(taps[i] - taps[i-1]);
   iv.sort((a,b) => a - b); const med = iv[Math.floor(iv.length / 2)];
   const good = iv.filter(x => Math.abs(x - med) < med * .25);
   const avg = good.reduce((a,b) => a + b, 0) / good.length;
-  $("tapHint").textContent = `${taps.length} tikken`;
+  $("tapHint").textContent = t("taps", {n: taps.length});
   $("fileChips").hidden = true;
   setDetected(Math.round(60000 / avg), "tap");
 }
@@ -1191,10 +1781,10 @@ document.addEventListener("keydown", e => {
 /* ---------- tempo: from file ---------- */
 $("audioFile").addEventListener("change", async e => {
   const f = e.target.files && e.target.files[0]; if(!f) return;
-  $("fileNote").textContent = `"${f.name}" analyseren…`; $("fileChips").hidden = true;
+  $("fileNote").textContent = t("analyzing", {f: f.name}); $("fileChips").hidden = true;
   try{
     const res = await analyzeFile(f);
-    $("fileNote").textContent = `Geschat tempo voor "${f.name}". Klopt het niet, kies dan de halve of dubbele waarde.`;
+    $("fileNote").textContent = t("estimate", {f: f.name});
     const chips = $("fileChips"); chips.textContent = "";
     const opts = [Math.round(res / 2), res, Math.round(res * 2)].filter(x => x >= 40 && x <= 260);
     opts.forEach(v => {
@@ -1203,11 +1793,11 @@ $("audioFile").addEventListener("change", async e => {
       chips.append(c);
     });
     chips.hidden = false;
-    $("tapHint").textContent = "Uit opname";
+    $("tapHint").textContent = t("fromRec");
     taps = [];
     setDetected(res, "file");
   }catch(err){
-    $("fileNote").textContent = "Dit bestand kon niet worden gelezen. Probeer een mp3, m4a of wav.";
+    $("fileNote").textContent = t("fileBad");
   }
 });
 async function analyzeFile(file){
@@ -1263,15 +1853,52 @@ async function analyzeFile(file){
 $("assignSel").addEventListener("change", updateAssignBtn);
 $("assignBtn").addEventListener("click", async () => {
   const id = $("assignSel").value; if(!id || !detectedBpm) return;
-  try{ await setBpm(id, detectedBpm); const s = songs.find(x => x.id === id); toast(`${detectedBpm} bpm opgeslagen bij ${s ? s.title : "nummer"}`); renderNow(); }
+  try{ await setBpm(id, detectedBpm); const s = songs.find(x => x.id === id); toast(t("bpmSavedAt", {bpm: detectedBpm, t: s ? s.title : t("songWord")})); renderNow(); }
   catch(err){ toast(writeError(err)); }
 });
+
+/* ---------- oefenen: lijst zonder schudden, oefenscherm = speelscherm zonder trekbalk ---------- */
+const practice = {active: false, prevId: null};
+function renderPractice(){
+  const ul = $("pracList"); ul.textContent = "";
+  const list = songs.filter(s => songStatus(s) === "practice");
+  $("pracEmpty").hidden = list.length > 0 || mode === "pending";
+  $("pracTabCount").textContent = list.length ? "(" + list.length + ")" : "";
+  list.forEach(s => {
+    const li = document.createElement("li"); li.dataset.id = s.id;
+    if(practice.active && s.id === currentId) li.className = "current";
+    const acts = document.createElement("div"); acts.className = "row-actions";
+    [["play", "aPlay"], ["pass", "aPass"]].forEach(([v, aria]) => {
+      const b = document.createElement("button"); b.type = "button"; b.className = "btn small"; b.textContent = t("st." + v);
+      b.setAttribute("aria-label", t(aria, {t: s.title || t("untitled")})); b.disabled = readOnly;
+      b.addEventListener("click", () => setStatus(s.id, v, true));
+      acts.append(b);
+    });
+    li.append(songMain(s, () => openPractice(s.id), t("practiceOpen")), durCell(s), acts);
+    ul.append(li);
+  });
+}
+// Het nummer van Spelen blijft bewaard: na het oefenen staat het kaartje daar weer zoals het was
+function openPractice(id){
+  if(!practice.active){ practice.prevId = currentId; practice.active = true; }
+  document.body.classList.add("practicing");
+  showSong(id, true); window.scrollTo(0, 0);
+}
+function endPractice(){
+  if(!practice.active) return;
+  practice.active = false; document.body.classList.remove("practicing");
+  if(scroller.active) stopScroll(true);
+  currentId = songs.some(x => x.id === practice.prevId) ? practice.prevId : null; practice.prevId = null;
+  resetTempo(); renderAll();
+}
+$("practiceBack").addEventListener("click", () => setTab("practice"));
 
 /* ---------- tabs (op elk formaat) ---------- */
 function setTab(t){
   // De tabbalk blijft ook tijdens het meelopen staan: een tik stopt het nummer en gaat terug naar het gewone scherm
   if(scroller.active) stopScroll(true);
   if(document.body.classList.contains("stagemode")) setStage(false);
+  endPractice();
   document.body.dataset.tab = t;
   document.querySelectorAll(".tabbar button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"));
   window.scrollTo(0, 0);
@@ -1280,14 +1907,7 @@ document.querySelectorAll(".tabbar button").forEach(b => b.addEventListener("cli
 setTab("play");
 
 /* ---------- laatste update (datum zet scripts/build-sw.mjs in de meta-tag) ---------- */
-(function(){
-  const d = (document.querySelector('meta[name="app-updated"]') || {}).content;
-  if(!d) return;
-  const t = document.createElement("time"); t.dateTime = d;
-  t.textContent = new Date(d + "T12:00:00").toLocaleDateString("nl-NL", { day: "numeric", month: "long", year: "numeric" });
-  $("appUpdated").append("Laatste update ", t);
-  $("appUpdated").hidden = false;
-})();
+// (de tekst zet renderAppUpdated, in de gekozen taal)
 
 
 /* ---------- setlist ---------- */
@@ -1302,9 +1922,9 @@ function fmtTotal(sec){
 function saveSet(){ ls.set(LS_SET, setlist); renderSetlist(); }
 function songMain(s, onClick, label){
   const main = document.createElement("button"); main.className = "linkish"; main.type = "button"; main.title = label;
-  const t = document.createElement("div"); t.className = "t"; t.textContent = s.title || "Zonder titel";
+  const tt = document.createElement("div"); tt.className = "t"; tt.textContent = s.title || t("untitled");
   const a = document.createElement("div"); a.className = "a"; a.textContent = titleCase(s.artist) || "";
-  main.append(t, a); main.addEventListener("click", onClick);
+  main.append(tt, a); main.addEventListener("click", onClick);
   return main;
 }
 function durCell(s){
@@ -1323,7 +1943,7 @@ function renderSetlist(){
   if(typeof renderSaved === "function" && savedSets) renderSaved();
   $("setTabCount").textContent = chosen.length ? "(" + chosen.length + ")" : "";
   $("setNote").hidden = !missing;
-  $("setNote").textContent = missing === 1 ? "1 nummer heeft nog geen duur en telt niet mee in de speeltijd." : `${missing} nummers hebben nog geen duur en tellen niet mee in de speeltijd.`;
+  $("setNote").textContent = missing === 1 ? t("noDur1") : t("noDurN", {n: missing});
   $("setEmpty").hidden = chosen.length > 0;
   $("setClear").hidden = !chosen.length;
   $("setSaveOpen").hidden = !chosen.length;
@@ -1331,31 +1951,31 @@ function renderSetlist(){
     const li = document.createElement("li"); li.dataset.id = s.id;
     if(s.id === currentId) li.className = "current";
     const h = document.createElement("button"); h.type = "button"; h.className = "drag"; h.innerHTML = ICON_GRIP;
-    h.setAttribute("aria-label", `Verplaats ${s.title}. Sleep, of gebruik pijl omhoog en omlaag.`); h.title = "Slepen om de volgorde te veranderen";
+    h.setAttribute("aria-label", t("moveAria", {t: s.title})); h.title = t("dragTitle");
     const idx = document.createElement("span"); idx.className = "idx"; idx.textContent = pad(i + 1);
     const rm = document.createElement("button"); rm.type = "button"; rm.className = "btn small ghost iconbtn"; rm.innerHTML = ICON_X;
-    rm.setAttribute("aria-label", `Haal ${s.title} uit de setlist`); rm.title = "Uit de setlist halen";
+    rm.setAttribute("aria-label", t("rmAria", {t: s.title})); rm.title = t("rmTitle");
     rm.addEventListener("click", () => { setlist = setlist.filter(id => id !== s.id); saveSet(); });
-    li.append(h, idx, songMain(s, () => showSong(s.id), "Toon dit nummer"), durCell(s), rm);
+    li.append(h, idx, songMain(s, () => showSong(s.id), t("showSong")), durCell(s), rm);
     ol.append(li);
   });
-  const allRest = songs.filter(s => !setlist.includes(s.id));
+  const allRest = songs.filter(s => !setlist.includes(s.id) && songStatus(s) === "play");
   $("pickH").hidden = $("pickTools").hidden = !allRest.length;
   const q = normQ($("pickSearch").value);
   const rest = allRest.filter(s => !q || normQ((s.title || "") + " " + (s.artist || "")).includes(q));
-  const sort = $("pickSort").value, byTitle = (a, b) => (a.title || "").localeCompare(b.title || "", "nl", { sensitivity: "base" });
-  if(sort === "artist") rest.sort((a, b) => (a.artist || "~").localeCompare(b.artist || "~", "nl", { sensitivity: "base" }) || byTitle(a, b));
+  const sort = $("pickSort").value, byTitle = (a, b) => (a.title || "").localeCompare(b.title || "", loc(), { sensitivity: "base" });
+  if(sort === "artist") rest.sort((a, b) => (a.artist || "~").localeCompare(b.artist || "~", loc(), { sensitivity: "base" }) || byTitle(a, b));
   else if(sort === "short") rest.sort((a, b) => (a.duration || 1e9) - (b.duration || 1e9) || byTitle(a, b));
   else if(sort === "long") rest.sort((a, b) => (b.duration || 0) - (a.duration || 0) || byTitle(a, b));
   else rest.sort(byTitle);
   $("pickNone").hidden = !(allRest.length && !rest.length);
-  $("pickNone").textContent = `Geen nummers gevonden voor "${$("pickSearch").value.trim()}".`;
+  $("pickNone").textContent = t("pickNone", {q: $("pickSearch").value.trim()});
   rest.forEach(s => {
     const li = document.createElement("li");
-    const add = () => { setlist.push(s.id); saveSet(); toast(`${s.title} staat in de setlist`); };
+    const add = () => { setlist.push(s.id); saveSet(); toast(t("inSet", {t: s.title})); };
     const b = document.createElement("button"); b.type = "button"; b.className = "btn small iconbtn"; b.innerHTML = ICON_PLUS;
-    b.setAttribute("aria-label", `Zet ${s.title} in de setlist`); b.title = "In de setlist zetten"; b.addEventListener("click", add);
-    li.append(songMain(s, add, "In de setlist zetten"), durCell(s), b);
+    b.setAttribute("aria-label", t("addAria", {t: s.title})); b.title = t("addTitle"); b.addEventListener("click", add);
+    li.append(songMain(s, add, t("addTitle")), durCell(s), b);
     pick.append(li);
   });
 }
@@ -1368,7 +1988,7 @@ function renderNext(){
   if(!setPlay.active){ box.hidden = true; fitLyrics(); return; }
   const next = songs.find(s => s.id === list[setPlay.idx + 1]);
   box.hidden = false; box.classList.toggle("last", !next);
-  $("nxTitle").textContent = next ? (next.title || "Zonder titel") : "Laatste nummer van de setlist";
+  $("nxTitle").textContent = next ? (next.title || t("untitled")) : t("lastInSet");
   fitLyrics();
 }
 function playSetAt(i, count){
@@ -1384,10 +2004,10 @@ function setSongEnded(){
   const list = setSongs();
   if(setPlay.idx + 1 < list.length){
     playSetAt(setPlay.idx + 1, false);
-    toast("Tik op afspelen om af te tellen");
+    toast(t("tapToCount"));
   } else {
     endSetPlay(); setTab("setlist");
-    toast("Einde van de setlist");
+    toast(t("setEnd"));
   }
 }
 function endSetPlay(){
@@ -1402,15 +2022,15 @@ $("setTarget").value = ls.get(LS_TARGET, "") || "";
 $("setTarget").addEventListener("change", () => { const m = parseInt($("setTarget").value, 10); ls.set(LS_TARGET, m > 0 ? m : ""); });
 function fillSetlist(){
   const minutes = parseInt($("setTarget").value, 10);
-  if(!(minutes > 0)){ $("setTarget").focus(); toast("Vul eerst de speelduur in minuten in"); return; }
+  if(!(minutes > 0)){ $("setTarget").focus(); toast(t("fillFirst")); return; }
   ls.set(LS_TARGET, minutes);
   const target = minutes * 60;
   const chosen = setSongs(), used = new Set(chosen);
   const have = chosen.reduce((n, id) => n + ((songs.find(s => s.id === id) || {}).duration || 0), 0);
   const room = target - have;
-  const pool = songs.filter(s => !used.has(s.id) && s.duration > 0);
-  if(room <= 0){ toast("De setlist is al " + fmtTotal(have) + ", dat is de speelduur of langer"); return; }
-  if(!pool.length){ toast("Er zijn geen nummers met een duur meer over om toe te voegen"); return; }
+  const pool = songs.filter(s => !used.has(s.id) && s.duration > 0 && songStatus(s) === "play");
+  if(room <= 0){ toast(t("fillAlready", {t: fmtTotal(have)})); return; }
+  if(!pool.length){ toast(t("fillNone")); return; }
   // Willekeurig vullen; van een aantal pogingen de best gevulde houden
   let best = [], bestSum = 0;
   for(let k = 0; k < 400; k++){
@@ -1420,10 +2040,10 @@ function fillSetlist(){
     for(const s of order) if(sum + s.duration <= room){ take.push(s); sum += s.duration; }
     if(sum > bestSum){ best = take; bestSum = sum; if(room - sum < 20) break; }
   }
-  if(!best.length){ toast("Geen enkel nummer past nog in de " + fmtTotal(room) + " die over is"); return; }
+  if(!best.length){ toast(t("fillNoFit", {t: fmtTotal(room)})); return; }
   setlist = chosen.concat(best.map(s => s.id)); saveSet();
   const left = room - bestSum;
-  toast(`${best.length} nummers toegevoegd, totaal ${fmtTotal(have + bestSum)}` + (left >= 30 ? `, ${fmtTotal(left)} over` : ""));
+  toast(t("fillDone", {n: best.length, t: fmtTotal(have + bestSum)}) + (left >= 30 ? t("fillLeft", {t: fmtTotal(left)}) : ""));
 }
 $("setFill").addEventListener("click", fillSetlist);
 
@@ -1437,15 +2057,15 @@ function renderSaved(){
   savedSets.slice().sort((a, b) => b.savedAt - a.savedAt).forEach(set => {
     const ids = set.ids.filter(id => songs.some(s => s.id === id));
     const li = document.createElement("li"); li.classList.toggle("on", ids.length && ids.join(",") === cur);
-    const main = songMain({ title: set.name }, () => loadSaved(set), "Deze setlist laden");
-    main.querySelector(".a").textContent = `${ids.length} ${ids.length === 1 ? "nummer" : "nummers"} · ${fmtTotal(setTotalOf(ids))}`;
-    const load = document.createElement("button"); load.type = "button"; load.className = "btn small"; load.textContent = "Laden";
-    load.setAttribute("aria-label", `Laad setlist ${set.name}`); load.addEventListener("click", () => loadSaved(set));
+    const main = songMain({ title: set.name }, () => loadSaved(set), t("loadSet"));
+    main.querySelector(".a").textContent = nSongs(ids.length) + " · " + fmtTotal(setTotalOf(ids));
+    const load = document.createElement("button"); load.type = "button"; load.className = "btn small"; load.textContent = t("load");
+    load.setAttribute("aria-label", t("loadAria", {n: set.name})); load.addEventListener("click", () => loadSaved(set));
     const rm = document.createElement("button"); rm.type = "button"; rm.className = "btn small ghost iconbtn"; rm.innerHTML = ICON_X;
-    rm.setAttribute("aria-label", `Verwijder bewaarde setlist ${set.name}`); rm.title = "Bewaarde setlist verwijderen";
+    rm.setAttribute("aria-label", t("rmSavedAria", {n: set.name})); rm.title = t("rmSavedTitle");
     rm.addEventListener("click", async () => {
-      if(!await ask("Verwijderen?", `Bewaarde setlist "${set.name}" verwijderen? De nummers zelf blijven bestaan.`, "Verwijderen", true)) return;
-      savedSets = savedSets.filter(x => x.id !== set.id); saveSaved(); toast("Bewaarde setlist verwijderd");
+      if(!await ask(t("askDelTitle"), t("askDelText", {n: set.name}), t("delete"), true)) return;
+      savedSets = savedSets.filter(x => x.id !== set.id); saveSaved(); toast(t("savedDeleted"));
     });
     li.append(main, load, rm); ul.append(li);
   });
@@ -1453,9 +2073,9 @@ function renderSaved(){
 async function loadSaved(set){
   const ids = set.ids.filter(id => songs.some(s => s.id === id));
   const cur = setSongs();
-  if(cur.length && cur.join(",") !== ids.join(",") && !await ask("Setlist laden?", `De huidige setlist vervangen door "${set.name}"? Bewaar hem eerst als je hem wilt houden.`, "Laden")) return;
+  if(cur.length && cur.join(",") !== ids.join(",") && !await ask(t("askLoadTitle"), t("askLoadText", {n: set.name}), t("load"))) return;
   setlist = ids; currentSetName = set.name; saveSet(); renderSaved();
-  toast(`Setlist "${set.name}" geladen`);
+  toast(t("loaded", {n: set.name}));
 }
 /* Eigen bevestigingsvenster: window.confirm geeft in sommige webviews direct "nee" zonder iets te tonen */
 let askDone = null;
@@ -1475,7 +2095,7 @@ let currentSetName = "";
 function openSaveDialog(){
   const ids = setSongs(); if(!ids.length) return;
   $("setName").value = currentSetName;
-  $("saveInfo").textContent = `${ids.length} ${ids.length === 1 ? "nummer" : "nummers"} · ${fmtTotal(setTotalOf(ids))}. Bestaat de naam al, dan wordt die setlist overschreven.`;
+  $("saveInfo").textContent = t("saveInfo", {c: nSongs(ids.length), t: fmtTotal(setTotalOf(ids))});
   $("saveErr").hidden = true;
   $("saveOverlay").hidden = false; $("setName").focus(); $("setName").select();
 }
@@ -1487,21 +2107,21 @@ document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("saveOve
 $("saveForm").addEventListener("submit", e => {
   e.preventDefault();
   const name = $("setName").value.trim();
-  if(!name){ $("saveErr").textContent = "Geef de setlist een naam."; $("saveErr").hidden = false; $("setName").focus(); return; }
+  if(!name){ $("saveErr").textContent = t("nameErr"); $("saveErr").hidden = false; $("setName").focus(); return; }
   const ids = setSongs();
   const same = savedSets.find(x => x.name.toLowerCase() === name.toLowerCase());
   if(same){ same.name = name; same.ids = ids; same.savedAt = Date.now(); }
   else savedSets.push({ id: "set" + Date.now().toString(36), name, ids, savedAt: Date.now() });
   currentSetName = name; closeSaveDialog(); saveSaved();
-  toast(same ? `Setlist "${name}" bijgewerkt` : `Setlist "${name}" bewaard`);
+  toast(same ? t("setUpdated", {n: name}) : t("setSaved", {n: name}));
 });
 function normQ(t){ return String(t).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\u2019'`]/g, "").replace(/\s+/g, " ").trim(); }
 $("pickSort").value = ls.get(LS_PICKSORT, "title");
 $("pickSort").addEventListener("change", () => { ls.set(LS_PICKSORT, $("pickSort").value); renderSetlist(); });
 $("pickSearch").addEventListener("input", () => renderSetlist());
 $("setClear").addEventListener("click", async () => {
-  if(!setlist.length || !await ask("Setlist leegmaken?", "Alle nummers gaan uit de setlist. De nummers zelf blijven gewoon bestaan.", "Leegmaken", true)) return;
-  setlist = []; saveSet(); toast("Setlist leeggemaakt");
+  if(!setlist.length || !await ask(t("askClearTitle"), t("askClearText"), t("clear"), true)) return;
+  setlist = []; saveSet(); toast(t("cleared"));
 });
 // Volgorde: slepen aan het greepje (aanraken of muis), of pijltjestoetsen op het greepje
 let setDrag = null;
@@ -1558,19 +2178,23 @@ $("setList").addEventListener("keydown", e => {
 
 /* ---------- exporteren / importeren ---------- */
 function exportData(){
-  return JSON.stringify({app:"switchbone-setlist", version:1, exportedAt:new Date().toISOString(), songs, setlist, savedSets}, null, 2);
+  // band: naam, hoofdkleur en logo gaan mee, zodat een bandlid na importeren hetzelfde ziet
+  return JSON.stringify({app:"switchbone-setlist", version:1, exportedAt:new Date().toISOString(), songs, setlist, savedSets, band:{name: opts.band || "", accent: opts.accent, logo: logoData || null}}, null, 2);
 }
-$("exportBtn").addEventListener("click", async () => {
-  const name = "switchbone-setlist-" + new Date().toISOString().slice(0,10) + ".json";
+function markBackup(){ ls.set(LS_BACKUP, Date.now()); renderBackupInfo(); }
+async function doExport(){
+  const slug = bandName().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "band";
+  const name = slug + "-setlist-" + new Date().toISOString().slice(0,10) + ".json";
   const file = new File([exportData()], name, {type:"application/json"});
   try{
-    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); return; }
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); markBackup(); return; }
   }catch(e){ if(e && e.name === "AbortError") return; }
   const url = URL.createObjectURL(file);
   const a = document.createElement("a"); a.href = url; a.download = name; document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
-  toast("Export gemaakt");
-});
+  markBackup(); toast(t("exported"));
+}
+$("exportBtn").addEventListener("click", doExport);
 $("importFile").addEventListener("change", async e => {
   const f = e.target.files && e.target.files[0]; if(!f) return;
   try{
@@ -1581,11 +2205,11 @@ $("importFile").addEventListener("change", async e => {
     let added = 0, updated = 0; const idMap = {};
     list.forEach(raw => {
       if(!raw || !raw.title) return;
-      const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, lyrics:raw.lyrics || "", updatedAt:raw.updatedAt || Date.now()};
+      const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, lyrics:raw.lyrics || "", status:["play", "practice", "pass"].includes(raw.status) ? raw.status : undefined, updatedAt:raw.updatedAt || Date.now()};
       const i = songs.findIndex(s => (inc.id && s.id === inc.id) || keyOf(s) === keyOf(inc));
       if(i >= 0){
         const cur = songs[i];
-        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: inc.lyrics || cur.lyrics || "", bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, key: inc.key || cur.key || ""});
+        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: inc.lyrics || cur.lyrics || "", bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, key: inc.key || cur.key || "", status: inc.status || cur.status});
         if(raw.id) idMap[raw.id] = cur.id;
         updated++;
       } else {
@@ -1598,7 +2222,7 @@ $("importFile").addEventListener("change", async e => {
     let setMsg = "";
     if(!Array.isArray(j) && Array.isArray(j.setlist) && j.setlist.length){
       const next = [...new Set(j.setlist.map(id => idMap[id]).filter(Boolean))];
-      if(next.length){ setlist = next; ls.set(LS_SET, setlist); setMsg = `, setlist met ${next.length} nummers`; }
+      if(next.length){ setlist = next; ls.set(LS_SET, setlist); setMsg = t("importSet", {n: next.length}); }
     }
     // Bewaarde setlists samenvoegen op naam
     if(!Array.isArray(j) && Array.isArray(j.savedSets)){
@@ -1610,11 +2234,20 @@ $("importFile").addEventListener("change", async e => {
         if(same){ same.ids = ids; same.savedAt = x.savedAt || Date.now(); } else savedSets.push({ id: x.id || ("set" + Date.now().toString(36) + n), name: String(x.name), ids, savedAt: x.savedAt || Date.now() });
         n++;
       });
-      if(n){ ls.set(LS_SAVED, savedSets); setMsg += `, ${n} bewaarde ${n === 1 ? "setlist" : "setlists"}`; }
+      if(n){ ls.set(LS_SAVED, savedSets); setMsg += n === 1 ? t("importSaved1") : t("importSavedN", {n}); }
+    }
+    // Bandgegevens: naam, kleur en logo van de band (scherm, taal en aftellen blijven persoonlijk)
+    let bandMsg = "";
+    if(!Array.isArray(j) && j.band && typeof j.band === "object"){
+      const bd = j.band, L = window.SBLook; let ch = false;
+      if(typeof bd.name === "string" && bd.name.trim()){ opts.band = bd.name.trim().slice(0, 40); ch = true; }
+      if(L && L.rgb(bd.accent)){ opts.accent = L.hex(L.rgb(bd.accent)); ch = true; }
+      if(typeof bd.logo === "string" && /^data:image\/(png|jpeg|webp|gif|svg\+xml)[;,]/.test(bd.logo) && bd.logo.length < 4e6){ logoData = bd.logo; try{ await storeLogo(logoData); }catch(e2){} applyLogo(); ch = true; }
+      if(ch){ saveOpts(); applyLook(); applyBand(); renderSettings(); bandMsg = t("importBand"); }
     }
     sortSongs(); ls.set(LS_SONGS, songs); renderAll();
-    toast(`${added} toegevoegd, ${updated} bijgewerkt${setMsg}`);
-  }catch(err){ toast("Dit bestand kon niet worden ingelezen. Kies een export van de Setlist-app."); }
+    toast(t("importRes", {a: added, u: updated}) + setMsg + bandMsg);
+  }catch(err){ toast(t("importBad")); }
   e.target.value = "";
 });
 
@@ -1622,7 +2255,7 @@ $("importFile").addEventListener("change", async e => {
 if("serviceWorker" in navigator){
   window.addEventListener("load", async () => {
     try{
-      const reg = await navigator.serviceWorker.register("sw.js");
+      const reg = await navigator.serviceWorker.register("sw.js"); swReg = reg;
       let waiting = null;
       const offer = w => { if(!w) return; waiting = w; if(!document.body.classList.contains("playing")) $("updateBar").hidden = false; };
       if(reg.waiting && navigator.serviceWorker.controller) offer(reg.waiting);
@@ -1639,6 +2272,169 @@ if("serviceWorker" in navigator){
   });
 }
 
+
+/* ---------- instellingen ---------- */
+const COLORS = [["orange", "#F26B1D"], ["red", "#E5484D"], ["yellow", "#F5C518"], ["green", "#3DBE6E"], ["teal", "#1FB5A8"], ["blue", "#3B82F6"], ["purple", "#8B5CF6"], ["pink", "#EC4899"]];
+// Logo: verkleind op het apparaat en bewaard in IndexedDB (localStorage is te klein voor afbeeldingen)
+const idb = (() => {
+  let dbp = null;
+  const open = () => dbp || (dbp = new Promise((res, rej) => {
+    const r = indexedDB.open("switchbone-setlist", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("files");
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  }));
+  const run = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const tx = db.transaction("files", mode), q = fn(tx.objectStore("files"));
+    tx.oncomplete = () => res(q && q.result); tx.onerror = () => rej(tx.error); tx.onabort = () => rej(tx.error);
+  }));
+  return { get: k => run("readonly", s => s.get(k)), set: (k, v) => run("readwrite", s => s.put(v, k)), del: k => run("readwrite", s => s.delete(k)) };
+})();
+let logoData = "";
+async function loadLogo(){ try{ return (await idb.get("logo")) || ""; }catch(e){ return ls.get(LS_LOGO, ""); } }
+async function storeLogo(v){
+  try{ if(v) await idb.set("logo", v); else await idb.del("logo"); }
+  catch(e){ try{ if(v) localStorage.setItem(LS_LOGO, JSON.stringify(v)); else localStorage.removeItem(LS_LOGO); }catch(e2){ throw e2; } }
+}
+function applyLogo(){
+  const src = logoData || "assets/logo.png";
+  ["brandLogo", "ciLogo", "logoPrev"].forEach(id => { const img = $(id); if(img.getAttribute("src") !== src) img.src = src; });
+  $("logoReset").hidden = !logoData;
+}
+// Een vierkant of hoog logo krijgt meer hoogte in de kop, anders wordt het een postzegel
+$("brandLogo").addEventListener("load", e => { const i = e.target; i.classList.toggle("squarish", i.naturalHeight > 0 && i.naturalWidth / i.naturalHeight < 2.2); });
+async function readLogo(file){
+  if(file.size > 15e6) throw new Error("big");
+  if(file.type === "image/svg+xml" || /\.svg$/i.test(file.name)){
+    const txt = await file.text();
+    if(txt.length > 500000) throw new Error("big");
+    if(!/<svg[\s>]/i.test(txt)) throw new Error("bad");
+    return "data:image/svg+xml;base64," + btoa(unescape(encodeURIComponent(txt)));
+  }
+  const url = URL.createObjectURL(file);
+  try{
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const w0 = img.naturalWidth, h0 = img.naturalHeight; if(!w0 || !h0) throw new Error("bad");
+    const k = Math.min(1, 1200 / w0, 480 / h0);
+    const cv = document.createElement("canvas"); cv.width = Math.max(1, Math.round(w0 * k)); cv.height = Math.max(1, Math.round(h0 * k));
+    cv.getContext("2d").drawImage(img, 0, 0, cv.width, cv.height);
+    return cv.toDataURL("image/png");
+  } finally { URL.revokeObjectURL(url); }
+}
+$("logoFile").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0]; e.target.value = ""; if(!f) return;
+  try{ const d = await readLogo(f); await storeLogo(d); logoData = d; applyLogo(); toast(t("opt.logoSaved")); }
+  catch(err){ toast(t(err && err.message === "big" ? "opt.logoBig" : "opt.logoBad")); }
+});
+$("logoReset").addEventListener("click", async () => { logoData = ""; try{ await storeLogo(""); }catch(e){} applyLogo(); toast(t("opt.logoBack")); });
+
+function bandName(){ return (opts.band || "").trim() || "Switchbone"; }
+function applyBand(){
+  document.title = bandName() + " Setlist";
+  $("brandLogo").alt = bandName() + " Setlist";
+}
+let lookInfo = {};
+function applyLook(){
+  lookInfo = window.SBLook ? window.SBLook.apply(opts) : {};
+  $("colorLow").hidden = !(lookInfo.bgContrast < 3);
+}
+if(window.SBLook && window.SBLook.mq){
+  const mq = window.SBLook.mq, onMq = () => { if(opts.theme === "auto") applyLook(); };
+  if(mq.addEventListener) mq.addEventListener("change", onMq); else if(mq.addListener) mq.addListener(onMq);
+}
+function applyTabs(){
+  const tb = document.querySelector('.tabbar [data-tab="tempo"]');
+  tb.hidden = !opts.showTempo;
+  if(!opts.showTempo && document.body.dataset.tab === "tempo") setTab("settings");
+  const n = document.querySelectorAll(".tabbar button:not([hidden])").length, bar = document.querySelector(".tabbar");
+  bar.style.setProperty("--tabs", n); bar.classList.toggle("many", n > 4); bar.classList.toggle("lots", n > 5); // vijf tabs op de iPhone: smallere letters
+}
+function renderSwatches(){
+  const box = $("swatches"); box.textContent = "";
+  const cur = (opts.accent || "").toUpperCase(), preset = COLORS.some(([, h]) => h === cur);
+  COLORS.forEach(([name, hex]) => {
+    const l = document.createElement("label"); l.className = "sw"; l.style.setProperty("--c", hex); l.title = t("c." + name);
+    const r = document.createElement("input"); r.type = "radio"; r.name = "optAccent"; r.value = hex; r.checked = hex === cur; r.setAttribute("aria-label", t("c." + name));
+    r.addEventListener("change", () => setAccent(hex));
+    l.append(r, document.createElement("i")); box.append(l);
+  });
+  const l = document.createElement("label"); l.className = "sw custom" + (preset ? "" : " on"); l.title = t("c.custom");
+  if(!preset) l.style.setProperty("--c", cur);
+  const c = document.createElement("input"); c.type = "color"; c.value = preset ? "#9A6BFF" : cur.toLowerCase(); c.setAttribute("aria-label", t("c.custom"));
+  c.addEventListener("input", () => setAccent(c.value.toUpperCase(), true));
+  c.addEventListener("change", () => setAccent(c.value.toUpperCase()));
+  l.append(c, document.createElement("i")); box.append(l);
+}
+function setAccent(hex, live){
+  opts.accent = hex; saveOpts(); applyLook();
+  if(live){ // tijdens het slepen in de kleurkiezer alleen de eigen bol bijwerken
+    const l = $("swatches").querySelector(".sw.custom"); l.classList.add("on"); l.style.setProperty("--c", hex);
+    $("swatches").querySelectorAll('input[type=radio]').forEach(r => { r.checked = false; });
+    return;
+  }
+  renderSwatches();
+}
+function setRadio(name, value){ document.querySelectorAll(`input[name="${name}"]`).forEach(r => { r.checked = r.value === String(value); }); }
+function renderBackupInfo(){
+  const last = ls.get(LS_BACKUP, 0);
+  $("backupInfo").textContent = last ? t("opt.backupLast", {d: fmtDate(last)}) : t("opt.backupNever");
+}
+function renderVersion(){
+  const d = (document.querySelector('meta[name="app-updated"]') || {}).content;
+  $("optVersion").textContent = d ? t("opt.updated", {d: fmtDate(d + "T12:00:00")}) : "";
+}
+function renderSettings(){
+  $("optBand").value = opts.band || "";
+  $("optBand").placeholder = "Switchbone";
+  setRadio("optTheme", opts.theme); setRadio("optLang", opts.lang); setRadio("optCount", opts.countBars);
+  $("optClick").checked = !!opts.countClick; $("optTempo").checked = !!opts.showTempo;
+  $("optFontVal").textContent = Math.round(fontScale * 100) + "%";
+  renderSwatches(); renderBackupInfo(); renderVersion();
+}
+function renderAppUpdated(){
+  const d = (document.querySelector('meta[name="app-updated"]') || {}).content, el = $("appUpdated");
+  if(!d) return;
+  const tm = document.createElement("time"); tm.dateTime = d; tm.textContent = fmtDate(d + "T12:00:00");
+  el.textContent = ""; el.append(t("lastUpdate") + " ", tm); el.hidden = false;
+}
+// Taal wisselen: vaste teksten opnieuw, en alles wat de app zelf schrijft opnieuw tekenen
+function relabel(){
+  applyI18n(); applyBand(); renderAll(); renderSettings(); renderAppUpdated();
+  setPlayBtn(pbState.s, pbState.n); updateMetButtons(); updateTapSave(); renderNext();
+  $("stageBtn").textContent = t(document.body.classList.contains("stagemode") ? "stageOff" : "stageOn");
+  if(!detectedBpm) $("tapHint").textContent = t("tapHint");
+  if($("fileChips").hidden) $("fileNote").textContent = t("fileNote");
+}
+$("optBand").addEventListener("input", () => { opts.band = $("optBand").value.trim(); saveOpts(); applyBand(); });
+document.querySelectorAll('input[name="optTheme"]').forEach(r => r.addEventListener("change", () => { opts.theme = r.value; saveOpts(); applyLook(); }));
+document.querySelectorAll('input[name="optLang"]').forEach(r => r.addEventListener("change", () => { opts.lang = r.value; saveOpts(); relabel(); }));
+document.querySelectorAll('input[name="optCount"]').forEach(r => r.addEventListener("change", () => { opts.countBars = +r.value; saveOpts(); renderNow(); }));
+$("optClick").addEventListener("change", () => { opts.countClick = $("optClick").checked; saveOpts(); });
+$("optTempo").addEventListener("change", () => { opts.showTempo = $("optTempo").checked; saveOpts(); applyTabs(); });
+$("optFontDown").addEventListener("click", () => setFont(fontScale - .1));
+$("optFontUp").addEventListener("click", () => setFont(fontScale + .1));
+$("optExport").addEventListener("click", doExport);
+$("optUpdate").addEventListener("click", async () => {
+  if(!navigator.onLine){ toast(t("opt.offline")); return; }
+  if(!swReg){ toast(t("opt.updateNA")); return; }
+  try{
+    await swReg.update();
+    toast(t(swReg.installing || swReg.waiting ? "opt.updating" : "opt.upToDate"));
+    if(swReg.waiting) $("updateBar").hidden = false;
+  }catch(e){ toast(t("opt.offline")); }
+});
+$("optReset").addEventListener("click", async () => {
+  if(!await ask(t("opt.resetAsk"), t("opt.resetNote"), t("opt.resetBtn"), true)) return;
+  opts = Object.assign({}, OPT_DEFAULT); saveOpts();
+  logoData = ""; try{ await storeLogo(""); }catch(e){}
+  applyLook(); applyLogo(); applyTabs(); relabel(); toast(t("opt.resetDone"));
+});
+
+/* ---------- opstarten ---------- */
+if(opts.lang !== "nl") applyI18n(); else document.documentElement.classList.remove("i18n-wait");
+applyBand(); applyLook(); applyTabs(); renderAppUpdated(); renderSettings();
+setPlayBtn("idle"); updateMetButtons();
+$("stageBtn").textContent = t("stageOn"); $("tapHint").textContent = t("tapHint"); $("fileNote").textContent = t("fileNote");
+loadLogo().then(d => { logoData = d || ""; applyLogo(); });
 renderAll();
 initStore();
 })();
