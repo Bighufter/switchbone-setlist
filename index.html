@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-11 f7fbc504f7">
+<meta name="app-updated" content="2026-11-11 c7e45f605a">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -217,7 +217,7 @@ textarea{min-height:240px;resize:vertical;line-height:1.5}
 body.setmode .backfact{display:grid!important}
 /* Nummer zonder tekst in de setlist: geen afspeelknop; verder met de knop bij Volgende */
 body.setmode .stage.nolyr #playBtn{display:none!important}
-@media (max-height:520.98px){ body.setmode .stage .tk-stub{flex-direction:row;gap:10px} body.setmode .stage .ticket{--stub:150px} body.setmode .tk-stub .playfact{flex:none} body .set-next{padding-top:6px;padding-bottom:6px} .set-next .nx-play{width:38px;height:38px} .set-next .nx-play svg{width:16px;height:16px} }
+@media (max-height:520.98px){ body.setmode .stage .tk-stub{flex-direction:row;gap:10px} body.setmode .stage .ticket{--stub:150px} body.setmode.playing .stage .ticket{--stub:230px} body.setmode .tk-stub .playfact{flex:none} body .set-next{padding-top:6px;padding-bottom:6px} .set-next .nx-play{width:38px;height:38px} .set-next .nx-play svg{width:16px;height:16px} }
 .set-next.last .nx-t{text-transform:none;font-stretch:100%;font-weight:600;font-size:var(--t-m);color:var(--mute)}
 body.setmode #nowFacts,body.setmode .lyrics-bar{display:none!important}
 .set-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:14px 20px;padding:16px 0 4px;border-top:1px solid var(--line)}
@@ -388,6 +388,17 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
 }
 /* iPad: drie schermen. 1 = alleen trekken, 2 = het getrokken nummer met afspeelknop, 3 = speelt (strook, voortgang, tekst) */
 .timefact,.pausefact,.next-row,.play-cap{display:none}
+/* Opnieuw vanaf het begin: alleen zolang het nummer speelt (of aftelt) */
+.restartfact{display:none}
+body.playing .restartfact{display:grid;background:var(--on-stock);color:var(--stock)}
+/* Zelf een nummer kiezen (Spelen) */
+.choose-btn{background:none;border-color:color-mix(in srgb,var(--paper) 40%,transparent);color:var(--paper);font-weight:700}
+.choose-btn:hover{background:color-mix(in srgb,var(--paper) 8%,transparent);border-color:var(--paper)}
+.stage.picked .choose-btn{display:none}
+.choose-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.choose-list li{grid-template-columns:minmax(0,1fr) auto}
+.choose-list li.done .t,.choose-list li.done .a,.choose-list li.done .dur{color:var(--faint)}
+.choose-list .tag-done{font-size:var(--t-s);font-weight:600;color:var(--faint);margin-left:8px}
 /* iPhone liggend: onder de trekbalk (vaste plek, verspringt niet) "Vorige nog een keer" (alleen als er een vorige is) en Overslaan */
 @media (max-width:1000.98px) and (max-height:520.98px){
   .stage > *{order:2}
@@ -412,6 +423,7 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) h1.brand .logo.squarish{height:118px}
   .stage:not(.picked) .draw-btn{min-height:116px;padding:0 52px;border-radius:16px}
   .stage:not(.picked) .pot{font-size:20px;font-weight:400}
+  .stage:not(.picked) .choose-btn{min-height:64px;padding:0 36px;border-radius:12px;font-size:var(--t-l);font-weight:800}
   .stage:not(.picked) #resetPot{position:absolute;right:12px;bottom:12px;margin:0}
   /* Scherm 2: geen kaartje maar het nummer los op het paneel */
   body:not(.playing):not(.setmode) .stage.picked{background:none;border:0;border-radius:var(--r);padding:48px 40px 72px;min-height:var(--pad-h);position:relative;gap:32px}
@@ -462,6 +474,41 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
 /* iPad (1024 breed en groter): tekst leesbaar op een meter afstand */
 @media (min-width:1000px){
   .lyrics{font-size:calc(32px * var(--ls,1) * var(--stage,1))}
+}
+/* iPad (staand en liggend), spelen en setlist-modus: zelfde ontwerp als de iPhone (Figma, 11 november 2026), grotere maten */
+@media (min-width:700px) and (min-height:521px), (min-width:1001px){
+  body.playing,body.setmode{--stage:1;padding-bottom:calc(70px - var(--tab-save,0px) + env(safe-area-inset-bottom,0px))}
+  body.playing .stage,body.setmode .stage{gap:12px}
+  body.playing .ticket,body.setmode .ticket{grid-template-columns:minmax(0,1fr) auto;border-radius:0;margin:-18px -20px 0;min-height:104px}
+  body.playing .ticket::before,body.playing .ticket::after,body.setmode .ticket::before,body.setmode .ticket::after{display:none}
+  body.playing .tk-main,body.setmode .tk-main{padding:20px 8px 20px 24px;gap:6px 20px;align-items:center}
+  body.playing .now,body.setmode .now{flex:1 1 220px;gap:0}
+  body.playing .now h2,body.setmode .now h2{font-size:52px;line-height:.9}
+  body.playing .now .artist,body.setmode .now .artist{font-size:24px;line-height:1;margin-top:4px}
+  body.playing .fact,body.setmode .fact{padding:0;border:0}
+  body.playing .fact .label{display:none}
+  body.playing .fact b{font-size:28px}
+  body.playing .tk-stub,body.setmode .tk-stub{border-left:0;padding:16px 24px 16px 0;gap:14px}
+  body.playing .playfact,body.setmode .playfact{width:60px;height:60px;background:var(--paper);color:var(--stock)}
+  body.playing .playfact svg,body.setmode .playfact svg{width:34px;height:34px}
+  body.playing .playfact .cnt,body.setmode .playfact .cnt{font-size:28px}
+  body.setmode .backfact{width:60px;height:60px;background:transparent;box-shadow:inset 0 0 0 3px var(--paper);color:var(--paper)}
+  .backfact .ico-back{display:none}
+  .backfact .ico-list{display:block}
+  body.playing .song-prog,body.setmode .song-prog{height:10px;border-radius:10px;margin:4px 4px 24px}
+  .lyrics{font-size:calc(32px * var(--ls,1));line-height:1.3}
+  .lyrics .tag{font-size:.7em;font-weight:300;font-stretch:100%;letter-spacing:0;text-transform:none;color:var(--stock-fg);margin-top:0}
+  .set-next{margin:0 -20px;padding:12px 24px;min-height:72px;gap:12px;border:0;border-radius:0;background:color-mix(in srgb,var(--stock) 32%,var(--ink))}
+  .set-next .label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .set-next .nx-t{font-size:32px;font-weight:800;font-stretch:62%;line-height:.9;color:var(--stock-fg)}
+  .nx-play{width:56px;height:56px}
+  .nx-play svg{width:20px;height:20px}
+  .nx-play .ico-play{display:none}
+  .nx-play .ico-skip{display:block}
+  .tabbar{grid-template-columns:repeat(var(--tabs,4),minmax(0,104px));gap:12px}
+  .tabbar button,.tabbar.many button,.tabbar.lots button{font-size:15px;letter-spacing:0;font-stretch:62%}
+  .tabbar svg{width:24px;height:24px}
+  .tabbar .tcount{display:none}
 }
 
 /* iPhone (staand en liggend): kleinere maten */
@@ -555,8 +602,9 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   body:not(.playing):not(.setmode) .stage.picked .playfact svg{width:36px;height:36px}
   body:not(.playing):not(.setmode) .stage.picked #lyricsWrap{left:0;right:0;bottom:46px}
   body:not(.playing):not(.setmode) .stage.picked #playHint{font-size:var(--t-xs)}
-  .next-btns{flex-wrap:nowrap;gap:10px;width:100%}
-  .next-btn{flex:1;min-width:0;min-height:56px;padding:0 12px;font-size:16px;font-stretch:112%;letter-spacing:.03em;line-height:1.15;white-space:normal}
+  .next-btns{flex-wrap:nowrap;gap:8px;width:100%}
+  .next-btn{flex:1;min-width:0;min-height:56px;padding:0 8px;font-size:14px;font-stretch:100%;letter-spacing:.02em;line-height:1.15;white-space:normal}
+  .stage:not(.picked) .choose-btn{min-height:48px;padding:0 20px;font-size:var(--t-s)}
   .next-row .pot{font-size:var(--t-xs)}
   #resetPot2{right:0;bottom:0;min-height:34px;padding:4px 12px;font-size:var(--t-xs)}
   body.playing .ticket{--stub:150px}
@@ -760,6 +808,7 @@ label.opt{cursor:pointer}
         </div>
         <div class="draw-row">
           <button class="btn primary draw-btn" id="drawBtn" data-i18n="draw">Trek een nummer</button>
+          <button class="btn choose-btn" id="chooseBtn" type="button" data-i18n="chooseOwn">Kies zelf een nummer</button>
           <div class="pot" id="potInfo"></div>
           <button class="btn ghost small" id="resetPot" data-i18n="resetPot" hidden>Alles terug in de pot</button>
         </div>
@@ -793,6 +842,7 @@ label.opt{cursor:pointer}
             <span class="stub-no" id="nowStub">–</span>
             <span class="stub-of" id="nowStubOf"></span>
             <button type="button" class="playfact backfact" id="setBack" aria-label="Terug naar setlist" title="Terug naar setlist" data-i18n-attr="aria-label:setBack;title:setBack"><svg class="ico-back" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg><svg class="ico-list" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><rect x="5" y="5" width="14" height="3" rx="1"/><rect x="5" y="10.5" width="14" height="3" rx="1"/><rect x="5" y="16" width="14" height="3" rx="1"/></svg></button>
+            <button type="button" class="playfact restartfact" id="restartBtn" aria-label="Opnieuw vanaf het begin" title="Opnieuw vanaf het begin" data-i18n-attr="aria-label:restart;title:restart"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4v4.5H9"/></svg></button>
             <button type="button" class="playfact pausefact" id="pauseBtn" aria-label="Pauze" title="Pauze"></button>
             <button type="button" class="playfact" id="playBtn" aria-label="Start met aftellen" title="Start met aftellen"></button>
             <span class="play-cap" id="playCap" data-i18n="pbAgain">Nog een keer</span>
@@ -803,6 +853,7 @@ label.opt{cursor:pointer}
           <div class="next-btns">
             <button class="btn next-btn" id="nextBtn" type="button" data-i18n="otherSong">Ander nummer</button>
             <button class="btn next-btn skip-btn" id="skipBtn" type="button" data-i18n="skipSong">Overslaan</button>
+            <button class="btn next-btn skip-btn" id="chooseBtn2" type="button" data-i18n="chooseShort">Kies zelf</button>
           </div>
           <div class="pot" id="potInfo2"></div>
           <button class="btn ghost small" id="resetPot2" type="button" data-i18n="resetPot" hidden>Alles terug in de pot</button>
@@ -1082,6 +1133,17 @@ label.opt{cursor:pointer}
     </div>
   </form>
 </div>
+<div class="overlay" id="chooseOverlay" hidden>
+  <div class="editor choose" role="dialog" aria-modal="true" aria-labelledby="chooseH">
+    <div class="choose-head">
+      <h2 id="chooseH" data-i18n="chooseTitle">Kies een nummer</h2>
+      <button type="button" class="btn" id="chooseClose" data-i18n="close">Sluiten</button>
+    </div>
+    <input type="search" id="chooseSearch" placeholder="Zoeken" aria-label="Zoek op titel of artiest" data-i18n-attr="placeholder:searchShort;aria-label:searchAria" autocomplete="off" enterkeyhint="search">
+    <p class="empty" id="chooseNone" hidden></p>
+    <ul class="songs pick choose-list" id="chooseList" aria-labelledby="chooseH"></ul>
+  </div>
+</div>
 <div class="overlay center" id="saveOverlay" hidden>
   <form class="editor small" id="saveForm" novalidate>
     <h2 data-i18n="saveSetTitle">Setlist bewaren</h2>
@@ -1290,6 +1352,13 @@ const I18N = {
   "nextSong": ["Volgende nummer", "Next song"],
   "playPrev": ["Vorige nog een keer", "Play previous again"],
   "skipSong": ["Overslaan", "Skip song"],
+  "close": ["Sluiten", "Close"],
+  "chooseOwn": ["Kies zelf een nummer", "Choose a song"],
+  "chooseShort": ["Kies zelf", "Choose"],
+  "chooseTitle": ["Kies een nummer", "Choose a song"],
+  "chooseEmpty": ["Er staan nog geen nummers op Spelen.", "There are no songs set to Play yet."],
+  "chooseDone": ["gespeeld", "played"],
+  "restart": ["Opnieuw vanaf het begin", "Restart from the beginning"],
   "opt.sync": ["Samen met de band", "Sync with the band"],
   "opt.syncNote": ["Met dezelfde bandcode hebben alle apparaten dezelfde nummers, teksten, status, setlists, logo en kleur. Wijzigingen gaan vanzelf heen en weer zodra er internet is. Zonder internet werkt alles gewoon.", "With the same band code, every device has the same songs, lyrics, status, setlists, logo and colour. Changes travel back and forth by themselves when there is internet. Without internet everything keeps working."],
   "opt.syncNA": ["Samen met de band is in deze versie van de app nog niet ingesteld.", "Syncing with the band is not set up in this version of the app yet."],
@@ -1933,7 +2002,7 @@ function fitLyrics(){
     const top = $("nowLyrics").getBoundingClientRect().top + window.scrollY;
     const bar = document.querySelector(".tabbar").getBoundingClientRect().height;
     // iPhone staand: "Volgende" en de tekst sluiten direct aan op de tabbalk
-    const flush = matchMedia("(max-width:699px) and (min-height:521px)").matches;
+    const flush = isPad();
     const nx = $("setNext").hidden ? 0 : $("setNext").getBoundingClientRect().height + (flush ? parseFloat(getComputedStyle($("lyricsWrap")).rowGap) || 0 : 14);
     root.setProperty("--ly-max", Math.max(nx ? 72 : 120, Math.floor(window.innerHeight - top - bar - nx - (flush ? 0 : nx ? 24 : 12))) + "px");
   });
@@ -2020,6 +2089,7 @@ function applyAwake(){ if(opts.keepAwake) wakeOn(); else if(!scroller.active) wa
 function startPlayAlong(){
   const s = songs.find(x => x.id === currentId); if(!s || !s.lyrics) return;
   stopScroll(true); stopMet();
+  $("nowElapsed").textContent = "0:00";
   const lyr = $("nowLyrics"); lyr.classList.add("playing"); lyr.scrollTop = 0;
   scroller.active = true; scroller.paused = true; scroller.total = s.duration || 210; scroller.elapsed = 0;
   wakeOn();
@@ -2115,6 +2185,8 @@ $("playBtn").addEventListener("click", () => {
   userStop();
 });
 $("pauseBtn").addEventListener("click", togglePause);
+// Opnieuw vanaf het begin: aftellen en de tekst weer bovenaan (ook in de setlist-modus)
+$("restartBtn").addEventListener("click", () => { if(scroller.active) startPlayAlong(); });
 $("nowLyrics").addEventListener("click", () => { if(scroller.active && scroller.speed) togglePause(); });
 function setSpeed(f){ speedFactor = Math.min(2, Math.max(.5, Math.round(f * 10) / 10)); $("speedLbl").textContent = "×" + speedFactor.toFixed(1); }
 $("slower").addEventListener("click", () => setSpeed(speedFactor - .1));
@@ -2330,6 +2402,45 @@ function endPractice(){
   resetTempo(); renderAll();
 }
 $("practiceBack").addEventListener("click", () => setTab("practice"));
+
+/* ---------- zelf een nummer kiezen op Spelen (naast trekken) ---------- */
+// Alle Spelen-nummers op titel; al gespeelde staan gedempt. Kiezen haalt het nummer uit de pot, net als trekken.
+function renderChoose(){
+  const ul = $("chooseList"); ul.textContent = "";
+  const all = playable().sort((a, b) => (a.title || "").localeCompare(b.title || "", loc(), { sensitivity: "base" }));
+  const raw = $("chooseSearch").value.trim(), q = normQ(raw);
+  const list = all.filter(s => !q || normQ((s.title || "") + " " + (s.artist || "")).includes(q));
+  $("chooseNone").hidden = list.length > 0;
+  $("chooseNone").textContent = all.length ? t("pickNone", {q: raw}) : t("chooseEmpty");
+  list.forEach(s => {
+    const li = document.createElement("li");
+    if(s.id === currentId) li.className = "current"; else if(played.has(s.id)) li.className = "done";
+    const main = songMain(s, () => chooseSong(s.id), t("chooseOwn"));
+    if(played.has(s.id) && s.id !== currentId){ const d = document.createElement("span"); d.className = "tag-done"; d.textContent = t("chooseDone"); main.querySelector(".t").append(d); }
+    li.append(main, durCell(s));
+    ul.append(li);
+  });
+}
+function openChoose(){
+  if(drawing) return;
+  $("chooseSearch").value = ""; renderChoose();
+  $("chooseOverlay").hidden = false; $("chooseOverlay").scrollTop = 0;
+  if(matchMedia("(hover:hover)").matches) $("chooseSearch").focus();
+}
+function closeChoose(){ $("chooseOverlay").hidden = true; }
+function chooseSong(id){
+  closeChoose();
+  // Het nummer dat klaarstond en nog niet gespeeld is, gaat terug in de pot (zoals bij "Ander nummer")
+  if(currentId && currentId !== id && !songDone) played.delete(currentId);
+  played.delete(id); played.add(id); ls.set(LS_PLAYED, [...played]);
+  showSong(id); renderPot(); window.scrollTo(0, 0);
+}
+$("chooseBtn").addEventListener("click", openChoose);
+$("chooseBtn2").addEventListener("click", openChoose);
+$("chooseClose").addEventListener("click", closeChoose);
+$("chooseSearch").addEventListener("input", renderChoose);
+$("chooseOverlay").addEventListener("click", e => { if(e.target === $("chooseOverlay")) closeChoose(); });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("chooseOverlay").hidden) closeChoose(); });
 
 /* ---------- tabs (op elk formaat) ---------- */
 function setTab(t){
