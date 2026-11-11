@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-10 1f85518b06">
+<meta name="app-updated" content="2026-11-11 7595667fef">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -375,8 +375,8 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
 }
 /* iPad: drie schermen. 1 = alleen trekken, 2 = het getrokken nummer met afspeelknop, 3 = speelt (strook, voortgang, tekst) */
 .timefact,.pausefact,.next-row,.play-cap{display:none}
-/* iPhone: onder de trekbalk (vaste plek, verspringt niet) "Vorige nog een keer" (alleen als er een vorige is) en Overslaan */
-@media (max-width:699.98px), (max-width:1000.98px) and (max-height:520.98px){
+/* iPhone liggend: onder de trekbalk (vaste plek, verspringt niet) "Vorige nog een keer" (alleen als er een vorige is) en Overslaan */
+@media (max-width:1000.98px) and (max-height:520.98px){
   .stage > *{order:2}
   .stage > .practice-bar,.stage > .draw-row{order:0}
   .stage > .next-row{order:1}
@@ -388,7 +388,8 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   #nextBtn{background:color-mix(in srgb,var(--stock) 26%,var(--ink));border-color:var(--stock-fg);color:var(--stock-fg)}
   .skip-btn{background:none}
 }
-@media (min-width:700px) and (min-height:521px), (min-width:1001px){
+/* Ook op de iPhone staand (min-height:521px): dezelfde drie schermen, met kleinere maten verderop */
+@media (min-height:521px), (min-width:1001px){
   body{--pad-h:calc(100dvh - 176px + var(--tab-save,0px) - env(safe-area-inset-bottom,0px))}
   /* Scherm 1 */
   .stage:not(.picked) .draw-row{flex-direction:column;flex-wrap:nowrap;justify-content:center;gap:16px;min-height:calc(var(--pad-h) - 46px);padding:40px;position:relative;background:none;border:0}
@@ -507,6 +508,43 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   .editor.small{min-height:0;border:1px solid var(--line-2);border-radius:var(--r);box-shadow:0 24px 60px var(--shade);padding:20px}
   .editor.small > .row:last-child{position:static;padding-block:0}
   textarea{min-height:40vh}
+}
+/* iPhone staand: de drie schermen van de iPad, kleiner */
+@media (max-width:699px) and (min-height:521px){
+  body{--pad-h:calc(100dvh - 148px + var(--tab-save,0px) - env(safe-area-inset-bottom,0px))}
+  body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) h1.brand .logo{height:60px}
+  body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) h1.brand .logo.squarish{height:84px}
+  .stage:not(.picked) .draw-row{min-height:calc(var(--pad-h) - 26px);padding:24px 0}
+  .stage:not(.picked) .draw-btn{flex:none;width:100%;max-width:340px;min-height:88px;padding:0 20px;border-radius:14px;font-size:22px;font-stretch:100%;letter-spacing:.04em;white-space:nowrap}
+  .stage:not(.picked) .pot{flex:none;font-size:17px}
+  .stage:not(.picked) #resetPot{right:0;bottom:0}
+  body:not(.playing) .stage.picked{padding:24px 0 88px;gap:24px}
+  body:not(.playing) .stage.picked .ticket{gap:32px}
+  body:not(.playing) .stage.picked .tk-main{gap:18px}
+  body:not(.playing) .stage.picked .now h2{font-size:clamp(40px,12vw,56px)}
+  body:not(.playing) .stage.picked .fact{padding:10px 10px 2px}
+  body:not(.playing) .stage.picked .fact:first-child{padding-left:0}
+  body:not(.playing) .stage.picked .fact b{font-size:30px}
+  body:not(.playing) .stage.picked .playfact{width:96px;height:96px}
+  body:not(.playing) .stage.picked .playfact svg{width:36px;height:36px}
+  body:not(.playing) .stage.picked #lyricsWrap{left:0;right:0;bottom:46px}
+  body:not(.playing) .stage.picked #playHint{font-size:var(--t-xs)}
+  .next-btns{flex-wrap:nowrap;gap:10px;width:100%}
+  .next-btn{flex:1;min-width:0;min-height:56px;padding:0 12px;font-size:16px;font-stretch:112%;letter-spacing:.03em;line-height:1.15;white-space:normal}
+  .next-row .pot{font-size:var(--t-xs)}
+  #resetPot2{right:0;bottom:0;min-height:34px;padding:4px 12px;font-size:var(--t-xs)}
+  body.playing .ticket{--stub:150px}
+  body.playing{padding-bottom:calc(78px - var(--tab-save,0px) + env(safe-area-inset-bottom,0px))}
+}
+/* Kleine iPhone (SE): alles iets compacter, zodat scherm 2 niet scrolt */
+@media (max-width:699px) and (min-height:521px) and (max-height:720px){
+  body:not(.playing) .stage.picked{padding-top:8px;gap:16px}
+  body:not(.playing) .stage.picked .ticket{gap:20px}
+  body:not(.playing) .stage.picked .tk-main{gap:12px}
+  body:not(.playing) .stage.picked .now h2{font-size:clamp(32px,10vw,42px)}
+  body:not(.playing) .stage.picked .fact b{font-size:24px}
+  body:not(.playing) .stage.picked .playfact{width:80px;height:80px}
+  .next-btn{min-height:50px}
 }
 /* iPhone liggend: weinig hoogte */
 @media (max-height:520px) and (max-width:1000px){
@@ -1336,7 +1374,8 @@ let currentId = null;
 let mode = "pending";
 // Het huidige nummer is gespeeld (de tekst is gaan lopen): de knop wordt "Volgende nummer" en de afspeelknop "Nog een keer"
 let songDone = false;
-const padMQ = window.matchMedia("(min-width:700px) and (min-height:521px), (min-width:1001px)");
+// Drie schermen op Spelen: iPad en iPhone staand (zelfde media query als de CSS)
+const padMQ = window.matchMedia("(min-height:521px), (min-width:1001px)");
 const isPad = () => padMQ.matches;    // db | local
 let db = null, readOnly = false;
 let fontScale = ls.get(LS_FONT, 1);
