@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-11 3551a4b9e9">
+<meta name="app-updated" content="2026-11-11 1fbceb928e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -212,10 +212,11 @@ textarea{min-height:240px;resize:vertical;line-height:1.5}
 .nx-play:active{transform:scale(.94)}
 .nx-play svg{width:22px;height:22px;display:block}
 .set-next.last .nx-play{display:none}
-.set-back{display:none;align-self:flex-start;width:auto;margin-top:12px;background:transparent;border-color:color-mix(in srgb,var(--on-stock) 45%,transparent);color:var(--on-stock)}
-.set-back:hover{background:color-mix(in srgb,var(--on-stock) 12%,transparent)}
-body.setmode .set-back{display:inline-flex}
-@media (max-height:520.98px){ body .set-next{padding-top:6px;padding-bottom:6px} .set-next .nx-play{width:38px;height:38px} .set-next .nx-play svg{width:16px;height:16px} }
+.backfact{display:none!important;background:transparent;box-shadow:inset 0 0 0 2px color-mix(in srgb,var(--on-stock) 45%,transparent);color:var(--on-stock)}
+body.setmode .backfact{display:grid!important}
+/* Nummer zonder tekst in de setlist: geen afspeelknop; verder met de knop bij Volgende */
+body.setmode .stage.nolyr #playBtn{display:none!important}
+@media (max-height:520.98px){ body.setmode .stage .tk-stub{flex-direction:row;gap:10px} body.setmode .stage .ticket{--stub:150px} body.setmode .tk-stub .playfact{flex:none} body .set-next{padding-top:6px;padding-bottom:6px} .set-next .nx-play{width:38px;height:38px} .set-next .nx-play svg{width:16px;height:16px} }
 .set-next.last .nx-t{text-transform:none;font-stretch:100%;font-weight:600;font-size:var(--t-m);color:var(--mute)}
 body.setmode #nowFacts,body.setmode .lyrics-bar{display:none!important}
 .set-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:14px 20px;padding:16px 0 4px;border-top:1px solid var(--line)}
@@ -269,7 +270,8 @@ body.practicing .draw-row,body.practicing .tk-stub .label,body.practicing .stub-
 body.setmode .draw-row,body.setmode #playHint{display:none!important}
 /* setlist-modus: vaste hoogte, zodat "Volgende" ook bij een korte tekst onderaan staat */
 body.setmode .lyrics{max-height:var(--ly-max,60vh);height:var(--ly-max,60vh)}
-body.setmode .toast{bottom:auto;top:calc(16px + env(safe-area-inset-top,0px))}
+/* Midden in beeld, zodat de melding niet over de knoppen in de strook valt; tikken gaat erdoorheen */
+body.setmode .toast{bottom:auto;top:45%;pointer-events:none}
 body.setmode.playing #nowArtist,body.setmode.stagemode #nowArtist{display:block!important}
 .set-sum .fact{border-left-color:var(--line-2);padding-bottom:4px}
 .set-sum .fact .label{color:var(--mute)}
@@ -325,23 +327,24 @@ body.stagemode,body.playing{--stage:1.5}
 body.stagemode header.top,body.stagemode .grid > .col:last-child,body.stagemode .draw-row,body.stagemode #playHint,
 body.playing header.top,body.playing .draw-row,body.playing #playHint,body.playing .grid > .col:last-child,
 body.stagemode #nowArtist,body.stagemode .stub-no,body.stagemode .stub-of,body.stagemode .tk-stub .label,body.stagemode .durfact,body.stagemode #tapHint,body.stagemode #tapSave,
-body.playing #nowArtist,body.playing .stub-no,body.playing .stub-of,body.playing .tk-stub .label,body.playing .durfact,body.playing #tapHint,body.playing #tapSave{display:none!important}
-body.stagemode .grid,body.playing .grid{grid-template-columns:minmax(0,1fr)}
-body.stagemode .wrap,body.playing .wrap{max-width:none}
-body.stagemode .ticket,body.playing .ticket{--stub:120px}
+body.playing #nowArtist,body.playing .stub-no,body.playing .stub-of,body.playing .tk-stub .label,body.playing .durfact,body.playing #tapHint,body.playing #tapSave,
+body.setmode header.top,body.setmode .grid > .col:last-child,body.setmode .stub-no,body.setmode .stub-of,body.setmode .tk-stub .label{display:none!important}
+body.stagemode .grid,body.playing .grid,body.setmode .grid{grid-template-columns:minmax(0,1fr)}
+body.stagemode .wrap,body.playing .wrap,body.setmode .wrap{max-width:none}
+body.stagemode .ticket,body.playing .ticket,body.setmode .ticket{--stub:120px}
 /* Strook tijdens het spelen: titel met tempo en toon ernaast */
-body.stagemode .tk-main,body.playing .tk-main{padding:14px 24px;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 28px}
-body.stagemode .now,body.playing .now{flex:1 1 320px}
-body.stagemode .facts,body.playing .facts{grid-template-columns:auto auto;border-top:0;flex:none}
-body.stagemode .fact,body.playing .fact{padding:2px 0 2px 20px;border-left-width:2px}
-body.stagemode .fact:first-child,body.playing .fact:first-child{border-left:0;padding-left:0;padding-right:20px}
-body.stagemode .fact b,body.playing .fact b{font-size:36px}
-body.stagemode .tempofact,body.playing .tempofact{pointer-events:none}
-body.stagemode .now h2,body.playing .now h2{font-size:clamp(30px,4vw,48px)}
-body.stagemode .tk-stub,body.playing .tk-stub{padding:10px}
-body.stagemode .playfact,body.playing .playfact{width:76px;height:76px}
-body.stagemode .playfact svg,body.playing .playfact svg{width:30px;height:30px}
-body.stagemode .lyrics,body.playing .lyrics{max-height:var(--ly-max, calc(100dvh - 310px - env(safe-area-inset-bottom,0px)));max-width:none}
+body.stagemode .tk-main,body.playing .tk-main,body.setmode .tk-main{padding:14px 24px;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 28px}
+body.stagemode .now,body.playing .now,body.setmode .now{flex:1 1 320px}
+body.stagemode .facts,body.playing .facts,body.setmode .facts{grid-template-columns:auto auto;border-top:0;flex:none}
+body.stagemode .fact,body.playing .fact,body.setmode .fact{padding:2px 0 2px 20px;border-left-width:2px}
+body.stagemode .fact:first-child,body.playing .fact:first-child,body.setmode .fact:first-child{border-left:0;padding-left:0;padding-right:20px}
+body.stagemode .fact b,body.playing .fact b,body.setmode .fact b{font-size:36px}
+body.stagemode .tempofact,body.playing .tempofact,body.setmode .tempofact{pointer-events:none}
+body.stagemode .now h2,body.playing .now h2,body.setmode .now h2{font-size:clamp(30px,4vw,48px)}
+body.stagemode .tk-stub,body.playing .tk-stub,body.setmode .tk-stub{padding:10px}
+body.stagemode .playfact,body.playing .playfact,body.setmode .playfact{width:76px;height:76px}
+body.stagemode .playfact svg,body.playing .playfact svg,body.setmode .playfact svg{width:30px;height:30px}
+body.stagemode .lyrics,body.playing .lyrics,body.setmode .lyrics{max-height:var(--ly-max, calc(100dvh - 310px - env(safe-area-inset-bottom,0px)));max-width:none}
 /* Meelopen: de regels onder de leeshoogte zakken iets terug */
 body.playing .lyrics{-webkit-mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5));mask-image:linear-gradient(#000 0 55%,rgba(0,0,0,.5))}
 
@@ -410,32 +413,32 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   .stage:not(.picked) .pot{font-size:20px;font-weight:400}
   .stage:not(.picked) #resetPot{position:absolute;right:12px;bottom:12px;margin:0}
   /* Scherm 2: geen kaartje maar het nummer los op het paneel */
-  body:not(.playing) .stage.picked{background:none;border:0;border-radius:var(--r);padding:48px 40px 72px;min-height:var(--pad-h);position:relative;gap:32px}
-  body:not(.playing) .stage.picked .draw-row{display:none}
-  body:not(.playing) .stage.picked .ticket{flex:1;display:flex;flex-direction:column;justify-content:center;gap:48px;background:none;color:var(--paper);width:100%;max-width:724px;margin-inline:auto}
-  body:not(.playing) .stage.picked .ticket::before,body:not(.playing) .stage.picked .ticket::after{display:none}
-  body:not(.playing) .stage.picked .tk-main{padding:0;gap:22px}
-  body:not(.playing) .stage.picked .now h2{font-size:clamp(56px,8.75vw,104px);color:var(--paper)}
-  body:not(.playing) .stage.picked .now .artist{color:var(--stock-fg)}
-  body:not(.playing) .stage.picked .facts{border-top:1px solid color-mix(in srgb,var(--paper) 50%,transparent);opacity:.5}
-  body:not(.playing) .stage.picked .fact{border-left:1px solid color-mix(in srgb,var(--paper) 50%,transparent)}
-  body:not(.playing) .stage.picked .fact:first-child{border-left:0}
-  body:not(.playing) .stage.picked .fact .label,body:not(.playing) .stage.picked .tempofact .unit{color:var(--stock-fg)}
-  body:not(.playing) .stage.picked .fact b{font-size:clamp(36px,4.5vw,56px)}
-  body:not(.playing) .stage.picked #tapHint{display:none}
-  body:not(.playing) .stage.picked #tapSave{background:var(--stock);border-color:var(--stock);color:var(--on-stock)}
-  body:not(.playing) .stage.picked .tempofact.hit{background:color-mix(in srgb,var(--paper) 8%,transparent)}
-  body:not(.playing) .stage.picked .tk-stub{border-left:0;padding:0;gap:12px}
-  body:not(.playing) .stage.picked .tk-stub .label,body:not(.playing) .stage.picked .stub-no,body:not(.playing) .stage.picked .stub-of{display:none}
+  body:not(.playing):not(.setmode) .stage.picked{background:none;border:0;border-radius:var(--r);padding:48px 40px 72px;min-height:var(--pad-h);position:relative;gap:32px}
+  body:not(.playing):not(.setmode) .stage.picked .draw-row{display:none}
+  body:not(.playing):not(.setmode) .stage.picked .ticket{flex:1;display:flex;flex-direction:column;justify-content:center;gap:48px;background:none;color:var(--paper);width:100%;max-width:724px;margin-inline:auto}
+  body:not(.playing):not(.setmode) .stage.picked .ticket::before,body:not(.playing):not(.setmode) .stage.picked .ticket::after{display:none}
+  body:not(.playing):not(.setmode) .stage.picked .tk-main{padding:0;gap:22px}
+  body:not(.playing):not(.setmode) .stage.picked .now h2{font-size:clamp(56px,8.75vw,104px);color:var(--paper)}
+  body:not(.playing):not(.setmode) .stage.picked .now .artist{color:var(--stock-fg)}
+  body:not(.playing):not(.setmode) .stage.picked .facts{border-top:1px solid color-mix(in srgb,var(--paper) 50%,transparent);opacity:.5}
+  body:not(.playing):not(.setmode) .stage.picked .fact{border-left:1px solid color-mix(in srgb,var(--paper) 50%,transparent)}
+  body:not(.playing):not(.setmode) .stage.picked .fact:first-child{border-left:0}
+  body:not(.playing):not(.setmode) .stage.picked .fact .label,body:not(.playing):not(.setmode) .stage.picked .tempofact .unit{color:var(--stock-fg)}
+  body:not(.playing):not(.setmode) .stage.picked .fact b{font-size:clamp(36px,4.5vw,56px)}
+  body:not(.playing):not(.setmode) .stage.picked #tapHint{display:none}
+  body:not(.playing):not(.setmode) .stage.picked #tapSave{background:var(--stock);border-color:var(--stock);color:var(--on-stock)}
+  body:not(.playing):not(.setmode) .stage.picked .tempofact.hit{background:color-mix(in srgb,var(--paper) 8%,transparent)}
+  body:not(.playing):not(.setmode) .stage.picked .tk-stub{border-left:0;padding:0;gap:12px}
+  body:not(.playing):not(.setmode) .stage.picked .tk-stub .label,body:not(.playing):not(.setmode) .stage.picked .stub-no,body:not(.playing):not(.setmode) .stage.picked .stub-of{display:none}
   /* Nummer zonder tekst: geen afspeelknop, alleen "Volgende nummer" eronder */
-  body:not(.playing) .stage.picked.nolyr .tk-stub{display:none}
-  body:not(.playing) .stage.picked .playfact{background:var(--stock);color:var(--on-stock)}
-  body:not(.playing) .stage.picked .play-cap.on{display:block;font-size:var(--t-s);font-weight:700;color:var(--mute)}
-  body:not(.playing) .stage.picked #lyricsWrap > :not(#playHint){display:none}
-  body:not(.playing) .stage.picked #playHint{text-align:center;margin-inline:auto}
-  body:not(.playing) .stage.picked .next-row{display:flex;flex-direction:column;align-items:center;gap:12px}
+  body:not(.playing):not(.setmode) .stage.picked.nolyr .tk-stub{display:none}
+  body:not(.playing):not(.setmode) .stage.picked .playfact{background:var(--stock);color:var(--on-stock)}
+  body:not(.playing):not(.setmode) .stage.picked .play-cap.on{display:block;font-size:var(--t-s);font-weight:700;color:var(--mute)}
+  body:not(.playing):not(.setmode) .stage.picked #lyricsWrap > :not(#playHint){display:none}
+  body:not(.playing):not(.setmode) .stage.picked #playHint{text-align:center;margin-inline:auto}
+  body:not(.playing):not(.setmode) .stage.picked .next-row{display:flex;flex-direction:column;align-items:center;gap:12px}
   /* De hint staat los onderin, zodat de knoppen niet verspringen als hij er wel of niet is (of tijdens het schudden) */
-  body:not(.playing) .stage.picked #lyricsWrap{position:absolute;left:210px;right:210px;bottom:24px}
+  body:not(.playing):not(.setmode) .stage.picked #lyricsWrap{position:absolute;left:210px;right:210px;bottom:24px}
   .next-btns{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
   body.practicing .stage .next-row,body.setmode .stage .next-row{display:none!important}
   .next-btn{min-height:64px;min-width:316px;padding:0 30px;border-radius:9px;background:color-mix(in srgb,var(--stock) 26%,var(--ink));border-color:var(--stock-fg);color:var(--stock-fg);font-size:var(--t-l);font-weight:900;font-stretch:125%;letter-spacing:.06em;text-transform:uppercase}
@@ -449,7 +452,10 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   body.playing .timefact{display:flex}
   body.playing .facts{grid-template-columns:auto}
   body.playing .ticket{--stub:200px}
-  body.playing .tk-stub{flex-direction:row;gap:14px}
+  body.playing .tk-stub,body.setmode .tk-stub{flex-direction:row;gap:14px}
+  /* Setlist: terug-knop links van pauze en stop (of van de afspeelknop als het nummer nog niet loopt) */
+  body.setmode .ticket{--stub:200px}
+  body.setmode.playing .ticket{--stub:290px}
   body.playing .pausefact{display:grid;background:var(--on-stock);color:var(--stock)}
 }
 /* iPad (1024 breed en groter): tekst leesbaar op een meter afstand */
@@ -469,7 +475,6 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   .set-next{padding:12px 14px;margin-top:10px;gap:10px}
   .set-next .nx-t{font-size:var(--t-m)}
   .nx-play{width:46px;height:46px}.nx-play svg{width:18px;height:18px}
-  .set-back{margin-top:8px}
   .set-tools{grid-template-columns:minmax(0,1fr)}
   .saved li{grid-template-columns:minmax(0,1fr) auto 40px}
   .set-play{width:56px;height:56px;margin-left:8px}
@@ -505,8 +510,8 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   .playfact{width:70px;height:70px}
   .playfact svg{width:28px;height:28px}
   .lyrics{font-size:calc(20px * var(--ls,1) * var(--stage,1));max-height:max(240px, calc(100dvh - 340px))}
-  body.stagemode .ticket,body.playing .ticket{--stub:84px}
-  body.stagemode .playfact,body.playing .playfact{width:58px;height:58px}
+  body.stagemode .ticket,body.playing .ticket,body.setmode .ticket{--stub:84px}
+  body.stagemode .playfact,body.playing .playfact,body.setmode .playfact{width:58px;height:58px}
   body.stagemode .tk-main,body.playing .tk-main{padding:12px 14px;gap:8px 18px}
   body.stagemode .now,body.playing .now{flex-basis:100%}
   body.stagemode .fact b,body.playing .fact b{font-size:24px}
@@ -529,32 +534,36 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   .stage:not(.picked) .draw-btn{flex:none;width:100%;max-width:340px;min-height:88px;padding:0 20px;border-radius:14px;font-size:22px;font-stretch:100%;letter-spacing:.04em;white-space:nowrap}
   .stage:not(.picked) .pot{flex:none;font-size:17px}
   .stage:not(.picked) #resetPot{right:0;bottom:0}
-  body:not(.playing) .stage.picked{padding:24px 0 88px;gap:24px}
-  body:not(.playing) .stage.picked .ticket{gap:32px}
-  body:not(.playing) .stage.picked .tk-main{gap:18px}
-  body:not(.playing) .stage.picked .now h2{font-size:clamp(40px,12vw,56px)}
-  body:not(.playing) .stage.picked .fact{padding:10px 10px 2px}
-  body:not(.playing) .stage.picked .fact:first-child{padding-left:0}
-  body:not(.playing) .stage.picked .fact b{font-size:30px}
-  body:not(.playing) .stage.picked .playfact{width:96px;height:96px}
-  body:not(.playing) .stage.picked .playfact svg{width:36px;height:36px}
-  body:not(.playing) .stage.picked #lyricsWrap{left:0;right:0;bottom:46px}
-  body:not(.playing) .stage.picked #playHint{font-size:var(--t-xs)}
+  body:not(.playing):not(.setmode) .stage.picked{padding:24px 0 88px;gap:24px}
+  body:not(.playing):not(.setmode) .stage.picked .ticket{gap:32px}
+  body:not(.playing):not(.setmode) .stage.picked .tk-main{gap:18px}
+  body:not(.playing):not(.setmode) .stage.picked .now h2{font-size:clamp(40px,12vw,56px)}
+  body:not(.playing):not(.setmode) .stage.picked .fact{padding:10px 10px 2px}
+  body:not(.playing):not(.setmode) .stage.picked .fact:first-child{padding-left:0}
+  body:not(.playing):not(.setmode) .stage.picked .fact b{font-size:30px}
+  body:not(.playing):not(.setmode) .stage.picked .playfact{width:96px;height:96px}
+  body:not(.playing):not(.setmode) .stage.picked .playfact svg{width:36px;height:36px}
+  body:not(.playing):not(.setmode) .stage.picked #lyricsWrap{left:0;right:0;bottom:46px}
+  body:not(.playing):not(.setmode) .stage.picked #playHint{font-size:var(--t-xs)}
   .next-btns{flex-wrap:nowrap;gap:10px;width:100%}
   .next-btn{flex:1;min-width:0;min-height:56px;padding:0 12px;font-size:16px;font-stretch:112%;letter-spacing:.03em;line-height:1.15;white-space:normal}
   .next-row .pot{font-size:var(--t-xs)}
   #resetPot2{right:0;bottom:0;min-height:34px;padding:4px 12px;font-size:var(--t-xs)}
   body.playing .ticket{--stub:150px}
+  body.setmode .ticket{--stub:132px}
+  body.setmode.playing .ticket{--stub:196px}
+  body.setmode .tk-stub{gap:10px}
+  body.setmode .backfact{width:44px;height:44px}
   body.playing{padding-bottom:calc(78px - var(--tab-save,0px) + env(safe-area-inset-bottom,0px))}
 }
 /* Kleine iPhone (SE): alles iets compacter, zodat scherm 2 niet scrolt */
 @media (max-width:699px) and (min-height:521px) and (max-height:720px){
-  body:not(.playing) .stage.picked{padding-top:8px;gap:16px}
-  body:not(.playing) .stage.picked .ticket{gap:20px}
-  body:not(.playing) .stage.picked .tk-main{gap:12px}
-  body:not(.playing) .stage.picked .now h2{font-size:clamp(32px,10vw,42px)}
-  body:not(.playing) .stage.picked .fact b{font-size:24px}
-  body:not(.playing) .stage.picked .playfact{width:80px;height:80px}
+  body:not(.playing):not(.setmode) .stage.picked{padding-top:8px;gap:16px}
+  body:not(.playing):not(.setmode) .stage.picked .ticket{gap:20px}
+  body:not(.playing):not(.setmode) .stage.picked .tk-main{gap:12px}
+  body:not(.playing):not(.setmode) .stage.picked .now h2{font-size:clamp(32px,10vw,42px)}
+  body:not(.playing):not(.setmode) .stage.picked .fact b{font-size:24px}
+  body:not(.playing):not(.setmode) .stage.picked .playfact{width:80px;height:80px}
   .next-btn{min-height:50px}
 }
 /* iPhone liggend: weinig hoogte */
@@ -721,7 +730,6 @@ label.opt{cursor:pointer}
             <div class="now" id="now">
               <h2 id="nowTitle">Nog niets getrokken</h2>
               <div class="artist" id="nowArtist">Voeg nummers toe en trek er een. Een nummer komt pas terug als de pot leeg is.</div>
-              <button class="btn small set-back" id="setBack" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span data-i18n="setBack">Terug naar setlist</span></button>
             </div>
 
             <div class="facts" id="nowFacts" hidden>
@@ -745,6 +753,7 @@ label.opt{cursor:pointer}
             <span class="label" data-i18n="nr">Nr</span>
             <span class="stub-no" id="nowStub">–</span>
             <span class="stub-of" id="nowStubOf"></span>
+            <button type="button" class="playfact backfact" id="setBack" aria-label="Terug naar setlist" title="Terug naar setlist" data-i18n-attr="aria-label:setBack;title:setBack"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg></button>
             <button type="button" class="playfact pausefact" id="pauseBtn" aria-label="Pauze" title="Pauze"></button>
             <button type="button" class="playfact" id="playBtn" aria-label="Start met aftellen" title="Start met aftellen"></button>
             <span class="play-cap" id="playCap" data-i18n="pbAgain">Nog een keer</span>
