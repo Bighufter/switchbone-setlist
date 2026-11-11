@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-11 bcca7217dc">
+<meta name="app-updated" content="2026-11-11 3551a4b9e9">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -128,7 +128,7 @@ a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 .playfact:active{transform:scale(.94)}
 .playfact svg{width:44px;height:44px;display:block}
 .playfact .cnt{font-size:46px;font-weight:900;font-stretch:125%;line-height:1}
-.playfact.stop{background:var(--paper);color:var(--on-stock)}
+.playfact.stop{background:var(--paper);color:var(--ink)}
 .playfact:disabled{opacity:.35;cursor:not-allowed}
 /* Nog niets getrokken: geen kaartje. De trekbalk zegt al hoeveel er in de pot zit. */
 .ticket.blank{display:none}
@@ -204,10 +204,18 @@ textarea{min-height:240px;resize:vertical;line-height:1.5}
 .set-play:active{transform:scale(.94)}
 .set-play:disabled{background:var(--ink-3);color:var(--faint);cursor:default}
 .set-play:focus-visible{outline:2px solid var(--paper);outline-offset:3px}
-.set-next{display:flex;align-items:baseline;gap:14px;margin-top:14px;padding:14px 18px;background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r)}
+.set-next{display:flex;align-items:center;gap:14px;margin-top:14px;padding:14px 18px;background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r)}
 .set-next[hidden]{display:none}
 .set-next .label{color:var(--mute);flex:none}
 .set-next .nx-t{font-size:var(--t-l);font-weight:800;font-stretch:112%;text-transform:uppercase;line-height:1.15;color:var(--paper);overflow-wrap:anywhere;min-width:0}
+.nx-play{margin-left:auto;flex:none;width:56px;height:56px;border-radius:50%;border:0;background:var(--stock);color:var(--on-stock);display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease)}
+.nx-play:active{transform:scale(.94)}
+.nx-play svg{width:22px;height:22px;display:block}
+.set-next.last .nx-play{display:none}
+.set-back{display:none;align-self:flex-start;width:auto;margin-top:12px;background:transparent;border-color:color-mix(in srgb,var(--on-stock) 45%,transparent);color:var(--on-stock)}
+.set-back:hover{background:color-mix(in srgb,var(--on-stock) 12%,transparent)}
+body.setmode .set-back{display:inline-flex}
+@media (max-height:520.98px){ body .set-next{padding-top:6px;padding-bottom:6px} .set-next .nx-play{width:38px;height:38px} .set-next .nx-play svg{width:16px;height:16px} }
 .set-next.last .nx-t{text-transform:none;font-stretch:100%;font-weight:600;font-size:var(--t-m);color:var(--mute)}
 body.setmode #nowFacts,body.setmode .lyrics-bar{display:none!important}
 .set-tools{display:grid;grid-template-columns:minmax(0,1fr);gap:14px 20px;padding:16px 0 4px;border-top:1px solid var(--line)}
@@ -460,6 +468,8 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
   .tabbar{grid-template-columns:repeat(var(--tabs,4),minmax(0,1fr));gap:4px}
   .set-next{padding:12px 14px;margin-top:10px;gap:10px}
   .set-next .nx-t{font-size:var(--t-m)}
+  .nx-play{width:46px;height:46px}.nx-play svg{width:18px;height:18px}
+  .set-back{margin-top:8px}
   .set-tools{grid-template-columns:minmax(0,1fr)}
   .saved li{grid-template-columns:minmax(0,1fr) auto 40px}
   .set-play{width:56px;height:56px;margin-left:8px}
@@ -711,6 +721,7 @@ label.opt{cursor:pointer}
             <div class="now" id="now">
               <h2 id="nowTitle">Nog niets getrokken</h2>
               <div class="artist" id="nowArtist">Voeg nummers toe en trek er een. Een nummer komt pas terug als de pot leeg is.</div>
+              <button class="btn small set-back" id="setBack" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span data-i18n="setBack">Terug naar setlist</span></button>
             </div>
 
             <div class="facts" id="nowFacts" hidden>
@@ -767,7 +778,7 @@ label.opt{cursor:pointer}
           <p class="play-hint" id="playHint"></p>
           <div class="song-prog" id="songProg" role="progressbar" aria-label="Hoever je in het nummer bent" data-i18n-attr="aria-label:progAria" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i id="songProgFill"></i></div>
           <pre class="lyrics" id="nowLyrics"></pre>
-          <div class="set-next" id="setNext" aria-live="polite" hidden><span class="label" data-i18n="next">Volgende</span><span class="nx-t" id="nxTitle"></span></div>
+          <div class="set-next" id="setNext" aria-live="polite" hidden><span class="label" data-i18n="next">Volgende</span><span class="nx-t" id="nxTitle"></span><button type="button" class="nx-play" id="nxPlay" aria-label="Speel het volgende nummer" title="Speel het volgende nummer" data-i18n-attr="aria-label:playNext;title:playNext"></button></div>
         </div>
       </section>
     </div>
@@ -1189,6 +1200,8 @@ const I18N = {
   "practiceEmpty": ["Nog geen oefennummers. Zet bij Nummers een nummer op Oefenen.", "No practice songs yet. Set a song to Practice under Songs."],
   "practiceOpen": ["Oefen dit nummer", "Practise this song"],
   "practiceBack": ["Oefenlijst", "Practice list"],
+  "setBack": ["Terug naar setlist", "Back to setlist"],
+  "playNext": ["Speel het volgende nummer", "Play the next song"],
   "noPlayable": ["Zet eerst nummers op Spelen bij Nummers.", "Mark some songs as Set under Songs first."],
   "filterAria": ["Welke nummers", "Which songs"],
   "f.all": ["Alle nummers", "All songs"],
@@ -2389,6 +2402,10 @@ function endSetPlay(){
   renderNext(); renderNow();
 }
 $("setPlay").addEventListener("click", () => playSetAt(0, true));
+$("nxPlay").innerHTML = ICON_PLAY;
+// Volgende nummer meteen afspelen (het huidige stopt; showSong stopt het meelopen)
+$("nxPlay").addEventListener("click", () => { if(setPlay.active && setSongs()[setPlay.idx + 1]) playSetAt(setPlay.idx + 1, true); });
+$("setBack").addEventListener("click", () => { endSetPlay(); setTab("setlist"); });
 /* ---------- setlist vullen tot de speelduur ---------- */
 $("setTarget").value = ls.get(LS_TARGET, "") || "";
 $("setTarget").addEventListener("change", () => { const m = parseInt($("setTarget").value, 10); ls.set(LS_TARGET, m > 0 ? m : ""); });
