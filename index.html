@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-11 1fbceb928e">
+<meta name="app-updated" content="2026-11-11 39fd15691f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -2661,7 +2661,7 @@ if("serviceWorker" in navigator){
         const w = reg.installing; if(!w) return;
         w.addEventListener("statechange", () => { if(w.state === "installed" && navigator.serviceWorker.controller) offer(w); });
       });
-      $("updateNow").addEventListener("click", () => { if(waiting) waiting.postMessage("skipWaiting"); });
+      $("updateNow").addEventListener("click", () => { $("updateBar").hidden = true; if(waiting) waiting.postMessage("skipWaiting"); });
       $("updateLater").addEventListener("click", () => { $("updateBar").hidden = true; });
       let reloading = false;
       navigator.serviceWorker.addEventListener("controllerchange", () => { if(reloading) return; reloading = true; location.reload(); });

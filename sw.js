@@ -1,6 +1,11 @@
 // AUTOMATISCH GEGENEREERD door scripts/build-sw.mjs. Niet met de hand aanpassen.
-const VERSION = "1fbceb928e";
-const CACHE = "switchbone-setlist-" + VERSION;
+const VERSION = "39fd15691f";
+// Bouwtijd. GitHub Pages bewaart sw.js tot 10 minuten op verschillende servers; vlak na het
+// publiceren kan een update-controle dus nog de vorige sw.js krijgen. Die zou het apparaat als
+// "nieuwe versie" zien (tweede melding, en bij Bijwerken terug naar de oude). Daarom weigert
+// een versie te installeren als er al een nieuwere op het apparaat staat.
+const BUILT = 1794410098690;
+const CACHE = "switchbone-setlist-" + BUILT + "-" + VERSION;
 const ASSETS = [
   "./",
   "assets/logo.png",
@@ -18,7 +23,15 @@ self.addEventListener("install", (event) => {
   // Alles vooraf opslaan, zodat de app daarna volledig offline werkt.
   // cache: "reload" slaat de browsercache over (GitHub Pages: max-age=600), anders kon een
   // nieuwe versie de oude index.html opslaan.
-  event.waitUntil(caches.open(CACHE).then((c) => c.addAll(ASSETS.map((u) => new Request(u, { cache: "reload" })))));
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => {
+        const newer = keys.some((k) => { const m = k.match(/^switchbone-setlist-([0-9]+)-/); return m && +m[1] > BUILT; });
+        if (newer) throw new Error("Ouder dan de versie op dit apparaat");
+      })
+      .then(() => caches.open(CACHE))
+      .then((c) => c.addAll(ASSETS.map((u) => new Request(u, { cache: "reload" }))))
+  );
 });
 
 self.addEventListener("activate", (event) => {
