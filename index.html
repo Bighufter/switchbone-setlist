@@ -10,7 +10,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-11 7595667fef">
+<meta name="app-updated" content="2026-11-11 e50012246a">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -569,6 +569,10 @@ label.opt{cursor:pointer}
 .logo-prev{display:flex;align-items:center;justify-content:center;min-height:96px;padding:16px;background:var(--ink);border:1px dashed var(--line-2);border-radius:var(--r-sm)}
 .logo-prev img{display:block;width:auto;height:auto;max-width:100%;max-height:64px;border-radius:3px}
 .opt-color{align-items:start}
+.sync-box{display:flex;flex-direction:column;align-items:flex-end;gap:10px;width:340px}
+.sync-box input{width:100%!important}
+.sync-box .row{justify-content:flex-end}
+.sync-code{font-size:var(--t-l);font-weight:900;font-stretch:112%;letter-spacing:.08em;color:var(--stock-fg);font-variant-numeric:tabular-nums;user-select:all;-webkit-user-select:all}
 .color-pick{display:flex;flex-direction:column;gap:14px;width:320px}
 .swatches{display:grid;grid-template-columns:repeat(5,44px);gap:12px;justify-content:space-between}
 .sw{position:relative;display:block;width:44px;height:44px;border-radius:50%;cursor:pointer}
@@ -604,7 +608,8 @@ label.opt{cursor:pointer}
   .opt{grid-template-columns:minmax(0,1fr);gap:12px;padding:14px}
   label.opt:has(.switch){grid-template-columns:minmax(0,1fr) auto}
   .opt input[type=text]{width:100%}
-  .opt-logo,.color-pick{width:100%}
+  .opt-logo,.color-pick,.sync-box{width:100%}
+  .sync-box{align-items:stretch}.sync-box .row{justify-content:flex-start}
   .seg{justify-self:stretch}
   .opt-font,.opt-actions{justify-content:flex-start}
   .opt > .btn{justify-self:start}
@@ -878,6 +883,21 @@ label.opt{cursor:pointer}
           </label>
         </div>
 
+        <h3 class="label set-sub" id="optSyncH" data-i18n="opt.sync">Samen met de band</h3>
+        <div class="opt-group" role="group" aria-labelledby="optSyncH">
+          <div class="opt">
+            <div class="opt-txt"><span class="opt-name" data-i18n="sync.codeLabel">Bandcode</span><span class="note" id="syncNote" data-i18n="opt.syncNote">Met dezelfde bandcode hebben alle apparaten dezelfde nummers, teksten, status, setlists, logo en kleur. Wijzigingen gaan vanzelf heen en weer zodra er internet is. Zonder internet werkt alles gewoon.</span><span class="note opt-meta" id="syncInfo" aria-live="polite"></span></div>
+            <div class="sync-box" id="syncOff">
+              <input type="text" id="syncCode" maxlength="40" autocomplete="off" autocapitalize="characters" spellcheck="false" enterkeyhint="go" placeholder="Bandcode" aria-label="Bandcode" data-i18n-attr="placeholder:sync.codeLabel;aria-label:sync.codeLabel">
+              <div class="row"><button class="btn small solid" id="syncJoin" type="button" data-i18n="sync.join">Koppelen</button><button class="btn small ghost" id="syncNew" type="button" data-i18n="sync.new">Nieuwe bandcode</button></div>
+            </div>
+            <div class="sync-box" id="syncOnBox" hidden>
+              <span class="sync-code" id="syncCodeTxt"></span>
+              <div class="row"><button class="btn small solid" id="syncShare" type="button" data-i18n="sync.share">Deel code</button><button class="btn small" id="syncNow" type="button" data-i18n="sync.now">Nu bijwerken</button><button class="btn small ghost danger" id="syncLeave" type="button" data-i18n="sync.leave">Ontkoppelen</button></div>
+            </div>
+          </div>
+        </div>
+
         <h3 class="label set-sub" id="optLookH" data-i18n="opt.look">Weergave</h3>
         <div class="opt-group" role="group" aria-labelledby="optLookH">
           <div class="opt">
@@ -1064,9 +1084,10 @@ label.opt{cursor:pointer}
 (function(){
 const $ = id => document.getElementById(id);
 const LS_SONGS = "setlist-trekker-songs", LS_PLAYED = "setlist-trekker-played", LS_FONT = "setlist-trekker-font", LS_SET = "setlist-trekker-setlist", LS_SAVED = "setlist-trekker-saved", LS_TARGET = "setlist-trekker-target", LS_PICKSORT = "setlist-trekker-picksort", LS_LISTFILTER = "setlist-trekker-listfilter", LS_LISTSORT = "setlist-trekker-listsort";
+let lsHook = null; // band synchroniseren: hoort elke wijziging (zie "samen met de band")
 const ls = {
   get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; }catch(e){ return d; } },
-  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} }
+  set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch(e){} if(lsHook) lsHook(k, v); }
 };
 
 /* ---------- instellingen en taal ---------- */
@@ -1205,6 +1226,34 @@ const I18N = {
   "nextSong": ["Volgende nummer", "Next song"],
   "playPrev": ["Vorige nog een keer", "Play previous again"],
   "skipSong": ["Overslaan", "Skip song"],
+  "opt.sync": ["Samen met de band", "Sync with the band"],
+  "opt.syncNote": ["Met dezelfde bandcode hebben alle apparaten dezelfde nummers, teksten, status, setlists, logo en kleur. Wijzigingen gaan vanzelf heen en weer zodra er internet is. Zonder internet werkt alles gewoon.", "With the same band code, every device has the same songs, lyrics, status, setlists, logo and colour. Changes travel back and forth by themselves when there is internet. Without internet everything keeps working."],
+  "opt.syncNA": ["Samen met de band is in deze versie van de app nog niet ingesteld.", "Syncing with the band is not set up in this version of the app yet."],
+  "sync.codeLabel": ["Bandcode", "Band code"],
+  "sync.join": ["Koppelen", "Join"],
+  "sync.new": ["Nieuwe bandcode", "New band code"],
+  "sync.share": ["Deel code", "Share code"],
+  "sync.now": ["Nu bijwerken", "Sync now"],
+  "sync.leave": ["Ontkoppelen", "Unlink"],
+  "sync.busy": ["Bezig met bijwerken", "Syncing"],
+  "sync.ok": ["Bijgewerkt: {d}", "Synced: {d}"],
+  "sync.never": ["Nog niet bijgewerkt", "Not synced yet"],
+  "sync.offline": ["Geen internet. Wijzigingen gaan mee zodra er weer internet is.", "No internet. Changes will be sent when there is internet again."],
+  "sync.error": ["Bijwerken lukte niet. De app probeert het later opnieuw.", "Syncing failed. The app will try again later."],
+  "sync.today": ["vandaag {t}", "today {t}"],
+  "sync.short": ["Een bandcode heeft minstens 8 letters of cijfers.", "A band code has at least 8 letters or digits."],
+  "sync.newAsk": ["Nieuwe band beginnen?", "Start a new band?"],
+  "sync.newAskNote": ["Deze bandcode bestaat nog niet. Je nummers, teksten, setlists, logo en kleur worden de start voor de band. Deel daarna de code met je bandleden.", "This band code does not exist yet. Your songs, lyrics, setlists, logo and colour become the start for the band. Then share the code with your band mates."],
+  "sync.newBtn": ["Beginnen", "Start"],
+  "sync.joined": ["Gekoppeld. Alles is bijgewerkt.", "Joined. Everything is up to date."],
+  "sync.created": ["Bandcode gemaakt. Deel hem met je bandleden.", "Band code created. Share it with your band mates."],
+  "sync.leaveAsk": ["Ontkoppelen van de band?", "Unlink from the band?"],
+  "sync.leaveNote": ["Alles blijft op dit apparaat staan, maar wijzigingen gaan niet meer heen en weer. Koppelen kan later weer met dezelfde code.", "Everything stays on this device, but changes no longer travel back and forth. You can join again later with the same code."],
+  "sync.left": ["Ontkoppeld", "Unlinked"],
+  "sync.shareText": ["Bandcode voor de {band} Setlist: {code}\nOpen de app ({url}), ga naar Instellingen > Samen met de band, vul de code in en tik op Koppelen.", "Band code for the {band} Setlist: {code}\nOpen the app ({url}), go to Settings > Sync with the band, enter the code and tap Join."],
+  "sync.copied": ["Code gekopieerd", "Code copied"],
+  "sync.fail": ["Bijwerken lukte niet. Controleer de internetverbinding.", "Syncing failed. Check the internet connection."],
+  "sync.done": ["Alles is bijgewerkt", "Everything is up to date"],
   "noOther": ["Er zit geen ander nummer in de pot", "There is no other song in the pot"],
   "time": ["Tijd", "Time"],
   "songEnd": ["Einde van het nummer", "End of the song"],
@@ -1426,7 +1475,7 @@ async function deleteSong(id){
 async function setBpm(id, bpm){
   const s = songs.find(x => x.id === id); if(!s) return;
   if(mode === "db"){ await db.collection("songs").doc(id).update({bpm, updatedAt:Date.now()}); }
-  else { s.bpm = bpm; ls.set(LS_SONGS, songs); renderAll(); }
+  else { s.bpm = bpm; s.updatedAt = Date.now(); ls.set(LS_SONGS, songs); renderAll(); }
 }
 function writeError(e){
   if(e && e.code === "invalid_argument" && mode === "db"){ readOnly = true; renderAll(); return t("writeRO"); }
@@ -2613,6 +2662,7 @@ async function loadLogo(){ try{ return (await idb.get("logo")) || ""; }catch(e){
 async function storeLogo(v){
   try{ if(v) await idb.set("logo", v); else await idb.del("logo"); }
   catch(e){ try{ if(v) localStorage.setItem(LS_LOGO, JSON.stringify(v)); else localStorage.removeItem(LS_LOGO); }catch(e2){ throw e2; } }
+  if(!syncQuiet) syncStampBand();
 }
 function applyLogo(){
   const src = logoData || "assets/logo.png";
@@ -2708,7 +2758,7 @@ function renderSettings(){
   setRadio("optTheme", opts.theme); setRadio("optLang", opts.lang); setRadio("optCount", opts.countBars); setRadio("optTabs", opts.tabLabels);
   $("optClick").checked = !!opts.countClick; $("optAwake").checked = !!opts.keepAwake; $("optTempo").checked = !!opts.showTempo;
   $("optFontVal").textContent = Math.round(fontScale * 100) + "%";
-  renderSwatches(); renderBackupInfo(); renderVersion();
+  renderSwatches(); renderBackupInfo(); renderVersion(); if(typeof renderSync === "function") renderSync();
 }
 // Taal wisselen: vaste teksten opnieuw, en alles wat de app zelf schrijft opnieuw tekenen
 function relabel(){
@@ -2752,9 +2802,11 @@ $("optFetchSongs").addEventListener("click", async () => {
       if(!raw || !raw.title) return;
       const cur = songs.find(s => (raw.id && s.id === raw.id) || keyOf(s) === keyOf(raw));
       if(cur){
+        const before = [cur.bpm, cur.key, cur.duration].join("|");
         if(!cur.bpm && raw.bpm) cur.bpm = raw.bpm;
         if(!cur.key && raw.key) cur.key = raw.key;
         if(!cur.duration && raw.duration) cur.duration = raw.duration;
+        if([cur.bpm, cur.key, cur.duration].join("|") !== before) cur.updatedAt = Date.now();
         return;
       }
       songs.push({id: raw.id || ("s" + Date.now().toString(36) + Math.random().toString(36).slice(2,6)), title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, lyrics:raw.lyrics || "", status:["play", "practice", "pass"].includes(raw.status) ? raw.status : "play", updatedAt:Date.now()});
@@ -2767,10 +2819,194 @@ $("optFetchSongs").addEventListener("click", async () => {
 });
 $("optReset").addEventListener("click", async () => {
   if(!await ask(t("opt.resetAsk"), t("opt.resetNote"), t("opt.resetBtn"), true)) return;
-  opts = Object.assign({}, OPT_DEFAULT); saveOpts();
-  logoData = ""; try{ await storeLogo(""); }catch(e){}
+  // Persoonlijk: niet naar de band sturen. Bij een gekoppeld apparaat komen logo, naam en kleur van de band daarna terug.
+  syncQuiet = true;
+  try{ opts = Object.assign({}, OPT_DEFAULT); saveOpts(); logoData = ""; try{ await storeLogo(""); }catch(e){} }
+  finally{ syncQuiet = false; syncSoon(); }
   applyLook(); applyLogo(); applyTabs(); applyAwake(); relabel(); toast(t("opt.resetDone"));
 });
+
+/* ---------- samen met de band (synchroniseren via Supabase) ---------- */
+// Project-URL en publieke sleutel (publishable of anon key) van het Supabase-project. Die sleutel mag openbaar zijn:
+// de tabel is dicht en alleen te lezen en te schrijven met de bandcode, via band_pull en band_push (supabase/band-sync.sql).
+// Voor testen kan "setlist-trekker-supa" in localStorage ({url, key}) dit overschrijven.
+const SUPA = Object.assign({url: "https://gghxaakwzynkmjiymrxm.supabase.co", key: "sb_publishable_zGcjK0CBOtrw2T-UQkGL0g_hVhT2CpZ"}, ls.get("setlist-trekker-supa", {}));
+if(localStorage.getItem("setlist-trekker-supa")) window.__sbEval = src => eval(src); // alleen voor tests (eigen server ingesteld)
+const LS_SYNC = "setlist-trekker-sync";
+// code: bandcode (alleen letters en cijfers); version: versie op de server bij de laatste keer; setAt/bandAt: tijd van de
+// laatste wijziging aan de setlist en aan naam/kleur/logo; del/delSaved: verwijderde nummers en bewaarde setlists (id: tijd)
+const sync = Object.assign({code: "", version: 0, setAt: 0, bandAt: 0, del: {}, delSaved: {}, last: 0}, ls.get(LS_SYNC, {}));
+let syncQuiet = false, syncBusy = false, syncAgain = false, syncTimer = 0, syncState = "";
+let syncSongIds = new Set(ls.get(LS_SONGS, []).map(x => x.id));
+let syncSavedIds = new Set(savedSets.map(x => x.id));
+let syncBandSig = (opts.band || "") + "|" + (opts.accent || "");
+const syncReady = () => !!(SUPA.url && SUPA.key);
+const syncOn = () => syncReady() && !!sync.code;
+function saveSync(){ ls.set(LS_SYNC, sync); }
+function syncSoon(ms){ if(!syncOn()) return; clearTimeout(syncTimer); syncTimer = setTimeout(() => syncRun(), ms == null ? 2500 : ms); }
+function syncStampBand(){ sync.bandAt = Date.now(); saveSync(); syncSoon(); }
+// Elke opslag in localStorage komt hier langs: houd bij wat er veranderd of verwijderd is
+lsHook = (k, v) => {
+  if(k === LS_SYNC) return;
+  const now = Date.now(); let ch = false;
+  if(k === LS_SONGS){
+    const ids = new Set((v || []).map(x => x.id));
+    if(!syncQuiet){ syncSongIds.forEach(id => { if(!ids.has(id)) sync.del[id] = now; }); ch = true; }
+    syncSongIds = ids;
+  } else if(k === LS_SET){
+    if(!syncQuiet){ sync.setAt = now; ch = true; }
+  } else if(k === LS_SAVED){
+    const ids = new Set((v || []).map(x => x.id));
+    if(!syncQuiet){ syncSavedIds.forEach(id => { if(!ids.has(id)) sync.delSaved[id] = now; }); ch = true; }
+    syncSavedIds = ids;
+  } else if(k === LS_OPTS){
+    const sig = (v.band || "") + "|" + (v.accent || "");
+    if(sig !== syncBandSig){ syncBandSig = sig; if(!syncQuiet){ sync.bandAt = now; ch = true; } }
+  }
+  if(ch){ saveSync(); syncSoon(); }
+};
+const byId = (a, b) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
+// JSON met gesorteerde sleutels: de database (jsonb) zet sleutels in een eigen volgorde
+function stable(o){
+  if(Array.isArray(o)) return "[" + o.map(stable).join(",") + "]";
+  if(o && typeof o === "object") return "{" + Object.keys(o).sort().map(k => JSON.stringify(k) + ":" + stable(o[k])).join(",") + "}";
+  return JSON.stringify(o === undefined ? null : o);
+}
+const accNorm = c => { const L = window.SBLook, v = L && L.rgb(c || ""); return v ? L.hex(v) : ""; };
+function cleanSong(x){ return {id: String(x.id), title: String(x.title || ""), artist: x.artist || "", bpm: x.bpm || null, key: x.key || "", duration: x.duration || null, lyrics: x.lyrics || "", status: songStatus(x), updatedAt: +x.updatedAt || 0}; }
+function cleanSaved(x){ return {id: String(x.id), name: String(x.name || ""), ids: (x.ids || []).map(String), savedAt: +x.savedAt || 0}; }
+function syncSnap(){
+  return {v: 1,
+    songs: songs.map(cleanSong).sort(byId), del: Object.assign({}, sync.del),
+    setlist: {ids: setlist.slice(), at: sync.setAt || 0},
+    saved: savedSets.map(cleanSaved).sort(byId), delSaved: Object.assign({}, sync.delSaved),
+    band: {name: opts.band || "", accent: accNorm(opts.accent), logo: logoData || "", at: sync.bandAt || 0}};
+}
+// Samenvoegen: per nummer en per bewaarde setlist wint de laatste wijziging; bij gelijke tijd wint de server.
+// Verwijderd (del) wint als het later is dan de laatste wijziging. Setlist en band: wie het laatst wijzigde.
+function syncMerge(a, b){
+  if(!b || typeof b !== "object" || !Array.isArray(b.songs)) return a;
+  const year = Date.now() - 365 * 864e5;
+  const maxMerge = (x, y) => { const o = {}; [x, y].forEach(m => Object.entries(m || {}).forEach(([k, t]) => { t = +t || 0; if(t > year && t > (o[k] || 0)) o[k] = t; })); return o; };
+  const del = maxMerge(a.del, b.del), delSaved = maxMerge(a.delSaved, b.delSaved);
+  const pick = (list, stamp) => { const m = new Map(); list.forEach(([x, mine]) => { const c = m.get(x.id); if(!c || stamp(x) > stamp(c) || (stamp(x) === stamp(c) && !mine)) m.set(x.id, x); }); return [...m.values()]; };
+  const rs = b.songs.filter(x => x && x.id != null && x.title).map(cleanSong);
+  const sg = pick([...a.songs.map(x => [x, true]), ...rs.map(x => [x, false])], x => x.updatedAt).filter(x => !(del[x.id] >= x.updatedAt)).sort(byId);
+  const has = new Set(sg.map(x => x.id));
+  const rset = b.setlist && Array.isArray(b.setlist.ids) ? {ids: b.setlist.ids.map(String), at: +b.setlist.at || 0} : {ids: [], at: 0};
+  const sl = a.setlist.at > rset.at ? a.setlist : rset;
+  const rsv = Array.isArray(b.saved) ? b.saved.filter(x => x && x.id != null && Array.isArray(x.ids)).map(cleanSaved) : [];
+  const sv = pick([...a.saved.map(x => [x, true]), ...rsv.map(x => [x, false])], x => x.savedAt).filter(x => !(delSaved[x.id] >= x.savedAt))
+    .map(x => Object.assign({}, x, {ids: x.ids.filter(id => has.has(id))})).filter(x => x.ids.length).sort(byId);
+  const rb = b.band && typeof b.band === "object" ? {name: String(b.band.name || ""), accent: accNorm(b.band.accent), logo: typeof b.band.logo === "string" && /^data:image\//.test(b.band.logo) ? b.band.logo : "", at: +b.band.at || 0} : null;
+  const band = !rb || a.band.at > rb.at ? a.band : rb;
+  return {v: 1, songs: sg, del, setlist: {ids: [...new Set(sl.ids)].filter(id => has.has(id)), at: sl.at}, saved: sv, delSaved, band};
+}
+async function syncApply(m){
+  syncQuiet = true;
+  try{
+    const bandCh = (opts.band || "") !== m.band.name || accNorm(opts.accent) !== m.band.accent;
+    songs = m.songs.map(x => Object.assign({}, x)); sortSongs(); ls.set(LS_SONGS, songs);
+    setlist = m.setlist.ids.slice(); ls.set(LS_SET, setlist);
+    savedSets = m.saved.map(x => Object.assign({}, x, {ids: x.ids.slice()})); ls.set(LS_SAVED, savedSets);
+    if(bandCh){
+      opts.band = m.band.name.slice(0, 40);
+      opts.accent = m.band.accent;
+      saveOpts(); applyLook(); applyBand(); renderSettings();
+    }
+    if((logoData || "") !== (m.band.logo || "")){ logoData = m.band.logo || ""; try{ await storeLogo(logoData); }catch(e){} applyLogo(); }
+    Object.assign(sync, {del: m.del, delSaved: m.delSaved, setAt: m.setlist.at, bandAt: m.band.at}); saveSync();
+    if(currentId && !songs.some(x => x.id === currentId)) currentId = null;
+    renderAll();
+  } finally { syncQuiet = false; }
+}
+async function rpc(fn, body){
+  const h = {"Content-Type": "application/json", apikey: SUPA.key};
+  if(/^eyJ/.test(SUPA.key)) h.Authorization = "Bearer " + SUPA.key; // oude anon key (JWT); de nieuwe publishable key niet
+  const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 20000);
+  try{
+    const r = await fetch(SUPA.url.replace(/\/+$/, "") + "/rest/v1/rpc/" + fn, {method: "POST", headers: h, body: JSON.stringify(body), cache: "no-store", signal: ctl.signal});
+    if(!r.ok) throw new Error("http " + r.status);
+    const txt = await r.text(); return txt ? JSON.parse(txt) : null;
+  } finally { clearTimeout(tm); }
+}
+async function syncPull(code){
+  const rows = await rpc("band_pull", {p_code: code || sync.code});
+  const row = Array.isArray(rows) ? rows[0] : rows;
+  return row && row.data ? {data: row.data, version: +row.version || 0} : null;
+}
+async function syncRun(){
+  if(!syncOn()) return;
+  if(syncBusy){ syncAgain = true; return; }
+  if(!navigator.onLine){ setSyncState("offline"); return; }
+  if(document.body.classList.contains("playing")){ syncSoon(30000); return; } // niet tijdens het meelopen van de tekst
+  syncBusy = true; setSyncState("busy");
+  try{
+    for(let i = 0; i < 4; i++){
+      const r = await syncPull();
+      const local = syncSnap(), merged = syncMerge(local, r && r.data);
+      if(stable(merged) !== stable(local)) await syncApply(merged);
+      if(r && stable(merged) === stable(syncMerge(merged, r.data)) && stable(r.data) === stable(merged)){ sync.version = r.version; break; }
+      const v = await rpc("band_push", {p_code: sync.code, p_data: merged, p_version: r ? r.version : 0});
+      if(v != null){ sync.version = +v; break; } // anders schreef een ander apparaat net: opnieuw lezen en samenvoegen
+    }
+    sync.last = Date.now(); saveSync(); setSyncState("ok");
+  }catch(e){ setSyncState(navigator.onLine ? "error" : "offline"); }
+  finally{ syncBusy = false; if(syncAgain){ syncAgain = false; syncSoon(500); } }
+}
+function codeNorm(v){ return String(v || "").toUpperCase().replace(/[^A-Z0-9]/g, ""); }
+function codeFmt(c){ return (c.match(/.{1,4}/g) || []).join("-"); }
+function codeNew(){ const abc = "ABCDEFGHJKMNPQRSTUVWXYZ23456789", r = crypto.getRandomValues(new Uint32Array(12)); return [...r].map(n => abc[n % abc.length]).join(""); }
+function fmtWhen(ms){
+  const d = new Date(ms), tm = d.toLocaleTimeString(loc(), {hour: "2-digit", minute: "2-digit"});
+  return d.toDateString() === new Date().toDateString() ? t("sync.today", {t: tm}) : fmtDate(ms) + " " + tm;
+}
+function setSyncState(st){ syncState = st; renderSync(); }
+function renderSync(){
+  const ready = syncReady(), on = syncOn();
+  $("syncNote").textContent = t(ready ? "opt.syncNote" : "opt.syncNA");
+  $("syncOff").hidden = !ready || on; $("syncOnBox").hidden = !on;
+  $("syncCodeTxt").textContent = on ? codeFmt(sync.code) : "";
+  $("syncInfo").textContent = !on ? "" : syncState === "busy" ? t("sync.busy") : syncState === "offline" ? t("sync.offline") : syncState === "error" ? t("sync.error") : sync.last ? t("sync.ok", {d: fmtWhen(sync.last)}) : t("sync.never");
+}
+async function syncLink(code, isNew){
+  if(code.length < 8){ toast(t("sync.short")); return; }
+  if(!navigator.onLine){ toast(t("opt.offline")); return; }
+  const btns = [$("syncJoin"), $("syncNew")]; btns.forEach(b => b.disabled = true);
+  try{
+    if(!isNew){
+      const r = await syncPull(code);
+      if(!r && !await ask(t("sync.newAsk"), t("sync.newAskNote"), t("sync.newBtn"))) return;
+    }
+    Object.assign(sync, {code, version: 0, last: 0}); saveSync(); $("syncCode").value = "";
+    await syncRun();
+    if(syncState === "ok") toast(t(isNew ? "sync.created" : "sync.joined")); else toast(t("sync.fail"));
+    if(isNew) syncShare();
+  }catch(e){ toast(t("sync.fail")); }
+  finally{ btns.forEach(b => b.disabled = false); renderSync(); }
+}
+async function syncShare(){
+  const text = t("sync.shareText", {band: bandName(), code: codeFmt(sync.code), url: location.origin + location.pathname});
+  try{ if(navigator.share){ await navigator.share({text}); return; } }catch(e){ if(e && e.name === "AbortError") return; }
+  try{ await navigator.clipboard.writeText(text); toast(t("sync.copied")); }catch(e){}
+}
+$("syncJoin").addEventListener("click", () => syncLink(codeNorm($("syncCode").value), false));
+$("syncCode").addEventListener("keydown", e => { if(e.key === "Enter") $("syncJoin").click(); });
+$("syncNew").addEventListener("click", () => syncLink(codeNew(), true));
+$("syncShare").addEventListener("click", syncShare);
+$("syncNow").addEventListener("click", async () => {
+  if(!navigator.onLine){ toast(t("opt.offline")); return; }
+  await syncRun(); toast(t(syncState === "ok" ? "sync.done" : "sync.fail"));
+});
+$("syncLeave").addEventListener("click", async () => {
+  if(!await ask(t("sync.leaveAsk"), t("sync.leaveNote"), t("sync.leave"), true)) return;
+  Object.assign(sync, {code: "", version: 0, last: 0}); saveSync(); syncState = ""; renderSync(); toast(t("sync.left"));
+});
+// Bijwerken bij openen, bij terugkomen in de app, als het internet terug is, en elke minuut zolang de app open is
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") syncSoon(300); });
+window.addEventListener("online", () => syncSoon(300));
+window.addEventListener("offline", () => { if(syncOn()) setSyncState("offline"); });
+setInterval(() => { if(document.visibilityState === "visible") syncRun(); }, 60000);
 
 /* ---------- opstarten ---------- */
 if(opts.lang !== "nl") applyI18n(); else document.documentElement.classList.remove("i18n-wait");
@@ -2781,7 +3017,7 @@ setPlayBtn("idle"); updateMetButtons();
 $("stageBtn").textContent = t("stageOn"); $("tapHint").textContent = t("tapHint"); $("fileNote").textContent = t("fileNote");
 loadLogo().then(d => { logoData = d || ""; applyLogo(); });
 renderAll();
-initStore();
+initStore().then(() => syncRun());
 })();
 </script>
 </body>
