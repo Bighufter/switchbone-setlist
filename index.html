@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Switchbone Setlist. Copyright (c) 2026 Eric Jongsma. Alle rechten voorbehouden. Zie LICENSE. -->
 <html lang="nl">
 <head>
 <meta charset="utf-8">
@@ -10,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-11 e50012246a">
+<meta name="app-updated" content="2026-11-11 bcca7217dc">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -569,6 +570,7 @@ label.opt{cursor:pointer}
 .logo-prev{display:flex;align-items:center;justify-content:center;min-height:96px;padding:16px;background:var(--ink);border:1px dashed var(--line-2);border-radius:var(--r-sm)}
 .logo-prev img{display:block;width:auto;height:auto;max-width:100%;max-height:64px;border-radius:3px}
 .opt-color{align-items:start}
+.copyright{margin:18px 0 0;text-align:center;opacity:.7}
 .sync-box{display:flex;flex-direction:column;align-items:flex-end;gap:10px;width:340px}
 .sync-box input{width:100%!important}
 .sync-box .row{justify-content:flex-end}
@@ -996,6 +998,7 @@ label.opt{cursor:pointer}
             <button class="btn small ghost danger" id="optReset" type="button" data-i18n="opt.resetBtn">Terugzetten</button>
           </div>
         </div>
+        <p class="note copyright" data-i18n="opt.copyright">© 2026 Eric Jongsma. Alle rechten voorbehouden.</p>
       </section>
     </div>
   </div>
@@ -1368,6 +1371,7 @@ const I18N = {
   "opt.backupMake": ["Back-up maken", "Make backup"],
   "opt.backupRestore": ["Back-up terugzetten", "Restore backup"],
   "opt.about": ["Over de app", "About"],
+  "opt.copyright": ["© 2026 Eric Jongsma. Alle rechten voorbehouden.", "© 2026 Eric Jongsma. All rights reserved."],
   "opt.version": ["Versie", "Version"],
   "opt.updated": ["Laatste update {d}", "Last update {d}"],
   "opt.updateCheck": ["Zoek naar update", "Check for update"],
