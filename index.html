@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-12 5c39031097">
+<meta name="app-updated" content="2026-11-12 0abcd90991">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -993,7 +993,7 @@ label.opt{cursor:pointer}
             </div>
           </div>
           <label class="opt">
-            <span class="opt-txt"><span class="opt-name" data-i18n="opt.name">Bandnaam</span><span class="note" data-i18n="opt.nameNote">Staat in de titel van de app en in de naam van een back-up.</span></span>
+            <span class="opt-txt"><span class="opt-name" data-i18n="opt.name">Bandnaam</span><span class="note" data-i18n="opt.nameNote">Staat in de titel van de app en in de naam van een export.</span></span>
             <input type="text" id="optBand" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="Switchbone">
           </label>
         </div>
@@ -1083,13 +1083,6 @@ label.opt{cursor:pointer}
 
         <h3 class="label set-sub" id="optDataH" data-i18n="opt.data">Gegevens</h3>
         <div class="opt-group" role="group" aria-labelledby="optDataH">
-          <div class="opt">
-            <div class="opt-txt"><span class="opt-name" data-i18n="opt.backup">Back-up</span><span class="note" data-i18n="opt.backupNote">Alles staat alleen op dit apparaat. Maak af en toe een back-up, of stuur hem naar een bandlid: dan heeft die dezelfde nummers, setlists, logo en kleur.</span><span class="note opt-meta" id="backupInfo"></span></div>
-            <div class="row opt-actions">
-              <button class="btn small solid" id="optExport" type="button" data-i18n="opt.backupMake">Back-up maken</button>
-              <label class="btn small" for="importFile" style="cursor:pointer" data-i18n="opt.backupRestore">Back-up terugzetten</label>
-            </div>
-          </div>
           <div class="opt">
             <div class="opt-txt"><span class="opt-name" data-i18n="opt.newSongs">Nieuwe nummers</span><span class="note" data-i18n="opt.newSongsNote">Haalt de nummers op die online in de app zijn gezet. Je eigen nummers, teksten en tempo's blijven staan. Werkt alleen met internet.</span></div>
             <button class="btn small" id="optFetchSongs" type="button" data-i18n="opt.newSongsBtn">Ophalen</button>
@@ -1213,7 +1206,7 @@ const ls = {
 };
 
 /* ---------- instellingen en taal ---------- */
-const LS_OPTS = "setlist-trekker-settings", LS_BACKUP = "setlist-trekker-lastbackup", LS_LOGO = "setlist-trekker-logo";
+const LS_OPTS = "setlist-trekker-settings", LS_LOGO = "setlist-trekker-logo";
 const OPT_DEFAULT = {band:"", theme:"dark", accent:"#F26B1D", lang:"nl", countBars:1, countClick:true, showTempo:false, tabLabels:"full", keepAwake:false};
 let opts = Object.assign({}, OPT_DEFAULT, ls.get(LS_OPTS, {}));
 function saveOpts(){ ls.set(LS_OPTS, opts); }
@@ -1443,14 +1436,14 @@ const I18N = {
   "askClearTitle": ["Setlist leegmaken?", "Clear setlist?"],
   "askClearText": ["Alle nummers gaan uit de setlist. De nummers zelf blijven gewoon bestaan.", "All songs are removed from the setlist. The songs themselves stay."],
   "cleared": ["Setlist leeggemaakt", "Setlist cleared"],
-  "exported": ["Back-up gemaakt", "Backup created"],
+  "exported": ["Geëxporteerd", "Exported"],
   "importRes": ["{n} nummers in het bestand: {a} nieuw, {u} stonden er al", "{n} songs in the file: {a} new, {u} already there"],
   "importAll": ["De {n} nummers in het bestand stonden er allemaal al, niets toegevoegd", "All {n} songs in the file were already there, nothing added"],
   "importSet": [", setlist met {n} nummers", ", setlist with {n} songs"],
   "importSaved1": [", 1 bewaarde setlist", ", 1 saved setlist"],
   "importSavedN": [", {n} bewaarde setlists", ", {n} saved setlists"],
   "importBand": [", logo en kleur", ", logo and colour"],
-  "importBad": ["Dit bestand kon niet worden ingelezen. Kies een back-up van de Setlist-app.", "This file could not be read. Choose a backup from the Setlist app."],
+  "importBad": ["Dit bestand kon niet worden ingelezen. Kies een exportbestand van de Setlist-app.", "This file could not be read. Choose an export file from the Setlist app."],
   "opt.title": ["Instellingen", "Settings"],
   "opt.band": ["Band", "Band"],
   "opt.logo": ["Logo", "Logo"],
@@ -1463,7 +1456,7 @@ const I18N = {
   "opt.logoBig": ["Dit bestand is te groot. Kies een kleiner bestand.", "This file is too large. Choose a smaller one."],
   "opt.logoBack": ["Standaardlogo staat er weer", "Default logo restored"],
   "opt.name": ["Bandnaam", "Band name"],
-  "opt.nameNote": ["Staat in de titel van de app en in de naam van een back-up.", "Used in the app title and the name of a backup."],
+  "opt.nameNote": ["Staat in de titel van de app en in de naam van een export.", "Used in the app title and the name of an export file."],
   "opt.look": ["Weergave", "Display"],
   "opt.theme": ["Scherm", "Screen"],
   "opt.themeNote": ["Donker is het rustigst in een donkere oefenruimte.", "Dark is easiest on the eyes in a dark rehearsal room."],
@@ -1492,12 +1485,6 @@ const I18N = {
   "opt.tempoTab": ["Tempo-tab", "Tempo tab"],
   "opt.tempoNote": ["Tempo berekenen uit een opname van de repetitie of het origineel.", "Calculate the tempo from a recording of the rehearsal or the original."],
   "opt.data": ["Gegevens", "Data"],
-  "opt.backup": ["Back-up", "Backup"],
-  "opt.backupNote": ["Alles staat alleen op dit apparaat. Maak af en toe een back-up, of stuur hem naar een bandlid: dan heeft die dezelfde nummers, setlists, logo en kleur.", "Everything is stored on this device only. Make a backup now and then, or send it to a bandmate so they get the same songs, setlists, logo and colour."],
-  "opt.backupLast": ["Laatste back-up: {d}", "Last backup: {d}"],
-  "opt.backupNever": ["Nog geen back-up gemaakt op dit apparaat.", "No backup made on this device yet."],
-  "opt.backupMake": ["Back-up maken", "Make backup"],
-  "opt.backupRestore": ["Back-up terugzetten", "Restore backup"],
   "opt.about": ["Over de app", "About"],
   "opt.copyright": ["© 2026 Eric Jongsma. Alle rechten voorbehouden.", "© 2026 Eric Jongsma. All rights reserved."],
   "opt.version": ["Versie", "Version"],
@@ -2755,18 +2742,17 @@ function exportData(){
   // band: naam, hoofdkleur en logo gaan mee, zodat een bandlid na importeren hetzelfde ziet
   return JSON.stringify({app:"switchbone-setlist", version:1, exportedAt:new Date().toISOString(), songs, setlist, savedSets, band:{name: opts.band || "", accent: opts.accent, logo: logoData || null}}, null, 2);
 }
-function markBackup(){ ls.set(LS_BACKUP, Date.now()); renderBackupInfo(); }
 async function doExport(){
   const slug = bandName().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "band";
   const name = slug + "-setlist-" + new Date().toISOString().slice(0,10) + ".json";
   const file = new File([exportData()], name, {type:"application/json"});
   try{
-    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); markBackup(); return; }
+    if(navigator.canShare && navigator.canShare({files:[file]})){ await navigator.share({files:[file], title:name}); return; }
   }catch(e){ if(e && e.name === "AbortError") return; }
   const url = URL.createObjectURL(file);
   const a = document.createElement("a"); a.href = url; a.download = name; document.body.append(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 4000);
-  markBackup(); toast(t("exported"));
+  toast(t("exported"));
 }
 $("exportBtn").addEventListener("click", doExport);
 $("importFile").addEventListener("change", async e => {
@@ -2955,10 +2941,6 @@ function setAccent(hex, live){
   renderSwatches();
 }
 function setRadio(name, value){ document.querySelectorAll(`input[name="${name}"]`).forEach(r => { r.checked = r.value === String(value); }); }
-function renderBackupInfo(){
-  const last = ls.get(LS_BACKUP, 0);
-  $("backupInfo").textContent = last ? t("opt.backupLast", {d: fmtDate(last)}) : t("opt.backupNever");
-}
 function renderVersion(){
   const [d, v] = ((document.querySelector('meta[name="app-updated"]') || {}).content || "").split(" ");
   $("optVersion").textContent = d ? t("opt.updated", {d: fmtDate(d + "T12:00:00")}) + (v ? " · " + v.slice(0, 7) : "") : "";
@@ -2969,7 +2951,7 @@ function renderSettings(){
   setRadio("optTheme", opts.theme); setRadio("optLang", opts.lang); setRadio("optCount", opts.countBars); setRadio("optTabs", opts.tabLabels);
   $("optClick").checked = !!opts.countClick; $("optAwake").checked = !!opts.keepAwake; $("optTempo").checked = !!opts.showTempo;
   $("optFontVal").textContent = Math.round(fontScale * 100) + "%";
-  renderSwatches(); renderBackupInfo(); renderVersion(); if(typeof renderSync === "function") renderSync();
+  renderSwatches(); renderVersion(); if(typeof renderSync === "function") renderSync();
 }
 // Taal wisselen: vaste teksten opnieuw, en alles wat de app zelf schrijft opnieuw tekenen
 function relabel(){
@@ -2989,7 +2971,6 @@ $("optAwake").addEventListener("change", () => { opts.keepAwake = $("optAwake").
 $("optTempo").addEventListener("change", () => { opts.showTempo = $("optTempo").checked; saveOpts(); applyTabs(); });
 $("optFontDown").addEventListener("click", () => setFont(fontScale - .1));
 $("optFontUp").addEventListener("click", () => setFont(fontScale + .1));
-$("optExport").addEventListener("click", doExport);
 $("optUpdate").addEventListener("click", async () => {
   if(!navigator.onLine){ toast(t("opt.offline")); return; }
   if(!swReg){ toast(t("opt.updateNA")); return; }
