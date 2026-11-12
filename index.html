@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-11 faebd107a9">
+<meta name="app-updated" content="2026-11-12 fed5417d9e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -1595,7 +1595,9 @@ async function saveSong(s){
   }
   const id = s.id || ("s" + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
   const i = songs.findIndex(x => x.id === id);
-  const full = Object.assign({id}, body);
+  // Eigen tijd voor de tekst: bij samen met de band wint de laatst gewijzigde tekst, los van status of tempo
+  const old = i >= 0 ? songs[i] : null, lyrCh = !old || (old.lyrics || "") !== body.lyrics;
+  const full = Object.assign({id}, body, {lyricsAt: lyrCh ? (body.lyrics || old ? body.updatedAt : 0) : (+old.lyricsAt || 0)});
   if(i >= 0) songs[i] = full; else songs.push(full);
   sortSongs(); ls.set(LS_SONGS, songs); renderAll();
   return id;
@@ -2779,12 +2781,14 @@ $("importFile").addEventListener("change", async e => {
       const i = songs.findIndex(s => (inc.id && s.id === inc.id) || keyOf(s) === keyOf(inc));
       if(i >= 0){
         const cur = songs[i];
-        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: inc.lyrics || cur.lyrics || "", bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, key: inc.key || cur.key || "", status: inc.status || cur.status});
+        const lyr = inc.lyrics || cur.lyrics || "";
+        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: lyr, lyricsAt: lyr !== (cur.lyrics || "") ? inc.updatedAt : (+cur.lyricsAt || 0), bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, key: inc.key || cur.key || "", status: inc.status || cur.status});
         if(raw.id) idMap[raw.id] = cur.id;
         updated++;
       } else {
         inc.id = inc.id || ("s" + Date.now().toString(36) + Math.random().toString(36).slice(2,6));
         if(raw.id) idMap[raw.id] = inc.id;
+        if(inc.lyrics) inc.lyricsAt = +raw.lyricsAt || inc.updatedAt;
         songs.push(inc); added++;
       }
     });
@@ -3075,7 +3079,7 @@ function stable(o){
   return JSON.stringify(o === undefined ? null : o);
 }
 const accNorm = c => { const L = window.SBLook, v = L && L.rgb(c || ""); return v ? L.hex(v) : ""; };
-function cleanSong(x){ return {id: String(x.id), title: String(x.title || ""), artist: x.artist || "", bpm: x.bpm || null, key: x.key || "", duration: x.duration || null, lyrics: x.lyrics || "", status: songStatus(x), updatedAt: +x.updatedAt || 0}; }
+function cleanSong(x){ return {id: String(x.id), title: String(x.title || ""), artist: x.artist || "", bpm: x.bpm || null, key: x.key || "", duration: x.duration || null, lyrics: x.lyrics || "", lyricsAt: +x.lyricsAt || 0, status: songStatus(x), updatedAt: +x.updatedAt || 0}; }
 function cleanSaved(x){ return {id: String(x.id), name: String(x.name || ""), ids: (x.ids || []).map(String), savedAt: +x.savedAt || 0}; }
 function syncSnap(){
   return {v: 1,
@@ -3093,7 +3097,21 @@ function syncMerge(a, b){
   const del = maxMerge(a.del, b.del), delSaved = maxMerge(a.delSaved, b.delSaved);
   const pick = (list, stamp) => { const m = new Map(); list.forEach(([x, mine]) => { const c = m.get(x.id); if(!c || stamp(x) > stamp(c) || (stamp(x) === stamp(c) && !mine)) m.set(x.id, x); }); return [...m.values()]; };
   const rs = b.songs.filter(x => x && x.id != null && x.title).map(cleanSong);
-  const sg = pick([...a.songs.map(x => [x, true]), ...rs.map(x => [x, false])], x => x.updatedAt).filter(x => !(del[x.id] >= x.updatedAt)).sort(byId);
+  // Per nummer wint de laatste wijziging, maar de tekst heeft een eigen tijd (lyricsAt): wie op een ander apparaat alleen de
+  // status of het tempo wijzigt, wist zo nooit een tekst die intussen elders is geplakt. Zonder tijd (oudere versies) wint
+  // een tekst het van geen tekst. Lege tempo, toon en duur worden aangevuld uit de andere versie.
+  const other = new Map(); [...a.songs, ...rs].forEach(x => { const l = other.get(x.id) || []; l.push(x); other.set(x.id, l); });
+  const sg = pick([...a.songs.map(x => [x, true]), ...rs.map(x => [x, false])], x => x.updatedAt).filter(x => !(del[x.id] >= x.updatedAt)).map(w => {
+    const o = Object.assign({}, w);
+    (other.get(w.id) || []).forEach(x => {
+      if(x === w) return;
+      if(x.lyricsAt > o.lyricsAt || (x.lyricsAt === o.lyricsAt && !o.lyrics && x.lyrics)){ o.lyrics = x.lyrics; o.lyricsAt = x.lyricsAt; }
+      if(!o.bpm && x.bpm) o.bpm = x.bpm;
+      if(!o.key && x.key) o.key = x.key;
+      if(!o.duration && x.duration) o.duration = x.duration;
+    });
+    return o;
+  }).sort(byId);
   const has = new Set(sg.map(x => x.id));
   const rset = b.setlist && Array.isArray(b.setlist.ids) ? {ids: b.setlist.ids.map(String), at: +b.setlist.at || 0} : {ids: [], at: 0};
   const sl = a.setlist.at > rset.at ? a.setlist : rset;
