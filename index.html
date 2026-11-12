@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-12 fed5417d9e">
+<meta name="app-updated" content="2026-11-12 5c39031097">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -298,6 +298,19 @@ body.setmode.playing #nowArtist,body.setmode.stagemode #nowArtist{display:block!
 .fields{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(0,1fr);gap:12px}
 @media (max-width:520px){.fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.fields .wide{grid-column:1 / -1}}
 .field{display:flex;flex-direction:column;gap:6px;min-width:0}
+/* Leeg tempo- of toonsoortveld: een zoeklink staat in het veld zelf, als een aanklikbare plaatshouder.
+   Rechts blijft minstens 38px vrij om in het veld te tikken en zelf iets in te vullen. */
+.find-in{position:relative;display:block}
+.field .find{display:none}
+.field.finding .find{display:flex;align-items:center;position:absolute;top:1px;bottom:1px;left:1px;max-width:calc(100% - 40px);padding:0 2px 0 12px;border-radius:calc(var(--r-sm) - 1px);color:var(--stock-fg);font-size:14px;font-weight:700;font-stretch:75%;line-height:1.1;text-decoration:none;overflow:hidden}
+.field.finding .find:hover{text-decoration:underline}
+.field.finding .find:focus-visible{outline:3px solid var(--stock-fg);outline-offset:2px}
+.field.finding input:focus + .find{display:none}
+.field.finding input:not(:focus)::placeholder{color:transparent}
+/* Status in de editor in dezelfde kleuren als de schuifknop bij Nummers */
+.seg-status input[value="play"]:checked + span{background:var(--stock);color:var(--on-stock)}
+.seg-status input[value="practice"]:checked + span{background:color-mix(in oklab, var(--stock) 42%, var(--ink));color:var(--paper)}
+.seg-status input[value="pass"]:checked + span{background:var(--line-2);color:var(--paper)}
 .err{color:var(--danger);font-size:var(--t-s)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(24px + env(safe-area-inset-bottom,0px));background:var(--paper);color:var(--ink);padding:12px 20px;border-radius:var(--r-sm);font-weight:800;z-index:30;box-shadow:0 10px 30px var(--shade)}
 
@@ -690,16 +703,6 @@ label.opt{cursor:pointer}
 .sw input:focus-visible + i{outline:3px solid var(--paper);outline-offset:6px}
 .sw.custom i{background:conic-gradient(from 90deg,#F26B1D,#F5C518,#3DBE6E,#1FB5A8,#3B82F6,#8B5CF6,#EC4899,#F26B1D)}
 .sw.custom.on i{background:var(--c)}
-.mini-ticket{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 78px;min-height:80px;background:var(--stock);color:var(--on-stock);border-radius:10px}
-.mini-ticket::before,.mini-ticket::after{content:"";position:absolute;right:68px;width:20px;height:20px;border-radius:50%;background:var(--ink-3)}
-.mini-ticket::before{top:-10px}
-.mini-ticket::after{bottom:-10px}
-.mt-main{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:12px 16px;min-width:0}
-.mt-main b{font-size:30px;font-weight:900;font-stretch:62%;line-height:.9;text-transform:uppercase}
-.mt-main span{font-size:var(--t-s);font-weight:600;line-height:1.25;color:var(--on-stock-2)}
-.mt-stub{display:grid;place-items:center;border-left:2px dashed color-mix(in srgb,var(--on-stock) 50%,transparent)}
-.mt-play{width:46px;height:46px;border-radius:50%;background:var(--on-stock);color:var(--stock);display:grid;place-items:center}
-.mt-play svg{width:18px;height:18px;margin-left:2px;display:block}
 .opt-font{flex-wrap:nowrap;justify-content:flex-end}
 .seg{display:inline-flex;gap:3px;padding:3px;background:var(--ink-2);border:1px solid var(--line-2);border-radius:var(--r-sm);justify-self:end}
 .seg label{position:relative;display:flex;flex:1 1 0}
@@ -983,7 +986,7 @@ label.opt{cursor:pointer}
             <div class="opt-logo">
               <div class="logo-prev"><img id="logoPrev" src="assets/logo.png" alt="" width="1200" height="228"></div>
               <div class="row">
-                <label class="btn small" for="logoFile" style="cursor:pointer" data-i18n="opt.logoPick">Kies logo</label>
+                <label class="btn small" for="logoFile" id="logoPick" style="cursor:pointer" data-i18n="opt.logoPick">Kies logo</label>
                 <input type="file" id="logoFile" accept="image/*,.svg" hidden>
                 <button class="btn small ghost" id="logoReset" type="button" data-i18n="opt.logoReset" hidden>Standaardlogo</button>
               </div>
@@ -1035,10 +1038,6 @@ label.opt{cursor:pointer}
             <div class="opt-txt"><span class="opt-name" id="optColorL" data-i18n="opt.color">Hoofdkleur</span><span class="note" data-i18n="opt.colorNote">De kleur van het kaartje en de knoppen. De tekst erop wordt vanzelf licht of donker.</span></div>
             <div class="color-pick">
               <div class="swatches" id="swatches" role="radiogroup" aria-labelledby="optColorL"></div>
-              <div class="mini-ticket" aria-hidden="true">
-                <div class="mt-main"><b data-i18n="opt.mtTitle">Voorbeeld</b><span data-i18n="opt.mtSub">Zo ziet het kaartje eruit</span></div>
-                <div class="mt-stub"><span class="mt-play"><svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z" fill="currentColor"/></svg></span></div>
-              </div>
               <p class="note" id="colorLow" data-i18n="opt.colorLow" hidden>Deze kleur heeft weinig contrast met de achtergrond. De voortgangsbalk en het aftellen krijgen daarom een aangepaste tint.</p>
             </div>
           </div>
@@ -1162,22 +1161,21 @@ label.opt{cursor:pointer}
     <h2 id="edTitle">Nummer toevoegen</h2>
     <div class="fields">
       <label class="field wide"><span class="label" data-i18n="fTitle">Titel</span><input type="text" id="fTitle" required></label>
-      <label class="field"><span class="label">Tempo (BPM)</span><input type="number" id="fBpm" min="30" max="300" inputmode="numeric"></label>
-      <label class="field"><span class="label" data-i18n="fKey">Toonsoort</span><input type="text" id="fKey" placeholder="bv. Am" data-i18n-attr="placeholder:fKeyPh"></label>
+      <div class="field has-find"><label class="label" for="fBpm">Tempo (BPM)</label><span class="find-in"><input type="number" id="fBpm" min="30" max="300" inputmode="numeric"><a class="find" id="lkBpm" target="_blank" rel="noopener" data-i18n="lkBpm">Zoek origineel tempo ↗</a></span></div>
+      <div class="field has-find"><label class="label" for="fKey" data-i18n="fKey">Toonsoort</label><span class="find-in"><input type="text" id="fKey" placeholder="bv. Am" data-i18n-attr="placeholder:fKeyPh"><a class="find" id="lkKey" target="_blank" rel="noopener" data-i18n="lkKey">Zoek originele toonsoort ↗</a></span></div>
       <label class="field wide" style="grid-column:span 2"><span class="label" data-i18n="fArtist">Artiest / origineel</span><input type="text" id="fArtist"></label>
       <label class="field"><span class="label" data-i18n="fDur">Duur (m:ss)</span><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"></label>
     </div>
     <div class="field"><span class="label" id="fStatusL">Status</span>
-      <div class="seg" role="radiogroup" aria-labelledby="fStatusL">
+      <div class="seg seg-status" role="radiogroup" aria-labelledby="fStatusL">
         <label><input type="radio" name="fStatus" value="play"><span data-i18n="st.play">Spelen</span></label>
         <label><input type="radio" name="fStatus" value="practice"><span data-i18n="st.practice">Oefenen</span></label>
         <label><input type="radio" name="fStatus" value="pass"><span data-i18n="st.pass">Passen</span></label>
       </div>
     </div>
     <div class="row">
-      <a class="btn small" id="lkBpm" target="_blank" rel="noopener" data-i18n="lkBpm">Zoek origineel tempo ↗</a>
       <a class="btn small" id="lkLyr" target="_blank" rel="noopener" data-i18n="lkLyr">Zoek tekst ↗</a>
-      <span class="note" data-i18n="lkNote">Opent een zoekopdracht in een nieuw tabblad. Neem tempo en tekst daarna hier over.</span>
+      <span class="note" data-i18n="lkNote">Opent een zoekopdracht in een nieuw tabblad. Neem de tekst daarna hier over.</span>
     </div>
     <label class="field"><span class="label" data-i18n="fLyrics">Tekst</span><textarea id="fLyrics" placeholder="Plak hier de tekst. Akkoorden mogen erbij." data-i18n-attr="placeholder:fLyricsPh"></textarea><span class="note" data-i18n="lyrNote">Bij opslaan worden dubbele lege regels en resten van tekstsites (zoals “Embed” en “You might also like”) weggehaald. Zet [Refrein] of [Couplet] op een eigen regel, dan valt het op tijdens het spelen.</span></label>
     <div class="err" id="edErr" hidden></div>
@@ -1278,9 +1276,10 @@ const I18N = {
   "fKeyPh": ["bv. Am", "e.g. Am"],
   "fArtist": ["Artiest / origineel", "Artist / original"],
   "fDur": ["Duur (m:ss)", "Length (m:ss)"],
-  "lkBpm": ["Zoek origineel tempo ↗", "Find original tempo ↗"],
+  "lkBpm": ["Zoek origineel tempo ↗", "Find original tempo ↗"],
+  "lkKey": ["Zoek originele toonsoort ↗", "Find original key ↗"],
   "lkLyr": ["Zoek tekst ↗", "Find lyrics ↗"],
-  "lkNote": ["Opent een zoekopdracht in een nieuw tabblad. Neem tempo en tekst daarna hier over.", "Opens a search in a new tab. Then copy the tempo and lyrics here."],
+  "lkNote": ["Opent een zoekopdracht in een nieuw tabblad. Neem de tekst daarna hier over.", "Opens a search in a new tab. Then copy the lyrics here."],
   "fLyrics": ["Tekst", "Lyrics"],
   "fLyricsPh": ["Plak hier de tekst. Akkoorden mogen erbij.", "Paste the lyrics here. Chords are fine too."],
   "lyrNote": ["Bij opslaan worden dubbele lege regels en resten van tekstsites (zoals “Embed” en “You might also like”) weggehaald. Zet [Refrein] of [Couplet] op een eigen regel, dan valt het op tijdens het spelen.", "When saving, double blank lines and leftovers from lyrics sites (such as “Embed” and “You might also like”) are removed. Put [Chorus] or [Verse] on its own line and it stands out while playing."],
@@ -1457,6 +1456,7 @@ const I18N = {
   "opt.logo": ["Logo", "Logo"],
   "opt.logoNote": ["PNG, JPG of SVG. Breed werkt het best, zoals een spandoek. Het logo wordt op dit apparaat verkleind en bewaard.", "PNG, JPG or SVG. Wide works best, like a banner. The logo is resized and stored on this device."],
   "opt.logoPick": ["Kies logo", "Choose logo"],
+  "opt.logoChange": ["Wijzig logo", "Change logo"],
   "opt.logoReset": ["Standaardlogo", "Default logo"],
   "opt.logoSaved": ["Logo opgeslagen", "Logo saved"],
   "opt.logoBad": ["Dit bestand kon niet als logo worden gelezen. Kies een PNG, JPG of SVG.", "This file could not be read as a logo. Choose a PNG, JPG or SVG."],
@@ -1473,8 +1473,6 @@ const I18N = {
   "opt.color": ["Hoofdkleur", "Accent colour"],
   "opt.colorNote": ["De kleur van het kaartje en de knoppen. De tekst erop wordt vanzelf licht of donker.", "The colour of the ticket and buttons. The text on it turns light or dark by itself."],
   "opt.colorLow": ["Deze kleur heeft weinig contrast met de achtergrond. De voortgangsbalk en het aftellen krijgen daarom een aangepaste tint.", "This colour has little contrast with the background, so the progress bar and count-in use an adjusted shade."],
-  "opt.mtTitle": ["Voorbeeld", "Preview"],
-  "opt.mtSub": ["Zo ziet het kaartje eruit", "This is how the ticket looks"],
   "opt.text": ["Tekstgrootte", "Text size"],
   "opt.textNote": ["Grootte van de songtekst. Kan ook met A− en A+ naast de tekst.", "Size of the lyrics. Also adjustable with A− and A+ next to the lyrics."],
   "opt.lang": ["Taal van de app", "App language"],
@@ -1933,13 +1931,17 @@ function titleCase(str){ return (str || "").replace(/(^|[\s(\/-])(\p{L})/gu, (m,
 function updateLookups(){
   const t = $("fTitle").value.trim(), a = $("fArtist").value.trim();
   const q = s => "https://www.google.com/search?q=" + encodeURIComponent(`"${t}" ${a} ${s}`.trim());
-  [["lkBpm", "bpm tempo"], ["lkLyr", "lyrics"]].forEach(([id, s]) => {
+  [["lkBpm", "bpm tempo"], ["lkKey", "key"], ["lkLyr", "lyrics"]].forEach(([id, s]) => {
     const el = $(id);
     if(t){ el.href = q(s); el.removeAttribute("aria-disabled"); } else { el.removeAttribute("href"); el.setAttribute("aria-disabled", "true"); }
   });
+  // Zoeklink in het veld alleen als er een titel is en het veld nog leeg is
+  ["fBpm", "fKey"].forEach(id => $(id).closest(".field").classList.toggle("finding", !!t && !$(id).value.trim()));
 }
 $("fTitle").addEventListener("input", updateLookups);
 $("fArtist").addEventListener("input", updateLookups);
+$("fBpm").addEventListener("input", updateLookups);
+$("fKey").addEventListener("input", updateLookups);
 $("fArtist").addEventListener("blur", () => { $("fArtist").value = titleCase($("fArtist").value); updateLookups(); });
 function closeEditor(){ $("overlay").hidden = true; editingId = null; }
 $("addBtn").addEventListener("click", () => openEditor(null));
@@ -2874,6 +2876,9 @@ function applyLogo(){
   const src = logoData || "assets/logo.png";
   ["brandLogo", "ciLogo", "logoPrev"].forEach(id => { const img = $(id); if(img.getAttribute("src") !== src) img.src = src; });
   $("logoReset").hidden = !logoData;
+  // Eigen logo gekozen: de knop heet dan "Wijzig logo" (data-i18n mee, zodat wisselen van taal het goed houdt)
+  const pk = $("logoPick"), key = logoData ? "opt.logoChange" : "opt.logoPick";
+  pk.dataset.i18n = key; pk.textContent = t(key);
 }
 // Een vierkant of hoog logo krijgt meer hoogte in de kop, anders wordt het een postzegel
 $("brandLogo").addEventListener("load", e => { const i = e.target; i.classList.toggle("squarish", i.naturalHeight > 0 && i.naturalWidth / i.naturalHeight < 2.2); });
