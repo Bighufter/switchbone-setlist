@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-24 fb0672cea9">
+<meta name="app-updated" content="2026-11-24 ab33089b46">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -145,6 +145,10 @@ a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 /* Voortgang: alleen zichtbaar zodra de tekst loopt */
 .song-prog{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin:0 0 12px}
 .song-prog[hidden]{display:none}
+/* Grotere tikzone om de voortgangsbalk heen: slepen = vooruit of terug in het nummer */
+.prog-hit{padding:12px 0;margin:-12px 0;touch-action:none;pointer-events:none}
+body.playing .prog-hit,body.setmode .prog-hit{pointer-events:auto;cursor:pointer}
+.song-prog:focus-visible{outline:3px solid var(--stock-fg);outline-offset:3px}
 .song-prog i{display:block;height:100%;width:100%;background:var(--stock-fg);transform-origin:left;transform:scaleX(0)}
 .lyrics-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .lyrics-bar .row{gap:6px}
@@ -772,15 +776,9 @@ body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-si
 @media (min-width:700px) and (min-height:521px), (min-width:1001px){ body.introing .intro-cue{font-size:calc(30px * var(--ls,1))} }
 /* Karaoke: regels als spans; alleen kleur verandert (geen gewicht of maat, anders verspringen de regels) */
 .lyrics{position:relative}
-.lyrics .ln.past{color:var(--mute)}
-.lyrics .ln.cur{color:var(--stock-fg)}
-body.recording .lyrics .ln.next{text-decoration:underline;text-decoration-color:var(--stock-fg);text-decoration-thickness:3px;text-underline-offset:.18em}
-.recbar{position:fixed;left:16px;right:16px;z-index:35;display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r-sm);background:var(--ink-3);box-shadow:0 8px 30px var(--shade)}
-.recbar[hidden]{display:none}
-.rec-info{flex:1;min-width:0;font-weight:700;color:var(--paper)}
-.recbar .rec-tap{min-height:64px;padding:0 22px;font-size:20px;touch-action:manipulation}
-.recbar #recUndo{min-height:64px;touch-action:manipulation}
-@media (max-width:420px){ .recbar{gap:8px;padding:8px} .recbar .rec-info{flex:none;font-size:14px;white-space:nowrap} .recbar #recUndo{padding:0 12px} .recbar .rec-tap{flex:1;min-width:0;padding:0 12px;font-size:17px;line-height:1.15} }
+/* Karaoke en tikken: alleen de regel die gezongen wordt is oranje, de rest lichtgrijs (alleen kleur, anders verspringen regels) */
+.lyrics.kcol{color:var(--mute)}
+.lyrics.kcol .ln.cur{color:var(--stock-fg)}
 .cue-box{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line-2);border-radius:var(--r-sm)}
 .cue-box .note{margin:0}
 .bars-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-height:44px}
@@ -927,7 +925,7 @@ body.recording .lyrics .ln.next{text-decoration:underline;text-decoration-color:
             </div>
           </div>
           <p class="play-hint" id="playHint"></p>
-          <div class="song-prog" id="songProg" role="progressbar" aria-label="Hoever je in het nummer bent" data-i18n-attr="aria-label:progAria" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i id="songProgFill"></i></div>
+          <div class="prog-hit" id="progHit"><div class="song-prog" id="songProg" role="slider" tabindex="0" aria-label="Hoever je in het nummer bent" data-i18n-attr="aria-label:progAria" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i id="songProgFill"></i></div></div>
           <div class="intro-cue" id="introCue" aria-live="polite"></div>
           <pre class="lyrics" id="nowLyrics"></pre>
           <div class="set-next" id="setNext" aria-live="polite" hidden><span class="label" data-i18n="next">Volgende</span><span class="nx-t" id="nxTitle"></span><button type="button" class="nx-play" id="nxPlay" aria-label="Speel het volgende nummer" title="Speel het volgende nummer" data-i18n-attr="aria-label:playNext;title:playNext"></button></div>
@@ -1259,11 +1257,6 @@ body.recording .lyrics .ln.next{text-decoration:underline;text-decoration-color:
   <div class="ci-hint" data-i18n="tapCancel">Tik om te annuleren</div>
 </div>
 <div class="beatpulse" id="beatPulse" aria-hidden="true"></div>
-<div class="recbar" id="recBar" hidden>
-  <span class="rec-info" id="recInfo" aria-live="polite"></span>
-  <button class="btn" id="recUndo" type="button" data-i18n="recUndo">Terug</button>
-  <button class="btn solid rec-tap" id="recTap" type="button" data-i18n="recTap">Tik: regel begint</button>
-</div>
 <div class="toast" id="toast" hidden></div>
 <div class="updatebar" id="updateBar" role="status" hidden>
   <span data-i18n="newVersion">Nieuwe versie klaar</span>
@@ -1412,7 +1405,7 @@ const I18N = {
   "cueRec": ["Tijden vastleggen", "Record timings"],
   "cueClear": ["Tijden wissen", "Clear timings"],
   "cueNeed": ["Vul eerst het tempo in en plak de tekst. Daarna tik je tijdens het nummer bij het begin van elke regel; bij het spelen licht dan de regel op die gezongen wordt.", "First fill in the tempo and paste the lyrics. Then tap at the start of every line while the song plays; when playing, the line being sung lights up."],
-  "cueNone": ["Nog geen tijden. Speel het nummer live met de band, direct na het aftellen, en tik bij het begin van elke regel. Daarna licht bij het spelen de regel op die gezongen wordt, en weet de app wanneer de zang begint.", "No timings yet. Play the song live with the band, straight after the count-in, and tap at the start of every line. When playing, the line being sung then lights up, and the app knows when the vocals start."],
+  "cueNone": ["Nog geen tijden. Speel het nummer live met de band, direct na het aftellen, en tik op de tekst zodra een regel begint. Daarna licht bij het spelen de regel op die gezongen wordt, en weet de app wanneer de zang begint.", "No timings yet. Play the song live with the band, straight after the count-in, and tap the lyrics as soon as a line starts. When playing, the line being sung then lights up, and the app knows when the vocals start."],
   "meterNote": ["Bij 6/8 en 12/8 telt de app in achtsten: vul het tempo dan ook in achtsten in.", "With 6/8 and 12/8 the app counts in eighths: fill in the tempo in eighths too."],
   "cueAll": ["Tijden vastgelegd voor alle {n} regels. De zang begint na {b} maten.", "Timings recorded for all {n} lines. The vocals start after {b} bars."],
   "cuePart": ["De tekst is gewijzigd: {k} van de {n} regels hebben nog een tijd, de rest is geschat. Leg de tijden opnieuw vast voor het beste resultaat.", "The lyrics have changed: {k} of {n} lines still have a timing, the rest is estimated. Record the timings again for the best result."],
@@ -1420,10 +1413,7 @@ const I18N = {
   "cueClearAsk": ["Tijden wissen?", "Clear timings?"],
   "cueClearBody": ["De tekst loopt daarna weer gelijkmatig mee. Dit gaat ook naar de band.", "The lyrics will scroll evenly again. This also goes to the band."],
   "cueCleared": ["Tijden gewist", "Timings cleared"],
-  "recInfo": ["Regel {k} van {n}", "Line {k} of {n}"],
-  "recWait": ["Wacht op het aftellen…", "Wait for the count-in…"],
-  "recUndo": ["Terug", "Back"],
-  "recTap": ["Tik: regel begint", "Tap: line starts"],
+  "recHint": ["Tik op de tekst zodra een regel begint", "Tap the lyrics as soon as a line starts"],
   "recDone": ["Alle regels getikt", "All lines tapped"],
   "recSaveAsk": ["Tijden bewaren?", "Save timings?"],
   "recSaveBody": ["Alle {n} regels hebben een tijd. De zang begint na {b} maten; dat komt ook bij Intro te staan.", "All {n} lines have a timing. The vocals start after {b} bars; this is also set as the intro."],
@@ -2301,13 +2291,15 @@ function applyAwake(){ if(opts.keepAwake) wakeOn(); else if(!scroller.active) wa
 function startPlayAlong(){
   const s = songs.find(x => x.id === currentId); if(!s || !s.lyrics) return;
   const keepRec = rec.on; stopScroll(true); stopMet(); // stopScroll beëindigt het tikken; bij opnieuw beginnen gaat het door
-  if(keepRec){ rec.on = true; $("recBar").hidden = false; }
+  if(keepRec) rec.on = true;
   beat.spb = s.bpm ? 60 / s.bpm : 0; beat.meter = meterOf(s); $("clickBtn").classList.toggle("has", !!s.bpm);
   if(rec.on){ rec.taps = []; rec.started = false; rec.n = cueLineTexts(s.lyrics).length; setSpeed(1); updRec(); }
   // Karaoke: tijden in seconden vanaf het einde van het aftellen (alleen met tempo en passende tijden)
   const cb = !rec.on && s.bpm ? cueBeats(s) : null;
   scroller.cues = cb && cb.beats ? cb.beats.map(b => b * 60 / s.bpm) : null;
-  $("nowLyrics").classList.toggle("karaoke", !!scroller.cues || rec.on);
+  $("nowLyrics").classList.toggle("karaoke", !!scroller.cues);
+  $("nowLyrics").classList.toggle("kcol", !!scroller.cues || rec.on);
+  $("nowLyrics").style.paddingTop = ""; scroller.padTop = 0;
   markLine(-1);
   $("nowElapsed").textContent = "0:00";
   const lyr = $("nowLyrics"); lyr.classList.add("playing"); lyr.scrollTop = 0;
@@ -2319,8 +2311,9 @@ function startPlayAlong(){
     const max = Math.max(0, lyr.scrollHeight - lyr.clientHeight);
     // Zang na de intro (maten x tellen per maat): tot dan blijft de tekst staan, daarna loopt hij in de resterende tijd.
     // Met karaoketijden begint de zang bij de eerste getikte regel; bij het tikken zelf is er geen intro.
-    scroller.lead = rec.on ? 0 : scroller.cues ? scroller.cues[0] : s.intro && s.bpm ? Math.min(s.intro * meterOf(s) * 60 / s.bpm, Math.max(0, scroller.total - 10)) : 0;
-    if(rec.on){ rec.started = true; document.body.classList.add("recording"); updRec(); }
+    // Met karaoketijden loopt de tekst meteen (ook door de intro), zodat tijd en tekst altijd samen bewegen
+    scroller.lead = rec.on || scroller.cues ? 0 : s.intro && s.bpm ? Math.min(s.intro * meterOf(s) * 60 / s.bpm, Math.max(0, scroller.total - 10)) : 0;
+    if(rec.on){ rec.started = true; document.body.classList.add("recording"); updRec(); toast(t("recHint")); }
     scroller.sung = !scroller.lead; scroller.cueN = 0; document.body.classList.toggle("introing", !scroller.sung);
     if(!scroller.sung) showCue();
     scroller.speed = max / Math.max(1, scroller.total - scroller.lead); scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
@@ -2354,18 +2347,20 @@ function step(now){
   if(!scroller.active) return;
   const lyr = $("nowLyrics");
   const dt = Math.min(.25, (now - scroller.last) / 1000); scroller.last = now;
-  // Tikken: de tijd loopt gewoon door, de tekst schuift zo dat de volgende regel op ankerhoogte staat
+  if(scroller.cues) karaokePad(lyr);
+  // Tikken: de tijd loopt gewoon door en de tekst loopt gelijkmatig mee; met de vinger terug of vooruit kan altijd
   if(rec.on){
-    if(!scroller.paused) scroller.elapsed += dt;
-    const ln = lineEls(), nx = ln[Math.min(rec.taps.length, ln.length - 1)];
-    if(nx){ const target = Math.max(0, nx.offsetTop - anchorPx()); lyr.scrollTop += (target - lyr.scrollTop) * Math.min(1, dt * 8); scroller.lastSet = lyr.scrollTop; }
+    scroller.elapsed += dt;
+    if(swipe.down || now < swipe.until) scroller.pos = lyr.scrollTop;
+    else { scroller.pos += scroller.speed * dt; lyr.scrollTop = scroller.pos; }
+    scroller.lastSet = lyr.scrollTop;
     showElapsed(); scroller.raf = requestAnimationFrame(step); return;
   }
   // Swipen: zolang de vinger (of het nadeinen) de tekst beweegt, schrijft de app niets; tijd en voortgang springen mee
   if(swipe.down || now < swipe.until){
     scroller.pos = lyr.scrollTop; scroller.lastSet = lyr.scrollTop;
     if(!scroller.sung && scroller.pos > 2) startSung(); // tijdens de intro naar de tekst geschoven: de zang is begonnen
-    if(scroller.cues && scroller.sung){ scroller.elapsed = Math.max(0, Math.min(scroller.total, cueTimeAt(lyr.scrollTop + anchorPx()))); markLine(cueIndexAt(scroller.elapsed)); if(!scroller.paused) scroller.off = audio().currentTime - scroller.anchor - scroller.elapsed; }
+    if(scroller.cues && scroller.sung){ scroller.elapsed = Math.max(0, Math.min(scroller.total, cueTimeAt(lyr.scrollTop + anchorPx()))); markLine(cueIndexAt(scroller.elapsed)); karaokeCue(); if(!scroller.paused) scroller.off = audio().currentTime - scroller.anchor - scroller.elapsed; }
     else if(scroller.speed && scroller.sung) scroller.elapsed = Math.max(0, Math.min(scroller.total, scroller.lead + scroller.pos / scroller.speed));
     showElapsed();
     scroller.raf = requestAnimationFrame(step); return;
@@ -2380,7 +2375,7 @@ function step(now){
     // De tijd komt van de audioklok (zoals de klik en het tikken), zodat een hapering niets verschuift.
     scroller.elapsed = cueClock();
     lyr.scrollTop = Math.max(0, cueYAt(scroller.elapsed) - anchorPx()); scroller.lastSet = lyr.scrollTop; scroller.pos = lyr.scrollTop;
-    markLine(cueIndexAt(scroller.elapsed));
+    markLine(cueIndexAt(scroller.elapsed)); karaokeCue();
     showElapsed();
     if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); if(setPlay.active) setSongEnded(); else { toast(t("songEnd")); autoNext(); } return; }
   } else if(!scroller.paused){
@@ -2397,10 +2392,22 @@ function cueClock(){ return Math.max(0, audio().currentTime - scroller.anchor - 
 function lineEls(){ return [...$("nowLyrics").querySelectorAll(".ln")]; }
 function anchorPx(){ return $("nowLyrics").clientHeight * .28; }
 function cueIndexAt(t){ const c = scroller.cues || []; let i = -1; for(let k = 0; k < c.length && c[k] <= t; k++) i = k; return i; }
+// Ruimte boven de tekst (ankerhoogte), zodat ook de eerste regel op ankerhoogte kan staan:
+// tijd 0 = bovenaan, en tijd en scrollpositie horen altijd een op een bij elkaar (swipen naar boven = 0:00)
+function karaokePad(lyr){
+  const a = Math.round(lyr.clientHeight * .28);
+  if(a && Math.abs(a - (scroller.padTop || 0)) > 1){ scroller.padTop = a; lyr.style.paddingTop = a + "px"; }
+}
+// Tot de eerste getikte regel: "Zang over N maten" boven de tekst, terwijl de tekst al meeloopt
+function karaokeCue(){
+  const c = scroller.cues, pre = !!c && scroller.elapsed < c[0] - .05;
+  if(pre !== document.body.classList.contains("introing")){ document.body.classList.toggle("introing", pre); fitLyrics(); }
+  if(pre) showCue(c[0]);
+}
 function cueYAt(t){
   const c = scroller.cues, ln = lineEls(); if(!c || !ln.length) return 0;
-  const n = Math.min(c.length, ln.length), Y = k => ln[k].offsetTop;
-  if(t < c[0]) return c[0] > 0 ? Y(0) * Math.max(0, t) / c[0] : Y(0);
+  const n = Math.min(c.length, ln.length), Y = k => ln[k].offsetTop, A = anchorPx();
+  if(t < c[0]) return c[0] > 0 ? A + (Y(0) - A) * Math.max(0, t) / c[0] : Y(0);
   for(let k = 0; k < n - 1; k++) if(t < c[k + 1]) return Y(k) + (Y(k + 1) - Y(k)) * (t - c[k]) / Math.max(.001, c[k + 1] - c[k]);
   const lh = ln[n - 1].offsetHeight, gap = n > 1 ? (c[n - 1] - c[0]) / (n - 1) : 4;
   return Y(n - 1) + lh * Math.min(1, (t - c[n - 1]) / Math.max(1, gap));
@@ -2408,38 +2415,32 @@ function cueYAt(t){
 function cueTimeAt(y){
   const c = scroller.cues, ln = lineEls(); if(!c || !ln.length) return 0;
   const n = Math.min(c.length, ln.length), Y = k => ln[k].offsetTop;
-  if(y < Y(0)) return Y(0) > 0 ? c[0] * Math.max(0, y) / Y(0) : c[0];
+  const A = anchorPx();
+  if(y < Y(0)) return Y(0) - A > 1 ? c[0] * Math.max(0, y - A) / (Y(0) - A) : 0;
   for(let k = 0; k < n - 1; k++) if(y < Y(k + 1)) return c[k] + (c[k + 1] - c[k]) * (y - Y(k)) / Math.max(1, Y(k + 1) - Y(k));
   return c[n - 1];
 }
 let markedLine = -2;
-function markLine(i, next){
-  if(i === markedLine && next === undefined) return; markedLine = i;
-  lineEls().forEach((el, k) => { el.classList.toggle("past", k < i); el.classList.toggle("cur", k === i); el.classList.toggle("next", next !== undefined && k === next); });
+function markLine(i){
+  if(i === markedLine) return; markedLine = i;
+  lineEls().forEach((el, k) => el.classList.toggle("cur", k === i));
 }
 // ---------- tijden vastleggen (meetikken) ----------
 function startRec(id){
   const s = songs.find(x => x.id === id); if(!s || !s.bpm || !s.lyrics) return;
   setTab("play"); showSong(id, true);
   rec.on = true; rec.id = id; rec.taps = [];
-  const bar = $("recBar"); bar.hidden = false;
-  bar.style.bottom = (document.querySelector(".tabbar").getBoundingClientRect().height + 12) + "px";
   startPlayAlong();
 }
-function updRec(){
-  const k = rec.taps.length;
-  $("recInfo").textContent = rec.started ? t("recInfo", {k: Math.min(k + 1, rec.n), n: rec.n}) : t("recWait");
-  $("recUndo").disabled = !k; $("recTap").disabled = !rec.started;
-  markLine(k - 1, rec.started ? k : -1);
-}
-function recMark(){
+function updRec(){ markLine(rec.taps.length - 1); } // de laatst getikte regel wordt gezongen: oranje
+function recMark(at){
   if(!rec.on || !rec.started || !beat.spb) return;
-  const beats = (audio().currentTime - rec.anchor) / beat.spb; // audioklok: precies, en hetzelfde raster als de klik
+  const beats = ((at === undefined ? audio().currentTime : at) - rec.anchor) / beat.spb; // audioklok: precies, en hetzelfde raster als de klik
   rec.taps.push(Math.max(0, beats)); updRec();
   if(rec.taps.length >= rec.n) finishRec();
 }
 function recUndo(){ if(rec.on && rec.taps.length){ rec.taps.pop(); updRec(); } }
-function endRec(){ rec.on = false; rec.started = false; $("recBar").hidden = true; document.body.classList.remove("recording"); markLine(-1); }
+function endRec(){ rec.on = false; rec.started = false; document.body.classList.remove("recording"); markLine(-1); }
 async function finishRec(){
   const id = rec.id, taps = rec.taps.slice(); endRec(); stopScroll(false);
   const s = songs.find(x => x.id === id); if(!s) return;
@@ -2451,18 +2452,28 @@ async function finishRec(){
   s.intro = b || null; s.updatedAt = now;
   ls.set(LS_SONGS, songs); renderAll(); renderNow(); toast(t("recSaved"));
 }
-$("recTap").addEventListener("pointerdown", e => { e.preventDefault(); recMark(); });
-$("recUndo").addEventListener("pointerdown", e => { e.preventDefault(); recUndo(); });
-$("nowLyrics").addEventListener("pointerdown", e => { if(rec.on){ e.preventDefault(); recMark(); } });
+// Tikken op de tekst: de tijd van het neerzetten van de vinger telt, maar alleen als het een tik was en geen swipe
+(() => {
+  let down = null;
+  const lyr = $("nowLyrics");
+  lyr.addEventListener("pointerdown", e => { down = rec.on && rec.started ? {x: e.clientX, y: e.clientY, at: audio().currentTime, top: lyr.scrollTop, ms: performance.now()} : null; });
+  lyr.addEventListener("pointercancel", () => { down = null; });
+  lyr.addEventListener("pointerup", e => {
+    const d = down; down = null;
+    if(!d || !rec.on) return;
+    if(Math.hypot(e.clientX - d.x, e.clientY - d.y) > 12 || Math.abs(lyr.scrollTop - d.top) > 30 || performance.now() - d.ms > 700) return;
+    recMark(d.at);
+  });
+})();
 document.addEventListener("keydown", e => {
   if(!rec.on || e.target.closest("input, textarea, select")) return;
   if([" ", "Enter", "ArrowDown", "ArrowRight", "PageDown"].includes(e.key)){ e.preventDefault(); if(!e.repeat) recMark(); }
   else if(["Backspace", "ArrowUp", "ArrowLeft", "PageUp"].includes(e.key)){ e.preventDefault(); if(!e.repeat) recUndo(); }
 });
 // Hoeveel maten tot de zang (alleen bijwerken als het getal verandert)
-function showCue(){
+function showCue(until){
   const s = songs.find(x => x.id === currentId), bar = s && s.bpm ? meterOf(s) * 60 / s.bpm : 1;
-  const n = Math.max(1, Math.ceil((scroller.lead - scroller.elapsed) / bar - .001));
+  const n = Math.max(1, Math.ceil(((until === undefined ? scroller.lead : until) - scroller.elapsed) / bar - .001));
   if(n !== scroller.cueN){ scroller.cueN = n; $("introCue").textContent = n === 1 ? t("cueBar") : t("cueBars", {n}); }
 }
 // De zang begint: melding weg, tekst krijgt de ruimte, snelheid opnieuw uit de echte hoogte
@@ -2489,10 +2500,41 @@ function showElapsed(){
   lyr.addEventListener("touchcancel", up, {passive: true});
   lyr.addEventListener("scroll", () => { if(scroller.active && Math.abs(lyr.scrollTop - scroller.lastSet) > 1) hold(150); }, {passive: true});
 })();
+// Vooruit of terug in het nummer door over de voortgangsbalk te slepen (of pijltjes op de balk)
+function seekTo(t){
+  if(!scroller.active || rec.on || !scroller.total || !$("countin").hidden) return; // niet tijdens het aftellen of het tikken
+  const lyr = $("nowLyrics"); t = Math.max(0, Math.min(scroller.total, t));
+  scroller.elapsed = t;
+  if(scroller.cues){
+    if(!scroller.paused) scroller.off = audio().currentTime - scroller.anchor - t;
+    karaokePad(lyr); karaokeCue();
+    lyr.scrollTop = Math.max(0, cueYAt(t) - anchorPx()); markLine(cueIndexAt(t));
+  } else if(t < scroller.lead){
+    if(scroller.sung){ scroller.sung = false; scroller.cueN = 0; document.body.classList.add("introing"); fitLyrics(); }
+    showCue(); lyr.scrollTop = 0;
+  } else {
+    if(!scroller.sung) startSung();
+    lyr.scrollTop = (t - scroller.lead) * scroller.speed;
+  }
+  scroller.elapsed = t; scroller.pos = lyr.scrollTop; scroller.lastSet = lyr.scrollTop;
+  showElapsed();
+}
+(() => {
+  const hit = $("progHit"), bar = $("songProg"); let drag = false;
+  const at = e => { const r = bar.getBoundingClientRect(); return Math.max(0, Math.min(1, (e.clientX - r.left) / Math.max(1, r.width))) * scroller.total; };
+  hit.addEventListener("pointerdown", e => { if(!scroller.active || bar.hidden || rec.on) return; drag = true; try{ hit.setPointerCapture(e.pointerId); }catch(_){} e.preventDefault(); seekTo(at(e)); });
+  hit.addEventListener("pointermove", e => { if(drag) seekTo(at(e)); });
+  const end = () => { drag = false; };
+  hit.addEventListener("pointerup", end); hit.addEventListener("pointercancel", end);
+  bar.addEventListener("keydown", e => {
+    const d = {ArrowRight: 5, ArrowUp: 5, ArrowLeft: -5, ArrowDown: -5}[e.key]; if(d === undefined || rec.on) return;
+    e.preventDefault(); e.stopPropagation(); seekTo(scroller.elapsed + d);
+  });
+})();
 function setProg(f){
   const pct = Math.max(0, Math.min(100, f * 100));
   $("songProgFill").style.transform = `scaleX(${pct / 100})`;
-  const r = Math.round(pct); if($("songProg").getAttribute("aria-valuenow") != r) $("songProg").setAttribute("aria-valuenow", r);
+  const r = Math.round(pct); if($("songProg").getAttribute("aria-valuenow") != r){ $("songProg").setAttribute("aria-valuenow", r); $("songProg").setAttribute("aria-valuetext", fmtDur(scroller.elapsed) + " / " + fmtDur(scroller.total)); }
 }
 function showCount(title, m){
   $("ciTitle").textContent = title || ""; $("ciNum").textContent = ""; $("ciNum").className = "ci-num";
@@ -2537,7 +2579,7 @@ function stopScroll(silent){
   cancelAnimationFrame(scroller.raf);
   scroller.active = false; scroller.paused = false; scroller.speed = 0; swipe.down = false; swipe.until = 0;
   scroller.lead = 0; scroller.sung = true; document.body.classList.remove("introing");
-  $("nowLyrics").classList.remove("playing", "karaoke");
+  $("nowLyrics").classList.remove("playing", "karaoke", "kcol"); $("nowLyrics").style.paddingTop = ""; scroller.padTop = 0;
   $("songProg").hidden = true; setProg(0);
   document.body.classList.remove("playing"); fitLyrics();
   setPlayBtn("idle");
