@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-12 7951aa4a0a">
+<meta name="app-updated" content="2026-11-24 9384c40e4e">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -749,6 +749,28 @@ label.opt{cursor:pointer}
 @keyframes introOut{to{opacity:0;visibility:hidden}}
 @media (prefers-reduced-motion:reduce){.intro{display:none}}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}.ci-num.pop,.ticket.issued{animation:none}.stub-torn{display:none}}
+/* Tel door tijdens het nummer (klik + puls): knop in de strook, alleen bij een nummer met tempo */
+.clickfact{display:none}
+body.playing .playfact.clickfact.has{display:grid;background:transparent;box-shadow:inset 0 0 0 2px color-mix(in srgb,currentColor 55%,transparent);color:var(--on-stock)}
+body.playing .playfact.clickfact.has[aria-pressed="true"]{background:var(--on-stock);color:var(--stock);box-shadow:none}
+@media (min-width:700px) and (min-height:521px), (min-width:1001px){
+  body.playing .playfact.clickfact.has{color:var(--paper);box-shadow:inset 0 0 0 3px var(--paper)}
+  body.playing .playfact.clickfact.has[aria-pressed="true"]{background:var(--paper);color:var(--stock);box-shadow:none}
+}
+@media (max-width:699px) and (min-height:521px){
+  body.playing .playfact.clickfact.has{color:var(--paper);box-shadow:inset 0 0 0 2px var(--paper)}
+  body.playing .playfact.clickfact.has[aria-pressed="true"]{background:var(--paper);color:var(--stock);box-shadow:none}
+}
+@media (max-height:520.98px){ body.setmode.playing .stage .ticket{--stub:290px} }
+/* iPhone staand: titel in de strook hooguit 2 regels (met …), anders duwt een lange titel de tekst omlaag */
+@media (max-width:699px) and (min-height:521px){
+  body.playing #nowTitle,body.setmode #nowTitle{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
+}
+/* Puls op de tel: alleen een rand rond het scherm (geen schermvullende flits), ook bij minder beweging */
+.beatpulse{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:0;box-shadow:inset 0 0 0 12px var(--stock-fg)}
+.beatpulse.acc{box-shadow:inset 0 0 0 22px var(--stock-fg)}
+.beatpulse.on{animation:beatPulse .2s ease-out}
+@keyframes beatPulse{from{opacity:1}to{opacity:0}}
 </style>
 <script>
 /* Instellingen vóór de eerste weergave: scherm (licht/donker), hoofdkleur en taal, zodat er niets knippert.
@@ -846,6 +868,7 @@ label.opt{cursor:pointer}
             <span class="stub-of" id="nowStubOf"></span>
             <button type="button" class="playfact backfact" id="setBack" aria-label="Terug naar setlist" title="Terug naar setlist" data-i18n-attr="aria-label:setBack;title:setBack"><svg class="ico-back" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 5.5 8 12l6.5 6.5"/></svg><svg class="ico-list" viewBox="0 0 24 24" aria-hidden="true" fill="currentColor"><rect x="5" y="5" width="14" height="3" rx="1"/><rect x="5" y="10.5" width="14" height="3" rx="1"/><rect x="5" y="16" width="14" height="3" rx="1"/></svg></button>
             <button type="button" class="playfact restartfact" id="restartBtn" aria-label="Opnieuw vanaf het begin" title="Opnieuw vanaf het begin" data-i18n-attr="aria-label:restart;title:restart"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 4v4.5H9"/></svg></button>
+            <button type="button" class="playfact clickfact" id="clickBtn" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3.5h6l3.5 17h-13z"/><path d="M12 15 17.5 6"/><path d="M7.5 15h9"/></svg></button>
             <button type="button" class="playfact pausefact" id="pauseBtn" aria-label="Pauze" title="Pauze"></button>
             <button type="button" class="playfact" id="playBtn" aria-label="Start met aftellen" title="Start met aftellen"></button>
             <span class="play-cap" id="playCap" data-i18n="pbAgain">Nog een keer</span>
@@ -1076,6 +1099,14 @@ label.opt{cursor:pointer}
             <input type="checkbox" class="switch" id="optClick" role="switch">
           </label>
           <label class="opt">
+            <span class="opt-txt"><span class="opt-name" data-i18n="opt.songClick">Tel door tijdens het nummer</span><span class="note" data-i18n="opt.songClickNote">Klik op elke tel zolang de tekst loopt, alleen bij nummers met een tempo. Tijdens het spelen ook aan of uit te zetten met de knop in de strook.</span></span>
+            <input type="checkbox" class="switch" id="optSongClick" role="switch">
+          </label>
+          <label class="opt">
+            <span class="opt-txt"><span class="opt-name" data-i18n="opt.pulse">Puls op de tel</span><span class="note" data-i18n="opt.pulseNote">De rand van het scherm licht op op elke tel, bij het aftellen en tijdens het doortellen. Voor wie de klik niet hoort.</span></span>
+            <input type="checkbox" class="switch" id="optPulse" role="switch">
+          </label>
+          <label class="opt">
             <span class="opt-txt"><span class="opt-name" data-i18n="opt.tempoTab">Tempo-tab</span><span class="note" data-i18n="opt.tempoNote">Tempo berekenen uit een opname van de repetitie of het origineel.</span></span>
             <input type="checkbox" class="switch" id="optTempo" role="switch">
           </label>
@@ -1096,7 +1127,7 @@ label.opt{cursor:pointer}
             <button class="btn small" id="optUpdate" type="button" data-i18n="opt.updateCheck">Zoek naar update</button>
           </div>
           <div class="opt">
-            <div class="opt-txt"><span class="opt-name" data-i18n="opt.reset">Instellingen terugzetten</span><span class="note" data-i18n="opt.resetNote">Logo, bandnaam, kleur, scherm, taal en aftellen terug naar standaard. Nummers en setlists blijven staan.</span></div>
+            <div class="opt-txt"><span class="opt-name" data-i18n="opt.reset">Instellingen terugzetten</span><span class="note" data-i18n="opt.resetNote">Logo, bandnaam, kleur, scherm, taal, aftellen en puls terug naar standaard. Nummers en setlists blijven staan.</span></div>
             <button class="btn small ghost danger" id="optReset" type="button" data-i18n="opt.resetBtn">Terugzetten</button>
           </div>
         </div>
@@ -1188,6 +1219,7 @@ label.opt{cursor:pointer}
   <div class="ci-beats" id="ciBeats" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
   <div class="ci-hint" data-i18n="tapCancel">Tik om te annuleren</div>
 </div>
+<div class="beatpulse" id="beatPulse" aria-hidden="true"></div>
 <div class="toast" id="toast" hidden></div>
 <div class="updatebar" id="updateBar" role="status" hidden>
   <span data-i18n="newVersion">Nieuwe versie klaar</span>
@@ -1207,7 +1239,7 @@ const ls = {
 
 /* ---------- instellingen en taal ---------- */
 const LS_OPTS = "setlist-trekker-settings", LS_LOGO = "setlist-trekker-logo";
-const OPT_DEFAULT = {band:"", theme:"dark", accent:"#F26B1D", lang:"nl", countBars:1, countClick:true, showTempo:false, tabLabels:"full", keepAwake:false};
+const OPT_DEFAULT = {band:"", theme:"dark", accent:"#F26B1D", lang:"nl", countBars:1, countClick:true, songClick:false, pulse:true, showTempo:false, tabLabels:"full", keepAwake:false};
 let opts = Object.assign({}, OPT_DEFAULT, ls.get(LS_OPTS, {}));
 function saveOpts(){ ls.set(LS_OPTS, opts); }
 // Elke tekst als [Nederlands, Engels]. {naam} wordt ingevuld door t().
@@ -1481,6 +1513,12 @@ const I18N = {
   "opt.bar1": ["1 maat", "1 bar"],
   "opt.bar2": ["2 maten", "2 bars"],
   "opt.click": ["Klik bij het aftellen", "Click during count-in"],
+  "opt.songClick": ["Tel door tijdens het nummer", "Keep counting during the song"],
+  "opt.songClickNote": ["Klik op elke tel zolang de tekst loopt, alleen bij nummers met een tempo. Tijdens het spelen ook aan of uit te zetten met de knop in de strook.", "A click on every beat while the lyrics run, only for songs with a tempo. Can also be switched on or off with the button in the strip while playing."],
+  "opt.pulse": ["Puls op de tel", "Pulse on the beat"],
+  "opt.pulseNote": ["De rand van het scherm licht op op elke tel, bij het aftellen en tijdens het doortellen. Voor wie de klik niet hoort.", "The edge of the screen lights up on every beat, during the count-in and while counting on. For anyone who can't hear the click."],
+  "beatOn": ["Doortellen aanzetten", "Turn on counting"],
+  "beatOff": ["Doortellen uitzetten", "Turn off counting"],
   "opt.clickNote": ["Uit: alleen de cijfers op het scherm, zonder geluid.", "Off: only the numbers on screen, no sound."],
   "opt.tempoTab": ["Tempo-tab", "Tempo tab"],
   "opt.tempoNote": ["Tempo berekenen uit een opname van de repetitie of het origineel.", "Calculate the tempo from a recording of the rehearsal or the original."],
@@ -1502,7 +1540,7 @@ const I18N = {
   "opt.updating": ["Nieuwe versie wordt opgehaald", "Downloading the new version"],
   "opt.updateNA": ["Bijwerken lukt alleen in de geïnstalleerde app", "Updating only works in the installed app"],
   "opt.reset": ["Instellingen terugzetten", "Reset settings"],
-  "opt.resetNote": ["Logo, bandnaam, kleur, scherm, taal en aftellen terug naar standaard. Nummers en setlists blijven staan.", "Logo, band name, colour, screen, language and count-in back to default. Songs and setlists stay."],
+  "opt.resetNote": ["Logo, bandnaam, kleur, scherm, taal, aftellen en puls terug naar standaard. Nummers en setlists blijven staan.", "Logo, band name, colour, screen, language, count-in and pulse back to default. Songs and setlists stay."],
   "opt.resetBtn": ["Terugzetten", "Reset"],
   "opt.resetAsk": ["Instellingen terugzetten?", "Reset settings?"],
   "opt.resetDone": ["Instellingen teruggezet", "Settings reset"],
@@ -2034,6 +2072,9 @@ document.addEventListener("keydown", e => { if(e.key === "Escape" && $("overlay"
 /* ---------- lyrics play-along ---------- */
 let lyricsFor = null, speedFactor = 1;
 const scroller = {active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
+// Doortellen tijdens het nummer: op = aan/uit (blijft staan voor volgende nummers en de setlist), spb = seconden per tel,
+// anchor = audiotijd van tel 1 na het aftellen (zelfde raster als de aftelklikken), pt = wachtende pulsen
+const beat = {on: false, timer: 0, next: 0, n: 0, spb: 0, anchor: 0, pt: []};
 const swipe = {down: false, until: 0}; // met de vinger in de tekst tijdens het spelen (zie showElapsed)
 function fmtDur(sec){ sec = Math.max(0, Math.round(sec)); return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); }
 function parseDur(v){
@@ -2066,7 +2107,38 @@ function setPauseBtn(){
   p.innerHTML = paused ? ICON_PLAY : ICON_PAUSE;
   const l = t(paused ? "pbResume" : "pbPause"); p.setAttribute("aria-label", l); p.title = l;
   p.disabled = !(scroller.active && scroller.speed);
+  setClickBtn();
 }
+function setClickBtn(){
+  const b = $("clickBtn"); b.setAttribute("aria-pressed", beat.on ? "true" : "false");
+  const l = t(beat.on ? "beatOff" : "beatOn"); b.setAttribute("aria-label", l); b.title = l;
+}
+function pulse(acc){
+  const el = $("beatPulse"); el.classList.remove("on"); el.classList.toggle("acc", !!acc); void el.offsetWidth; el.classList.add("on");
+}
+// Klikken vooruit plannen op de audioklok (zoals de metronoom). Liep de app achter (achtergrond, iOS),
+// dan naar de eerstvolgende tel springen in plaats van alle gemiste tikken in een keer te spelen.
+function beatTick(){
+  const ctx = audio();
+  if(beat.next < ctx.currentTime - .05){ const k = Math.ceil((ctx.currentTime - beat.next) / beat.spb); beat.next += k * beat.spb; beat.n += k; }
+  while(beat.next < ctx.currentTime + .12){
+    const acc = beat.n % 4 === 0; click(beat.next, acc);
+    if(opts.pulse){ const d = Math.max(0, (beat.next - ctx.currentTime) * 1000); beat.pt.push(setTimeout(() => { beat.pt.shift(); pulse(acc); }, d)); }
+    beat.next += beat.spb; beat.n++;
+  }
+}
+function startBeat(at){
+  stopBeat(); if(!beat.spb) return;
+  beat.next = at; beat.n = 0; beat.timer = setInterval(beatTick, 25); beatTick();
+}
+function stopBeat(){ clearInterval(beat.timer); beat.timer = 0; beat.pt.forEach(clearTimeout); beat.pt = []; }
+// Aan of uit (knop in de strook of Instellingen); tijdens het spelen meteen op het raster van het nummer
+function setBeat(on){
+  beat.on = !!on; setClickBtn();
+  if(!beat.on){ stopBeat(); return; }
+  if(scroller.active && beat.spb && !(scroller.paused && scroller.speed)) startBeat(beat.anchor);
+}
+beat.on = !!opts.songClick;
 setPlayBtn("idle");
 // Scherm wakker houden: tijdens het spelen, of altijd als "Scherm altijd aan" (opts.keepAwake) aan staat
 async function wakeOn(){
@@ -2081,6 +2153,7 @@ function applyAwake(){ if(opts.keepAwake) wakeOn(); else if(!scroller.active) wa
 function startPlayAlong(){
   const s = songs.find(x => x.id === currentId); if(!s || !s.lyrics) return;
   stopScroll(true); stopMet();
+  beat.spb = s.bpm ? 60 / s.bpm : 0; $("clickBtn").classList.toggle("has", !!s.bpm);
   $("nowElapsed").textContent = "0:00";
   const lyr = $("nowLyrics"); lyr.classList.add("playing"); lyr.scrollTop = 0;
   scroller.active = true; scroller.paused = true; scroller.total = s.duration || 210; scroller.elapsed = 0;
@@ -2107,6 +2180,8 @@ function startPlayAlong(){
       scroller.countTimers.push(setTimeout(() => { setPlayBtn("count", b + 1); flash($("beatsNow"), b); countBeat(b, String(b + 1)); }, (.15 + i * spb) * 1000));
     }
     scroller.countTimers.push(setTimeout(go, (.15 + beats * spb) * 1000));
+    beat.anchor = t0 + beats * spb; // tel 1 van het nummer, op hetzelfde raster als het aftellen
+    if(beat.on) startBeat(beat.anchor);
   } else {
     setPlayBtn("start");
     ["3", "2", "1"].forEach((n, i) => scroller.countTimers.push(setTimeout(() => countBeat(i + 1, n), 100 + i * 700)));
@@ -2161,6 +2236,7 @@ function showCount(title){
 function countBeat(i, label){
   const n = $("ciNum"); n.textContent = label;
   n.className = "ci-num" + (i === 0 ? " first" : ""); void n.offsetWidth; n.classList.add("pop");
+  if(opts.pulse) pulse(i % 4 === 0);
   $("ciBeats").querySelectorAll("i").forEach((d, k) => d.classList.toggle("on", k <= i));
 }
 function hideCount(){ $("countin").hidden = true; }
@@ -2177,9 +2253,12 @@ function togglePause(){
   // iPad heeft een eigen pauzeknop: de stopknop blijft dan een stopknop
   setPlayBtn(scroller.paused && !isPad() ? "resume" : "stop");
   if(scroller.paused) toast(t("paused"));
+  if(scroller.paused) stopBeat();
+  else if(beat.on && beat.spb){ beat.anchor = audio().currentTime + .05; startBeat(beat.anchor); } // na pauze opnieuw vanaf tel 1
 }
 function stopScroll(silent){
   scroller.countTimers.forEach(clearTimeout); scroller.countTimers = [];
+  stopBeat();
   hideCount();
   cancelAnimationFrame(scroller.raf);
   scroller.active = false; scroller.paused = false; scroller.speed = 0; swipe.down = false; swipe.until = 0;
@@ -2196,6 +2275,7 @@ $("playBtn").addEventListener("click", () => {
   userStop();
 });
 $("pauseBtn").addEventListener("click", togglePause);
+$("clickBtn").addEventListener("click", () => setBeat(!beat.on));
 // Opnieuw vanaf het begin: aftellen en de tekst weer bovenaan (ook in de setlist-modus)
 $("restartBtn").addEventListener("click", () => { if(scroller.active) startPlayAlong(); });
 $("nowLyrics").addEventListener("click", () => { if(scroller.active && scroller.speed) togglePause(); });
@@ -2949,7 +3029,7 @@ function renderSettings(){
   $("optBand").value = opts.band || "";
   $("optBand").placeholder = "Switchbone";
   setRadio("optTheme", opts.theme); setRadio("optLang", opts.lang); setRadio("optCount", opts.countBars); setRadio("optTabs", opts.tabLabels);
-  $("optClick").checked = !!opts.countClick; $("optAwake").checked = !!opts.keepAwake; $("optTempo").checked = !!opts.showTempo;
+  $("optClick").checked = !!opts.countClick; $("optSongClick").checked = !!opts.songClick; $("optPulse").checked = !!opts.pulse; $("optAwake").checked = !!opts.keepAwake; $("optTempo").checked = !!opts.showTempo;
   $("optFontVal").textContent = Math.round(fontScale * 100) + "%";
   renderSwatches(); renderVersion(); if(typeof renderSync === "function") renderSync();
 }
@@ -2967,6 +3047,8 @@ document.querySelectorAll('input[name="optLang"]').forEach(r => r.addEventListen
 document.querySelectorAll('input[name="optTabs"]').forEach(r => r.addEventListener("change", () => { opts.tabLabels = r.value; saveOpts(); applyTabs(); refit(); }));
 document.querySelectorAll('input[name="optCount"]').forEach(r => r.addEventListener("change", () => { opts.countBars = +r.value; saveOpts(); renderNow(); }));
 $("optClick").addEventListener("change", () => { opts.countClick = $("optClick").checked; saveOpts(); });
+$("optSongClick").addEventListener("change", () => { opts.songClick = $("optSongClick").checked; saveOpts(); setBeat(opts.songClick); });
+$("optPulse").addEventListener("change", () => { opts.pulse = $("optPulse").checked; saveOpts(); });
 $("optAwake").addEventListener("change", () => { opts.keepAwake = $("optAwake").checked; saveOpts(); applyAwake(); });
 $("optTempo").addEventListener("change", () => { opts.showTempo = $("optTempo").checked; saveOpts(); applyTabs(); });
 $("optFontDown").addEventListener("click", () => setFont(fontScale - .1));
@@ -3013,7 +3095,7 @@ $("optReset").addEventListener("click", async () => {
   if(!await ask(t("opt.resetAsk"), t("opt.resetNote"), t("opt.resetBtn"), true)) return;
   // Persoonlijk: niet naar de band sturen. Bij een gekoppeld apparaat komen logo, naam en kleur van de band daarna terug.
   syncQuiet = true;
-  try{ opts = Object.assign({}, OPT_DEFAULT); saveOpts(); logoData = ""; try{ await storeLogo(""); }catch(e){} }
+  try{ opts = Object.assign({}, OPT_DEFAULT); saveOpts(); setBeat(opts.songClick); logoData = ""; try{ await storeLogo(""); }catch(e){} }
   finally{ syncQuiet = false; syncSoon(); }
   applyLook(); applyLogo(); applyTabs(); applyAwake(); relabel(); toast(t("opt.resetDone"));
 });
