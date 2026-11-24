@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-24 5a8339313f">
+<meta name="app-updated" content="2026-11-24 fb0672cea9">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -770,6 +770,28 @@ body.playing .playfact.clickfact.has[aria-pressed="true"]{background:var(--on-st
 .intro-cue{display:none}
 body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-size:calc(22px * var(--ls,1));line-height:1.1;letter-spacing:.02em;text-transform:uppercase;color:var(--stock-fg)}
 @media (min-width:700px) and (min-height:521px), (min-width:1001px){ body.introing .intro-cue{font-size:calc(30px * var(--ls,1))} }
+/* Karaoke: regels als spans; alleen kleur verandert (geen gewicht of maat, anders verspringen de regels) */
+.lyrics{position:relative}
+.lyrics .ln.past{color:var(--mute)}
+.lyrics .ln.cur{color:var(--stock-fg)}
+body.recording .lyrics .ln.next{text-decoration:underline;text-decoration-color:var(--stock-fg);text-decoration-thickness:3px;text-underline-offset:.18em}
+.recbar{position:fixed;left:16px;right:16px;z-index:35;display:flex;align-items:center;gap:10px;padding:10px;border-radius:var(--r-sm);background:var(--ink-3);box-shadow:0 8px 30px var(--shade)}
+.recbar[hidden]{display:none}
+.rec-info{flex:1;min-width:0;font-weight:700;color:var(--paper)}
+.recbar .rec-tap{min-height:64px;padding:0 22px;font-size:20px;touch-action:manipulation}
+.recbar #recUndo{min-height:64px;touch-action:manipulation}
+@media (max-width:420px){ .recbar{gap:8px;padding:8px} .recbar .rec-info{flex:none;font-size:14px;white-space:nowrap} .recbar #recUndo{padding:0 12px} .recbar .rec-tap{flex:1;min-width:0;padding:0 12px;font-size:17px;line-height:1.15} }
+.cue-box{display:flex;flex-direction:column;gap:8px;padding:12px;border:1px solid var(--line-2);border-radius:var(--r-sm)}
+.cue-box .note{margin:0}
+.bars-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;min-height:44px}
+.find-sm{color:var(--stock-fg);font-size:14px;font-weight:700;text-decoration:none}
+.find-sm[aria-disabled="true"]{visibility:hidden}
+.bars-out{font-weight:700;color:var(--mute)}
+/* Karaoke en tikken: ruimte onder de tekst, zodat ook de laatste regels op ankerhoogte kunnen komen */
+.lyrics.karaoke{padding-bottom:60vh}
+.fields .wide2{grid-column:span 2}
+.fields .meter-note{grid-column:1 / -1;order:99;margin:0;color:var(--stock-fg)}
+@media (max-width:520px){.fields .wide2{grid-column:span 1}}
 /* Puls op de tel: alleen een rand rond het scherm (geen schermvullende flits), ook bij minder beweging */
 .beatpulse{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:0;box-shadow:inset 0 0 0 12px var(--stock-fg)}
 .beatpulse.acc{box-shadow:inset 0 0 0 22px var(--stock-fg)}
@@ -1193,8 +1215,11 @@ body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-si
       <div class="field has-find"><label class="label" for="fBpm">Tempo (BPM)</label><span class="find-in"><input type="number" id="fBpm" min="30" max="300" inputmode="numeric"><a class="find" id="lkBpm" target="_blank" rel="noopener" data-i18n="lkBpm">Zoek origineel tempo ↗</a></span></div>
       <div class="field has-find"><label class="label" for="fKey" data-i18n="fKey">Toonsoort</label><span class="find-in"><input type="text" id="fKey" placeholder="bv. Am" data-i18n-attr="placeholder:fKeyPh"><a class="find" id="lkKey" target="_blank" rel="noopener" data-i18n="lkKey">Zoek originele toonsoort ↗</a></span></div>
       <label class="field wide"><span class="label" data-i18n="fArtist">Artiest / origineel</span><input type="text" id="fArtist"></label>
+      <label class="field"><span class="label" data-i18n="fMeter">Maatsoort</span><select id="fMeter"><option value="4">4/4</option><option value="3">3/4</option><option value="2">2/4</option><option value="5">5/4</option><option value="6">6/8</option><option value="12">12/8</option></select></label>
       <label class="field"><span class="label" data-i18n="fDur">Duur (m:ss)</span><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"></label>
       <label class="field"><span class="label" data-i18n="fIntro">Intro (maten)</span><input type="number" id="fIntro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
+      <p class="note meter-note" id="meterNote" data-i18n="meterNote" hidden>Bij 6/8 en 12/8 telt de app in achtsten: vul het tempo dan ook in achtsten in.</p>
+      <div class="field wide2"><span class="label" data-i18n="fBars">Lengte</span><span class="bars-row"><output class="bars-out" id="fBars">–</output><a class="find-sm" id="lkMeter" target="_blank" rel="noopener" data-i18n="lkMeter">Zoek maatsoort ↗</a></span></div>
     </div>
     <div class="field"><span class="label" id="fStatusL">Status</span>
       <div class="seg seg-status" role="radiogroup" aria-labelledby="fStatusL">
@@ -1206,6 +1231,14 @@ body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-si
     <div class="row">
       <a class="btn small" id="lkLyr" target="_blank" rel="noopener" data-i18n="lkLyr">Zoek tekst ↗</a>
       <span class="note" data-i18n="lkNote">Opent een zoekopdracht in een nieuw tabblad. Neem de tekst daarna hier over.</span>
+    </div>
+    <div class="cue-box">
+      <span class="label" data-i18n="cueH">Karaoke</span>
+      <p class="note" id="cueNote"></p>
+      <div class="row">
+        <button class="btn small" id="cueRec" type="button" data-i18n="cueRec">Tijden vastleggen</button>
+        <button class="btn small ghost" id="cueClear" type="button" data-i18n="cueClear">Tijden wissen</button>
+      </div>
     </div>
     <label class="field"><span class="label" data-i18n="fLyrics">Tekst</span><textarea id="fLyrics" placeholder="Plak hier de tekst. Akkoorden mogen erbij." data-i18n-attr="placeholder:fLyricsPh"></textarea><span class="note" data-i18n="lyrNote">Bij opslaan worden dubbele lege regels en resten van tekstsites (zoals “Embed” en “You might also like”) weggehaald. Zet [Refrein] of [Couplet] op een eigen regel, dan valt het op tijdens het spelen.</span></label>
     <div class="err" id="edErr" hidden></div>
@@ -1226,6 +1259,11 @@ body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-si
   <div class="ci-hint" data-i18n="tapCancel">Tik om te annuleren</div>
 </div>
 <div class="beatpulse" id="beatPulse" aria-hidden="true"></div>
+<div class="recbar" id="recBar" hidden>
+  <span class="rec-info" id="recInfo" aria-live="polite"></span>
+  <button class="btn" id="recUndo" type="button" data-i18n="recUndo">Terug</button>
+  <button class="btn solid rec-tap" id="recTap" type="button" data-i18n="recTap">Tik: regel begint</button>
+</div>
 <div class="toast" id="toast" hidden></div>
 <div class="updatebar" id="updateBar" role="status" hidden>
   <span data-i18n="newVersion">Nieuwe versie klaar</span>
@@ -1365,6 +1403,35 @@ const I18N = {
   "edEdit": ["Nummer bewerken", "Edit song"],
   "errTitle": ["Vul een titel in.", "Enter a title."],
   "errBpm": ["Tempo moet tussen 30 en 300 BPM liggen.", "Tempo must be between 30 and 300 BPM."],
+  "fMeter": ["Maatsoort", "Time signature"],
+  "lkMeter": ["Zoek maatsoort ↗", "Find time signature ↗"],
+  "fBars": ["Lengte", "Length"],
+  "barsOut": ["≈ {n} maten", "≈ {n} bars"],
+  "barsNeed": ["Vul tempo en duur in", "Fill in tempo and length"],
+  "cueH": ["Karaoke", "Karaoke"],
+  "cueRec": ["Tijden vastleggen", "Record timings"],
+  "cueClear": ["Tijden wissen", "Clear timings"],
+  "cueNeed": ["Vul eerst het tempo in en plak de tekst. Daarna tik je tijdens het nummer bij het begin van elke regel; bij het spelen licht dan de regel op die gezongen wordt.", "First fill in the tempo and paste the lyrics. Then tap at the start of every line while the song plays; when playing, the line being sung lights up."],
+  "cueNone": ["Nog geen tijden. Speel het nummer live met de band, direct na het aftellen, en tik bij het begin van elke regel. Daarna licht bij het spelen de regel op die gezongen wordt, en weet de app wanneer de zang begint.", "No timings yet. Play the song live with the band, straight after the count-in, and tap at the start of every line. When playing, the line being sung then lights up, and the app knows when the vocals start."],
+  "meterNote": ["Bij 6/8 en 12/8 telt de app in achtsten: vul het tempo dan ook in achtsten in.", "With 6/8 and 12/8 the app counts in eighths: fill in the tempo in eighths too."],
+  "cueAll": ["Tijden vastgelegd voor alle {n} regels. De zang begint na {b} maten.", "Timings recorded for all {n} lines. The vocals start after {b} bars."],
+  "cuePart": ["De tekst is gewijzigd: {k} van de {n} regels hebben nog een tijd, de rest is geschat. Leg de tijden opnieuw vast voor het beste resultaat.", "The lyrics have changed: {k} of {n} lines still have a timing, the rest is estimated. Record the timings again for the best result."],
+  "cueLost": ["De tekst is te veel gewijzigd, de oude tijden passen niet meer. Leg ze opnieuw vast.", "The lyrics have changed too much, the old timings no longer fit. Record them again."],
+  "cueClearAsk": ["Tijden wissen?", "Clear timings?"],
+  "cueClearBody": ["De tekst loopt daarna weer gelijkmatig mee. Dit gaat ook naar de band.", "The lyrics will scroll evenly again. This also goes to the band."],
+  "cueCleared": ["Tijden gewist", "Timings cleared"],
+  "recInfo": ["Regel {k} van {n}", "Line {k} of {n}"],
+  "recWait": ["Wacht op het aftellen…", "Wait for the count-in…"],
+  "recUndo": ["Terug", "Back"],
+  "recTap": ["Tik: regel begint", "Tap: line starts"],
+  "recDone": ["Alle regels getikt", "All lines tapped"],
+  "recSaveAsk": ["Tijden bewaren?", "Save timings?"],
+  "recSaveBody": ["Alle {n} regels hebben een tijd. De zang begint na {b} maten; dat komt ook bij Intro te staan.", "All {n} lines have a timing. The vocals start after {b} bars; this is also set as the intro."],
+  "recSave": ["Bewaren", "Save"],
+  "recSaved": ["Tijden bewaard", "Timings saved"],
+  "recStopAsk": ["Stoppen met tikken?", "Stop tapping?"],
+  "recStopBody": ["Je hebt {k} van de {n} regels getikt. Die worden niet bewaard.", "You tapped {k} of the {n} lines. They won't be saved."],
+  "recStop": ["Stoppen", "Stop"],
   "fIntro": ["Intro (maten)", "Intro (bars)"],
   "errIntro": ["Schrijf het aantal maten intro als een getal van 0 tot 64.", "Write the number of intro bars as a number from 0 to 64."],
   "errIntroBpm": ["Vul ook het tempo in, dan weet de app hoe lang een maat duurt.", "Fill in the tempo too, so the app knows how long a bar is."],
@@ -1621,7 +1688,7 @@ async function initStore(){
   useLocal();
 }
 async function saveSong(s){
-  const body = {title:s.title, artist:s.artist||"", bpm:s.bpm||null, key:s.key||"", duration:s.duration||null, intro:s.intro||null, lyrics:s.lyrics||"", status:songStatus(s), updatedAt:Date.now()};
+  const body = {title:s.title, artist:s.artist||"", bpm:s.bpm||null, key:s.key||"", duration:s.duration||null, intro:s.intro||null, meter:s.meter||null, lyrics:s.lyrics||"", status:songStatus(s), updatedAt:Date.now()};
   if(mode === "db"){
     const ref = s.id ? db.collection("songs").doc(s.id) : db.collection("songs").doc();
     await ref.set(body);
@@ -1632,6 +1699,8 @@ async function saveSong(s){
   // Eigen tijd voor de tekst: bij samen met de band wint de laatst gewijzigde tekst, los van status of tempo
   const old = i >= 0 ? songs[i] : null, lyrCh = !old || (old.lyrics || "") !== body.lyrics;
   const full = Object.assign({id}, body, {lyricsAt: lyrCh ? (body.lyrics || old ? body.updatedAt : 0) : (+old.lyricsAt || 0)});
+  // Karaoketijden blijven staan (ook bij een gewijzigde tekst: cueBeats zoekt de regels op)
+  if(old && Array.isArray(old.cues)){ full.cues = old.cues; full.cuesAt = +old.cuesAt || 0; }
   if(i >= 0) songs[i] = full; else songs.push(full);
   sortSongs(); ls.set(LS_SONGS, songs); renderAll();
   return id;
@@ -1957,17 +2026,17 @@ function openEditor(id){
   const s = songs.find(x => x.id === id) || {};
   $("edTitle").textContent = id ? t("edEdit") : t("edAdd");
   $("fTitle").value = s.title || ""; $("fArtist").value = s.artist || "";
-  $("fBpm").value = s.bpm || (id ? "" : (detectedBpm || "")); $("fKey").value = s.key || ""; $("fDur").value = s.duration ? fmtDur(s.duration) : ""; $("fIntro").value = s.intro || ""; $("fLyrics").value = s.lyrics || ""; setRadio("fStatus", songStatus(s));
+  $("fBpm").value = s.bpm || (id ? "" : (detectedBpm || "")); $("fKey").value = s.key || ""; $("fDur").value = s.duration ? fmtDur(s.duration) : ""; $("fIntro").value = s.intro || ""; $("fMeter").value = String(meterOf(s)); $("fLyrics").value = s.lyrics || ""; setRadio("fStatus", songStatus(s));
   $("edDelete").hidden = !id; $("edDelete").dataset.armed = ""; $("edDelete").textContent = t("delete");
   $("edErr").hidden = true;
-  updateLookups();
+  updateLookups(); updateEdExtra();
   $("overlay").hidden = false; $("fTitle").focus();
 }
 function titleCase(str){ return (str || "").replace(/(^|[\s(\/-])(\p{L})/gu, (m, p, c) => p + c.toLocaleUpperCase("nl")); }
 function updateLookups(){
   const t = $("fTitle").value.trim(), a = $("fArtist").value.trim();
   const q = s => "https://www.google.com/search?q=" + encodeURIComponent(`"${t}" ${a} ${s}`.trim());
-  [["lkBpm", "bpm tempo"], ["lkKey", "key"], ["lkLyr", "lyrics"]].forEach(([id, s]) => {
+  [["lkBpm", "bpm tempo"], ["lkKey", "key"], ["lkLyr", "lyrics"], ["lkMeter", "time signature"]].forEach(([id, s]) => {
     const el = $(id);
     if(t){ el.href = q(s); el.removeAttribute("aria-disabled"); } else { el.removeAttribute("href"); el.setAttribute("aria-disabled", "true"); }
   });
@@ -1985,8 +2054,34 @@ $("nowEdit").addEventListener("click", () => openEditor(currentId));
 $("edCancel").addEventListener("click", closeEditor);
 $("overlay").addEventListener("click", e => { if(e.target === $("overlay")) closeEditor(); });
 document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("overlay").hidden) closeEditor(); });
+// Lengte in maten en de karaoke-status in de editor
+function updateEdExtra(){
+  const bpm = +$("fBpm").value, dur = parseDur($("fDur").value.trim() || "x"), m = +$("fMeter").value || 4;
+  $("meterNote").hidden = m < 6;
+  $("fBars").textContent = bpm && dur ? t("barsOut", {n: Math.round(dur * bpm / 60 / m)}) : t("barsNeed");
+  const s = songs.find(x => x.id === editingId), lyr = $("fLyrics").value;
+  const ok = !!bpm && !!cueLineTexts(lyr).length && !readOnly;
+  $("cueRec").disabled = !ok;
+  const probe = s ? Object.assign({}, s, {lyrics: lyr}) : null, cb = cueBeats(probe);
+  $("cueClear").hidden = !(s && Array.isArray(s.cues) && s.cues.length);
+  let note = !ok ? t("cueNeed") : t("cueNone");
+  if(cb && cb.beats && cb.hit === cb.n) note = t("cueAll", {n: cb.n, b: Math.round(cb.beats[0] / m)});
+  else if(cb && cb.beats) note = t("cuePart", {k: cb.hit, n: cb.n});
+  else if(cb) note = t("cueLost");
+  $("cueNote").textContent = note;
+}
+["fBpm", "fDur", "fLyrics"].forEach(id => $(id).addEventListener("input", updateEdExtra));
+$("fMeter").addEventListener("change", updateEdExtra);
 $("editor").addEventListener("submit", async e => {
   e.preventDefault();
+  const id = await editorSave(); if(!id) return;
+  const wasNew = !editingId;
+  closeEditor();
+  toast(wasNew ? t("added") : t("saved"));
+  if(!wasNew && id === currentId) renderNow();
+});
+// Opslaan zoals de knop Opslaan, zonder te sluiten; geeft het id (of null bij een fout)
+async function editorSave(){
   const title = $("fTitle").value.trim();
   const bpmRaw = $("fBpm").value.trim();
   const bpm = bpmRaw ? Math.round(Number(bpmRaw)) : null;
@@ -1997,16 +2092,22 @@ $("editor").addEventListener("submit", async e => {
   if(durRaw && !duration){ showErr(t("errDur")); return; }
   const introRaw = $("fIntro").value.trim(), intro = introRaw ? Number(introRaw) : 0;
   if(introRaw && !(Number.isInteger(intro) && intro >= 0 && intro <= 64)){ showErr(t("errIntro")); return; }
-  if(intro && !bpm){ showErr(t("errIntroBpm")); return; }
+  if(intro && !bpm){ showErr(t("errIntroBpm")); return null; }
   $("edSave").disabled = true;
   try{
-    const id = await saveSong({id:editingId, title, artist:titleCase($("fArtist").value.trim()), bpm, key:$("fKey").value.trim(), duration, intro, lyrics:cleanLyrics($("fLyrics").value), status:(document.querySelector('input[name="fStatus"]:checked') || {}).value});
-    const wasNew = !editingId;
-    closeEditor();
-    toast(wasNew ? t("added") : t("saved"));
-    if(!wasNew && id === currentId) renderNow();
-  }catch(err){ showErr(writeError(err)); }
+    return await saveSong({id:editingId, title, artist:titleCase($("fArtist").value.trim()), bpm, key:$("fKey").value.trim(), duration, intro, meter: +$("fMeter").value || 4, lyrics:cleanLyrics($("fLyrics").value), status:(document.querySelector('input[name="fStatus"]:checked') || {}).value});
+  }catch(err){ showErr(writeError(err)); return null; }
   finally{ $("edSave").disabled = false; }
+}
+$("cueRec").addEventListener("click", async () => {
+  const id = await editorSave(); if(!id) return;
+  closeEditor(); startRec(id);
+});
+$("cueClear").addEventListener("click", async () => {
+  const s = songs.find(x => x.id === editingId); if(!s) return;
+  if(!await ask(t("cueClearAsk"), t("cueClearBody"), t("cueClear"), true)) return;
+  const now = Date.now(); s.cues = []; s.cuesAt = now; s.updatedAt = now;
+  ls.set(LS_SONGS, songs); renderAll(); updateEdExtra(); toast(t("cueCleared"));
 });
 $("edDelete").addEventListener("click", async () => {
   const b = $("edDelete");
@@ -2027,11 +2128,42 @@ function cleanLyrics(t){
   if(lines.length && /\blyrics$/i.test(lines[0].trim()) && lines[0].trim().split(/\s+/).length <= 12) lines.shift();
   return lines.join("\n").replace(/\n{3,}/g, "\n\n").replace(/^\s*\n+/, "").replace(/\s+$/, "");
 }
+// Karaoke: een "regel" is een niet-lege regel die geen kopje ([Refrein]) en geen regel met alleen akkoorden is.
+// Overal (tekst tonen, tikken, afspelen, editor) dezelfde indeling, op de opgeschoonde tekst.
+const RX_TAG = /^\s*\[[^\]]+\]\s*$/, RX_CHORD = /^[A-G][#b]?(m|maj|min|dim|aug|sus|add|M)?\d*(sus\d|add\d|maj\d|b\d|#\d)*(\/[A-G][#b]?)?$/;
+function isCueLine(l){ const x = l.trim(); if(!x || RX_TAG.test(x)) return false; return !x.split(/\s+/).every(w => RX_CHORD.test(w)); }
+function cueLineTexts(lyrics){ return cleanLyrics(lyrics || "").split("\n").filter(isCueLine).map(l => l.trim()); }
+function lineHash(l){ let h = 2166136261; for(let i = 0; i < l.length; i++){ h ^= l.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
+function validCues(c){ return Array.isArray(c) ? c.filter(x => Array.isArray(x) && typeof x[0] === "string" && Number.isFinite(+x[1])) : undefined; }
+function meterOf(s){ return [2, 3, 4, 5, 6, 12].includes(+(s && s.meter)) ? +s.meter : 4; }
+// Bewaarde tijden (in tellen) bij de huidige tekst zoeken: per regel op volgorde via een korte hash, zodat een
+// kleine tekstwijziging de rest laat staan. Ontbrekende regels worden geschat tussen de buren.
+function cueBeats(s){
+  if(!s || !Array.isArray(s.cues) || !s.cues.length || !s.lyrics) return null;
+  const hs = cueLineTexts(s.lyrics).map(lineHash), n = hs.length; if(!n) return null;
+  const out = new Array(n).fill(null); let j = 0, hit = 0;
+  for(let k = 0; k < n; k++) for(let d = 0; d < 6 && j + d < s.cues.length; d++){
+    if(s.cues[j + d][0] === hs[k]){ out[k] = +s.cues[j + d][1]; j += d + 1; hit++; break; }
+  }
+  if(hit < Math.max(1, Math.ceil(n * .6))) return {beats: null, hit, n};
+  const known = out.map((v, k) => v == null ? -1 : k).filter(k => k >= 0);
+  const gap = known.length > 1 ? (out[known[known.length - 1]] - out[known[0]]) / (known[known.length - 1] - known[0]) : 8;
+  for(let k = 0; k < n; k++){
+    if(out[k] != null) continue;
+    const a = known.filter(x => x < k).pop(), b = known.find(x => x > k);
+    if(a != null && b != null) out[k] = out[a] + (out[b] - out[a]) * (k - a) / (b - a);
+    else if(a != null) out[k] = out[a] + gap * (k - a);
+    else out[k] = Math.max(0, out[b] - gap * (b - k));
+  }
+  for(let k = 1; k < n; k++) if(out[k] < out[k - 1]) out[k] = out[k - 1];
+  return {beats: out, hit, n};
+}
 function renderLyrics(el, txt){
-  el.textContent = "";
+  el.textContent = ""; let k = 0;
   txt.split("\n").forEach((line, i) => {
     if(i) el.append("\n");
-    if(/^\s*\[[^\]]+\]\s*$/.test(line)){ const sp = document.createElement("span"); sp.className = "tag"; sp.textContent = line.trim().replace(/^\[|\]$/g, ""); el.append(sp); }
+    if(RX_TAG.test(line)){ const sp = document.createElement("span"); sp.className = "tag"; sp.textContent = line.trim().replace(/^\[|\]$/g, ""); el.append(sp); }
+    else if(isCueLine(line)){ const sp = document.createElement("span"); sp.className = "ln"; sp.dataset.k = k++; sp.textContent = line; el.append(sp); }
     else el.append(line);
   });
 }
@@ -2085,11 +2217,13 @@ document.addEventListener("keydown", e => { if(e.key === "Escape" && $("overlay"
 
 /* ---------- lyrics play-along ---------- */
 let lyricsFor = null, speedFactor = 1;
-const scroller = {lead:0, sung:true, cueN:0, active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
+const scroller = {anchor:0, off:0, pauseAt:0, cues:null, lead:0, sung:true, cueN:0, active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
 // Doortellen tijdens het nummer: op = aan/uit (blijft staan voor volgende nummers en de setlist), spb = seconden per tel,
 // anchor = audiotijd van tel 1 na het aftellen (zelfde raster als de aftelklikken), pt = wachtende pulsen
-const beat = {on: false, timer: 0, next: 0, n: 0, spb: 0, anchor: 0, pt: []};
-const swipe = {down: false, until: 0}; // met de vinger in de tekst tijdens het spelen (zie showElapsed)
+const beat = {meter: 4, on: false, timer: 0, next: 0, n: 0, spb: 0, anchor: 0, pt: []};
+const swipe = {down: false, until: 0};
+// Tijden vastleggen (meetikken): id van het nummer, getikte tellen per regel, audiotijd van tel 1 na het aftellen
+const rec = {on: false, id: null, taps: [], n: 0, anchor: 0, started: false}; // met de vinger in de tekst tijdens het spelen (zie showElapsed)
 function fmtDur(sec){ sec = Math.max(0, Math.round(sec)); return Math.floor(sec / 60) + ":" + String(sec % 60).padStart(2, "0"); }
 function parseDur(v){
   const m = v.match(/^(\d{1,2})[:.,](\d{1,2})$/); if(m){ const s = (+m[1]) * 60 + (+m[2]); return (+m[2]) < 60 && s >= 20 && s <= 1800 ? s : null; }
@@ -2102,7 +2236,7 @@ const ICON_AGAIN = '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stro
 const ico = svg => svg.replace("<svg ", '<svg class="ico" ');
 // state: "idle" | "count" (met n) | "start" | "stop" | "resume"
 const pbState = {s: "idle", n: 0};
-function countBeats(){ return opts.countBars === 2 ? 8 : 4; } // 1 of 2 maten aftellen (Instellingen)
+function countBeats(m){ return (opts.countBars === 2 ? 2 : 1) * (m || 4); } // 1 of 2 maten aftellen (Instellingen), in de maatsoort van het nummer
 function setPlayBtn(state, n){
   pbState.s = state; pbState.n = n;
   const b = $("playBtn"); let label = t("pbStart"); let html = ICON_PLAY; let stop = false;
@@ -2136,7 +2270,7 @@ function beatTick(){
   const ctx = audio();
   if(beat.next < ctx.currentTime - .05){ const k = Math.ceil((ctx.currentTime - beat.next) / beat.spb); beat.next += k * beat.spb; beat.n += k; }
   while(beat.next < ctx.currentTime + .12){
-    const acc = beat.n % 4 === 0; click(beat.next, acc);
+    const acc = beat.n % (beat.meter || 4) === 0; click(beat.next, acc);
     if(opts.pulse){ const d = Math.max(0, (beat.next - ctx.currentTime) * 1000); beat.pt.push(setTimeout(() => { beat.pt.shift(); pulse(acc); }, d)); }
     beat.next += beat.spb; beat.n++;
   }
@@ -2166,8 +2300,15 @@ function wakeOff(){
 function applyAwake(){ if(opts.keepAwake) wakeOn(); else if(!scroller.active) wakeOff(); }
 function startPlayAlong(){
   const s = songs.find(x => x.id === currentId); if(!s || !s.lyrics) return;
-  stopScroll(true); stopMet();
-  beat.spb = s.bpm ? 60 / s.bpm : 0; $("clickBtn").classList.toggle("has", !!s.bpm);
+  const keepRec = rec.on; stopScroll(true); stopMet(); // stopScroll beëindigt het tikken; bij opnieuw beginnen gaat het door
+  if(keepRec){ rec.on = true; $("recBar").hidden = false; }
+  beat.spb = s.bpm ? 60 / s.bpm : 0; beat.meter = meterOf(s); $("clickBtn").classList.toggle("has", !!s.bpm);
+  if(rec.on){ rec.taps = []; rec.started = false; rec.n = cueLineTexts(s.lyrics).length; setSpeed(1); updRec(); }
+  // Karaoke: tijden in seconden vanaf het einde van het aftellen (alleen met tempo en passende tijden)
+  const cb = !rec.on && s.bpm ? cueBeats(s) : null;
+  scroller.cues = cb && cb.beats ? cb.beats.map(b => b * 60 / s.bpm) : null;
+  $("nowLyrics").classList.toggle("karaoke", !!scroller.cues || rec.on);
+  markLine(-1);
   $("nowElapsed").textContent = "0:00";
   const lyr = $("nowLyrics"); lyr.classList.add("playing"); lyr.scrollTop = 0;
   scroller.active = true; scroller.paused = true; scroller.total = s.duration || 210; scroller.elapsed = 0;
@@ -2176,8 +2317,10 @@ function startPlayAlong(){
   const go = () => {
     hideCount();
     const max = Math.max(0, lyr.scrollHeight - lyr.clientHeight);
-    // Zang na de intro (maten x 4 tellen): tot dan blijft de tekst staan, daarna loopt hij in de resterende tijd
-    scroller.lead = s.intro && s.bpm ? Math.min(s.intro * 4 * 60 / s.bpm, Math.max(0, scroller.total - 10)) : 0;
+    // Zang na de intro (maten x tellen per maat): tot dan blijft de tekst staan, daarna loopt hij in de resterende tijd.
+    // Met karaoketijden begint de zang bij de eerste getikte regel; bij het tikken zelf is er geen intro.
+    scroller.lead = rec.on ? 0 : scroller.cues ? scroller.cues[0] : s.intro && s.bpm ? Math.min(s.intro * meterOf(s) * 60 / s.bpm, Math.max(0, scroller.total - 10)) : 0;
+    if(rec.on){ rec.started = true; document.body.classList.add("recording"); updRec(); }
     scroller.sung = !scroller.lead; scroller.cueN = 0; document.body.classList.toggle("introing", !scroller.sung);
     if(!scroller.sung) showCue();
     scroller.speed = max / Math.max(1, scroller.total - scroller.lead); scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
@@ -2188,17 +2331,18 @@ function startPlayAlong(){
     setProg(0); $("songProg").hidden = false; fitLyrics();
     scroller.raf = requestAnimationFrame(step);
   };
-  showCount(s.title);
+  showCount(s.title, s.bpm ? meterOf(s) : 4);
   if(s.bpm){
     const ctx = audio(), spb = 60 / s.bpm, t0 = ctx.currentTime + .15;
-    const beats = countBeats();
+    const m = meterOf(s), beats = countBeats(m);
     for(let i = 0; i < beats; i++){
-      const b = i % 4; // bij 2 maten twee keer 1 tot 4
+      const b = i % m; // bij 2 maten twee keer 1 tot m
       if(opts.countClick) click(t0 + i * spb, b === 0);
       scroller.countTimers.push(setTimeout(() => { setPlayBtn("count", b + 1); flash($("beatsNow"), b); countBeat(b, String(b + 1)); }, (.15 + i * spb) * 1000));
     }
     scroller.countTimers.push(setTimeout(go, (.15 + beats * spb) * 1000));
     beat.anchor = t0 + beats * spb; // tel 1 van het nummer, op hetzelfde raster als het aftellen
+    rec.anchor = beat.anchor; scroller.anchor = beat.anchor; scroller.off = 0;
     if(beat.on) startBeat(beat.anchor);
   } else {
     setPlayBtn("start");
@@ -2210,20 +2354,36 @@ function step(now){
   if(!scroller.active) return;
   const lyr = $("nowLyrics");
   const dt = Math.min(.25, (now - scroller.last) / 1000); scroller.last = now;
+  // Tikken: de tijd loopt gewoon door, de tekst schuift zo dat de volgende regel op ankerhoogte staat
+  if(rec.on){
+    if(!scroller.paused) scroller.elapsed += dt;
+    const ln = lineEls(), nx = ln[Math.min(rec.taps.length, ln.length - 1)];
+    if(nx){ const target = Math.max(0, nx.offsetTop - anchorPx()); lyr.scrollTop += (target - lyr.scrollTop) * Math.min(1, dt * 8); scroller.lastSet = lyr.scrollTop; }
+    showElapsed(); scroller.raf = requestAnimationFrame(step); return;
+  }
   // Swipen: zolang de vinger (of het nadeinen) de tekst beweegt, schrijft de app niets; tijd en voortgang springen mee
   if(swipe.down || now < swipe.until){
     scroller.pos = lyr.scrollTop; scroller.lastSet = lyr.scrollTop;
     if(!scroller.sung && scroller.pos > 2) startSung(); // tijdens de intro naar de tekst geschoven: de zang is begonnen
-    if(scroller.speed && scroller.sung) scroller.elapsed = Math.max(0, Math.min(scroller.total, scroller.lead + scroller.pos / scroller.speed));
+    if(scroller.cues && scroller.sung){ scroller.elapsed = Math.max(0, Math.min(scroller.total, cueTimeAt(lyr.scrollTop + anchorPx()))); markLine(cueIndexAt(scroller.elapsed)); if(!scroller.paused) scroller.off = audio().currentTime - scroller.anchor - scroller.elapsed; }
+    else if(scroller.speed && scroller.sung) scroller.elapsed = Math.max(0, Math.min(scroller.total, scroller.lead + scroller.pos / scroller.speed));
     showElapsed();
     scroller.raf = requestAnimationFrame(step); return;
   }
   if(!scroller.paused && !scroller.sung){
-    scroller.elapsed += dt * speedFactor;
+    scroller.elapsed = scroller.cues ? cueClock() : scroller.elapsed + dt * speedFactor;
     if(scroller.elapsed < scroller.lead){ showCue(); showElapsed(); scroller.raf = requestAnimationFrame(step); return; }
     startSung();
   }
-  if(!scroller.paused){
+  if(!scroller.paused && scroller.cues){
+    // Karaoke: de regel die gezongen wordt staat op ankerhoogte en licht op; tussen twee regels schuift hij gelijkmatig.
+    // De tijd komt van de audioklok (zoals de klik en het tikken), zodat een hapering niets verschuift.
+    scroller.elapsed = cueClock();
+    lyr.scrollTop = Math.max(0, cueYAt(scroller.elapsed) - anchorPx()); scroller.lastSet = lyr.scrollTop; scroller.pos = lyr.scrollTop;
+    markLine(cueIndexAt(scroller.elapsed));
+    showElapsed();
+    if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); if(setPlay.active) setSongEnded(); else { toast(t("songEnd")); autoNext(); } return; }
+  } else if(!scroller.paused){
     scroller.pos += scroller.speed * speedFactor * dt;
     scroller.elapsed += dt * speedFactor;
     lyr.scrollTop = scroller.pos; scroller.lastSet = lyr.scrollTop;
@@ -2232,9 +2392,76 @@ function step(now){
   }
   scroller.raf = requestAnimationFrame(step);
 }
+// Karaoke: regels, ankerhoogte (boven de vervaging van de tekst) en de omrekening tijd <-> scrollpositie
+function cueClock(){ return Math.max(0, audio().currentTime - scroller.anchor - scroller.off); }
+function lineEls(){ return [...$("nowLyrics").querySelectorAll(".ln")]; }
+function anchorPx(){ return $("nowLyrics").clientHeight * .28; }
+function cueIndexAt(t){ const c = scroller.cues || []; let i = -1; for(let k = 0; k < c.length && c[k] <= t; k++) i = k; return i; }
+function cueYAt(t){
+  const c = scroller.cues, ln = lineEls(); if(!c || !ln.length) return 0;
+  const n = Math.min(c.length, ln.length), Y = k => ln[k].offsetTop;
+  if(t < c[0]) return c[0] > 0 ? Y(0) * Math.max(0, t) / c[0] : Y(0);
+  for(let k = 0; k < n - 1; k++) if(t < c[k + 1]) return Y(k) + (Y(k + 1) - Y(k)) * (t - c[k]) / Math.max(.001, c[k + 1] - c[k]);
+  const lh = ln[n - 1].offsetHeight, gap = n > 1 ? (c[n - 1] - c[0]) / (n - 1) : 4;
+  return Y(n - 1) + lh * Math.min(1, (t - c[n - 1]) / Math.max(1, gap));
+}
+function cueTimeAt(y){
+  const c = scroller.cues, ln = lineEls(); if(!c || !ln.length) return 0;
+  const n = Math.min(c.length, ln.length), Y = k => ln[k].offsetTop;
+  if(y < Y(0)) return Y(0) > 0 ? c[0] * Math.max(0, y) / Y(0) : c[0];
+  for(let k = 0; k < n - 1; k++) if(y < Y(k + 1)) return c[k] + (c[k + 1] - c[k]) * (y - Y(k)) / Math.max(1, Y(k + 1) - Y(k));
+  return c[n - 1];
+}
+let markedLine = -2;
+function markLine(i, next){
+  if(i === markedLine && next === undefined) return; markedLine = i;
+  lineEls().forEach((el, k) => { el.classList.toggle("past", k < i); el.classList.toggle("cur", k === i); el.classList.toggle("next", next !== undefined && k === next); });
+}
+// ---------- tijden vastleggen (meetikken) ----------
+function startRec(id){
+  const s = songs.find(x => x.id === id); if(!s || !s.bpm || !s.lyrics) return;
+  setTab("play"); showSong(id, true);
+  rec.on = true; rec.id = id; rec.taps = [];
+  const bar = $("recBar"); bar.hidden = false;
+  bar.style.bottom = (document.querySelector(".tabbar").getBoundingClientRect().height + 12) + "px";
+  startPlayAlong();
+}
+function updRec(){
+  const k = rec.taps.length;
+  $("recInfo").textContent = rec.started ? t("recInfo", {k: Math.min(k + 1, rec.n), n: rec.n}) : t("recWait");
+  $("recUndo").disabled = !k; $("recTap").disabled = !rec.started;
+  markLine(k - 1, rec.started ? k : -1);
+}
+function recMark(){
+  if(!rec.on || !rec.started || !beat.spb) return;
+  const beats = (audio().currentTime - rec.anchor) / beat.spb; // audioklok: precies, en hetzelfde raster als de klik
+  rec.taps.push(Math.max(0, beats)); updRec();
+  if(rec.taps.length >= rec.n) finishRec();
+}
+function recUndo(){ if(rec.on && rec.taps.length){ rec.taps.pop(); updRec(); } }
+function endRec(){ rec.on = false; rec.started = false; $("recBar").hidden = true; document.body.classList.remove("recording"); markLine(-1); }
+async function finishRec(){
+  const id = rec.id, taps = rec.taps.slice(); endRec(); stopScroll(false);
+  const s = songs.find(x => x.id === id); if(!s) return;
+  const m = meterOf(s), b = Math.round(taps[0] / m);
+  toast(t("recDone"));
+  if(!await ask(t("recSaveAsk"), t("recSaveBody", {n: taps.length, b}), t("recSave"))) return;
+  const lines = cueLineTexts(s.lyrics), now = Date.now();
+  s.cues = lines.map((l, k) => [lineHash(l), Math.round(taps[k] * 1000) / 1000]); s.cuesAt = now;
+  s.intro = b || null; s.updatedAt = now;
+  ls.set(LS_SONGS, songs); renderAll(); renderNow(); toast(t("recSaved"));
+}
+$("recTap").addEventListener("pointerdown", e => { e.preventDefault(); recMark(); });
+$("recUndo").addEventListener("pointerdown", e => { e.preventDefault(); recUndo(); });
+$("nowLyrics").addEventListener("pointerdown", e => { if(rec.on){ e.preventDefault(); recMark(); } });
+document.addEventListener("keydown", e => {
+  if(!rec.on || e.target.closest("input, textarea, select")) return;
+  if([" ", "Enter", "ArrowDown", "ArrowRight", "PageDown"].includes(e.key)){ e.preventDefault(); if(!e.repeat) recMark(); }
+  else if(["Backspace", "ArrowUp", "ArrowLeft", "PageUp"].includes(e.key)){ e.preventDefault(); if(!e.repeat) recUndo(); }
+});
 // Hoeveel maten tot de zang (alleen bijwerken als het getal verandert)
 function showCue(){
-  const s = songs.find(x => x.id === currentId), bar = s && s.bpm ? 4 * 60 / s.bpm : 1;
+  const s = songs.find(x => x.id === currentId), bar = s && s.bpm ? meterOf(s) * 60 / s.bpm : 1;
   const n = Math.max(1, Math.ceil((scroller.lead - scroller.elapsed) / bar - .001));
   if(n !== scroller.cueN){ scroller.cueN = n; $("introCue").textContent = n === 1 ? t("cueBar") : t("cueBars", {n}); }
 }
@@ -2267,42 +2494,50 @@ function setProg(f){
   $("songProgFill").style.transform = `scaleX(${pct / 100})`;
   const r = Math.round(pct); if($("songProg").getAttribute("aria-valuenow") != r) $("songProg").setAttribute("aria-valuenow", r);
 }
-function showCount(title){
+function showCount(title, m){
   $("ciTitle").textContent = title || ""; $("ciNum").textContent = ""; $("ciNum").className = "ci-num";
-  $("ciBeats").querySelectorAll("i").forEach(d => d.classList.remove("on"));
+  $("ciBeats").innerHTML = "<i></i>".repeat(Math.min(12, m || 4)); // een stip per tel van de maat
   $("countin").hidden = false;
 }
 function countBeat(i, label){
   const n = $("ciNum"); n.textContent = label;
   n.className = "ci-num" + (i === 0 ? " first" : ""); void n.offsetWidth; n.classList.add("pop");
-  if(opts.pulse) pulse(i % 4 === 0);
+  if(opts.pulse) pulse(i === 0);
   $("ciBeats").querySelectorAll("i").forEach((d, k) => d.classList.toggle("on", k <= i));
 }
 function hideCount(){ $("countin").hidden = true; }
 // Zelf stoppen: in de setlist-modus terug naar de Setlist-tab, anders blijf je op Spelen
-function userStop(){
+async function userStop(){
+  if(rec.on){
+    if(rec.taps.length && !await ask(t("recStopAsk"), t("recStopBody", {k: rec.taps.length, n: rec.n}), t("recStop"), true)) return;
+    endRec(); stopScroll(false); return;
+  }
   stopScroll(false);
   if(setPlay.active){ endSetPlay(); setTab("setlist"); toast(t("setStopped")); }
   else autoNext();
 }
 $("countin").addEventListener("click", userStop);
 function togglePause(){
+  if(rec.on) return; // tijdens het tikken loopt de audioklok door, dus geen pauze
   if(!scroller.active || scroller.countTimers.length && scroller.speed === 0) return;
   scroller.paused = !scroller.paused; scroller.last = performance.now();
   // iPad heeft een eigen pauzeknop: de stopknop blijft dan een stopknop
   setPlayBtn(scroller.paused && !isPad() ? "resume" : "stop");
   if(scroller.paused) toast(t("paused"));
   if(scroller.paused) stopBeat();
+  // Karaoke op de audioklok: de pauzetijd telt niet mee (na swipen tijdens pauze geldt de nieuwe plek)
+  if(scroller.cues){ const now = audio().currentTime; if(scroller.paused) scroller.pauseAt = now; else scroller.off = now - scroller.anchor - scroller.elapsed; }
   else if(beat.on && beat.spb){ beat.anchor = audio().currentTime + .05; startBeat(beat.anchor); } // na pauze opnieuw vanaf tel 1
 }
 function stopScroll(silent){
   scroller.countTimers.forEach(clearTimeout); scroller.countTimers = [];
   stopBeat();
+  if(rec.on) endRec();
   hideCount();
   cancelAnimationFrame(scroller.raf);
   scroller.active = false; scroller.paused = false; scroller.speed = 0; swipe.down = false; swipe.until = 0;
   scroller.lead = 0; scroller.sung = true; document.body.classList.remove("introing");
-  $("nowLyrics").classList.remove("playing");
+  $("nowLyrics").classList.remove("playing", "karaoke");
   $("songProg").hidden = true; setProg(0);
   document.body.classList.remove("playing"); fitLyrics();
   setPlayBtn("idle");
@@ -2318,7 +2553,7 @@ $("pauseBtn").addEventListener("click", togglePause);
 $("clickBtn").addEventListener("click", () => setBeat(!beat.on));
 // Opnieuw vanaf het begin: aftellen en de tekst weer bovenaan (ook in de setlist-modus)
 $("restartBtn").addEventListener("click", () => { if(scroller.active) startPlayAlong(); });
-$("nowLyrics").addEventListener("click", () => { if(scroller.active && scroller.speed) togglePause(); });
+$("nowLyrics").addEventListener("click", () => { if(!rec.on && scroller.active && (scroller.speed || scroller.cues)) togglePause(); });
 function setSpeed(f){ speedFactor = Math.min(2, Math.max(.5, Math.round(f * 10) / 10)); $("speedLbl").textContent = "×" + speedFactor.toFixed(1); }
 $("slower").addEventListener("click", () => setSpeed(speedFactor - .1));
 $("faster").addEventListener("click", () => setSpeed(speedFactor + .1));
@@ -2885,12 +3120,12 @@ $("importFile").addEventListener("change", async e => {
     let added = 0, updated = 0; const idMap = {};
     list.forEach(raw => {
       if(!raw || !raw.title) return;
-      const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, intro:raw.intro || null, lyrics:raw.lyrics || "", status:["play", "practice", "pass"].includes(raw.status) ? raw.status : undefined, updatedAt:raw.updatedAt || Date.now()};
+      const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, intro:raw.intro || null, meter:raw.meter || null, cues: validCues(raw.cues), cuesAt: +raw.cuesAt || 0, lyrics:raw.lyrics || "", status:["play", "practice", "pass"].includes(raw.status) ? raw.status : undefined, updatedAt:raw.updatedAt || Date.now()};
       const i = songs.findIndex(s => (inc.id && s.id === inc.id) || keyOf(s) === keyOf(inc));
       if(i >= 0){
         const cur = songs[i];
         const lyr = inc.lyrics || cur.lyrics || "";
-        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: lyr, lyricsAt: lyr !== (cur.lyrics || "") ? inc.updatedAt : (+cur.lyricsAt || 0), bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, intro: inc.intro || cur.intro || null, key: inc.key || cur.key || "", status: inc.status || cur.status});
+        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: lyr, lyricsAt: lyr !== (cur.lyrics || "") ? inc.updatedAt : (+cur.lyricsAt || 0), bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, intro: inc.intro || cur.intro || null, meter: inc.meter || cur.meter || null, cues: inc.cuesAt > (+cur.cuesAt || 0) ? inc.cues : cur.cues, cuesAt: Math.max(inc.cuesAt, +cur.cuesAt || 0), key: inc.key || cur.key || "", status: inc.status || cur.status});
         if(raw.id) idMap[raw.id] = cur.id;
         updated++;
       } else {
@@ -3187,7 +3422,7 @@ function stable(o){
   return JSON.stringify(o === undefined ? null : o);
 }
 const accNorm = c => { const L = window.SBLook, v = L && L.rgb(c || ""); return v ? L.hex(v) : ""; };
-function cleanSong(x){ return {id: String(x.id), title: String(x.title || ""), artist: x.artist || "", bpm: x.bpm || null, key: x.key || "", duration: x.duration || null, intro: x.intro === undefined ? undefined : (+x.intro || null), lyrics: x.lyrics || "", lyricsAt: +x.lyricsAt || 0, status: songStatus(x), updatedAt: +x.updatedAt || 0}; }
+function cleanSong(x){ return {id: String(x.id), title: String(x.title || ""), artist: x.artist || "", bpm: x.bpm || null, key: x.key || "", duration: x.duration || null, intro: x.intro === undefined ? undefined : (+x.intro || null), meter: x.meter === undefined ? undefined : (+x.meter || null), cues: validCues(x.cues), cuesAt: +x.cuesAt || 0, lyrics: x.lyrics || "", lyricsAt: +x.lyricsAt || 0, status: songStatus(x), updatedAt: +x.updatedAt || 0}; }
 function cleanSaved(x){ return {id: String(x.id), name: String(x.name || ""), ids: (x.ids || []).map(String), savedAt: +x.savedAt || 0}; }
 function syncSnap(){
   return {v: 1,
@@ -3219,6 +3454,9 @@ function syncMerge(a, b){
       if(!o.duration && x.duration) o.duration = x.duration;
       // Een oudere versie kent intro nog niet (veld ontbreekt): dan de intro van de andere versie houden
       if(w.intro === undefined && x.intro) o.intro = x.intro;
+      if(w.meter === undefined && x.meter) o.meter = x.meter;
+      // Karaoketijden hebben een eigen tijd, zoals de tekst; wissen = lege lijst met tijd
+      if(x.cuesAt > (o.cuesAt || 0) || (o.cues === undefined && Array.isArray(x.cues))){ o.cues = x.cues; o.cuesAt = x.cuesAt; }
     });
     return o;
   }).sort(byId);
