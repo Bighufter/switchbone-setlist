@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-24 ab33089b46">
+<meta name="app-updated" content="2026-11-24 eefff2d832">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -2585,6 +2585,8 @@ function stopScroll(silent){
   setPlayBtn("idle");
   const s = songs.find(x => x.id === currentId); $("timer").textContent = s && s.duration ? fmtDur(s.duration) : "";
   wakeOff();
+  // Kwam er een update binnen tijdens het spelen, dan nu alsnog de melding tonen
+  if(swReg && swReg.waiting && navigator.serviceWorker.controller) $("updateBar").hidden = false;
 }
 $("playBtn").addEventListener("click", () => {
   if(!scroller.active){ startPlayAlong(); return; }
