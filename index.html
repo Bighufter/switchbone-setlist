@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-24 eefff2d832">
+<meta name="app-updated" content="2026-11-24 49c2f960df">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -2207,7 +2207,7 @@ document.addEventListener("keydown", e => { if(e.key === "Escape" && $("overlay"
 
 /* ---------- lyrics play-along ---------- */
 let lyricsFor = null, speedFactor = 1;
-const scroller = {anchor:0, off:0, pauseAt:0, cues:null, lead:0, sung:true, cueN:0, active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
+const scroller = {token:0, anchor:0, off:0, pauseAt:0, cues:null, lead:0, sung:true, cueN:0, active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
 // Doortellen tijdens het nummer: op = aan/uit (blijft staan voor volgende nummers en de setlist), spb = seconden per tel,
 // anchor = audiotijd van tel 1 na het aftellen (zelfde raster als de aftelklikken), pt = wachtende pulsen
 const beat = {meter: 4, on: false, timer: 0, next: 0, n: 0, spb: 0, anchor: 0, pt: []};
@@ -2326,17 +2326,22 @@ function startPlayAlong(){
   };
   showCount(s.title, s.bpm ? meterOf(s) : 4);
   if(s.bpm){
-    const ctx = audio(), spb = 60 / s.bpm, t0 = ctx.currentTime + .15;
-    const m = meterOf(s), beats = countBeats(m);
-    for(let i = 0; i < beats; i++){
-      const b = i % m; // bij 2 maten twee keer 1 tot m
-      if(opts.countClick) click(t0 + i * spb, b === 0);
-      scroller.countTimers.push(setTimeout(() => { setPlayBtn("count", b + 1); flash($("beatsNow"), b); countBeat(b, String(b + 1)); }, (.15 + i * spb) * 1000));
-    }
-    scroller.countTimers.push(setTimeout(go, (.15 + beats * spb) * 1000));
-    beat.anchor = t0 + beats * spb; // tel 1 van het nummer, op hetzelfde raster als het aftellen
-    rec.anchor = beat.anchor; scroller.anchor = beat.anchor; scroller.off = 0;
-    if(beat.on) startBeat(beat.anchor);
+    const token = ++scroller.token;
+    whenAudio((ctx, woke) => {
+      if(token !== scroller.token || !scroller.active) return; // intussen gestopt of opnieuw begonnen
+      // Net wakker geworden: iets meer aanloop, want de eerste milliseconden geluid vallen op iOS soms weg
+      const spb = 60 / s.bpm, lead = woke ? .35 : .15, t0 = ctx.currentTime + lead;
+      const m = meterOf(s), beats = countBeats(m);
+      for(let i = 0; i < beats; i++){
+        const b = i % m; // bij 2 maten twee keer 1 tot m
+        if(opts.countClick) click(t0 + i * spb, b === 0);
+        scroller.countTimers.push(setTimeout(() => { setPlayBtn("count", b + 1); flash($("beatsNow"), b); countBeat(b, String(b + 1)); }, (lead + i * spb) * 1000));
+      }
+      scroller.countTimers.push(setTimeout(go, (lead + beats * spb) * 1000));
+      beat.anchor = t0 + beats * spb; // tel 1 van het nummer, op hetzelfde raster als het aftellen
+      rec.anchor = beat.anchor; scroller.anchor = beat.anchor; scroller.off = 0;
+      if(beat.on) startBeat(beat.anchor);
+    });
   } else {
     setPlayBtn("start");
     ["3", "2", "1"].forEach((n, i) => scroller.countTimers.push(setTimeout(() => countBeat(i + 1, n), 100 + i * 700)));
@@ -2572,7 +2577,7 @@ function togglePause(){
   else if(beat.on && beat.spb){ beat.anchor = audio().currentTime + .05; startBeat(beat.anchor); } // na pauze opnieuw vanaf tel 1
 }
 function stopScroll(silent){
-  scroller.countTimers.forEach(clearTimeout); scroller.countTimers = [];
+  scroller.token++; scroller.countTimers.forEach(clearTimeout); scroller.countTimers = [];
   stopBeat();
   if(rec.on) endRec();
   hideCount();
@@ -2606,9 +2611,19 @@ applyAwake();
 
 /* ---------- metronome ---------- */
 let actx = null, metTimer = null, nextTime = 0, beatN = 0, metBpm = 0, metOwner = null;
-function audio(){ if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if(actx.state === "suspended") actx.resume(); return actx; }
+// iOS zet de audio stil na een tijdje niets (of na een onderbreking: "interrupted"); hervatten gaat niet meteen
+function audio(){ if(!actx) actx = new (window.AudioContext || window.webkitAudioContext)(); if(actx.state !== "running" && actx.state !== "closed") actx.resume().catch(() => {}); return actx; }
+// Wacht tot de audio echt loopt (hooguit 600 ms). Plant je klikken terwijl de klok nog stilstaat, dan liggen ze
+// bij het hervatten al in het verleden en blijft vooral de eerste klik stil. ready(ctx, net hervat?)
+function whenAudio(ready){
+  const ctx = audio();
+  if(ctx.state === "running"){ ready(ctx, false); return; }
+  let done = false; const go = () => { if(done) return; done = true; ready(ctx, true); };
+  ctx.resume().then(go, go); setTimeout(go, 600);
+}
 function click(t, accent){
   const ctx = audio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+  t = Math.max(t, ctx.currentTime + .005); // nooit in het verleden plannen: dan is de klik al voorbij voor hij klinkt
   o.frequency.value = accent ? 1650 : 1100;
   g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(accent ? .6 : .35, t + .002); g.gain.exponentialRampToValueAtTime(0.0001, t + .05);
   o.connect(g).connect(ctx.destination); o.start(t); o.stop(t + .06);

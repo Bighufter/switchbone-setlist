@@ -1,10 +1,10 @@
 // AUTOMATISCH GEGENEREERD door scripts/build-sw.mjs. Niet met de hand aanpassen.
-const VERSION = "eefff2d832";
+const VERSION = "49c2f960df";
 // Bouwtijd. GitHub Pages bewaart sw.js tot 10 minuten op verschillende servers; vlak na het
 // publiceren kan een update-controle dus nog de vorige sw.js krijgen. Die zou het apparaat als
 // "nieuwe versie" zien (tweede melding, en bij Bijwerken terug naar de oude). Daarom weigert
 // een versie te installeren als er al een nieuwere op het apparaat staat.
-const BUILT = 1795554537622;
+const BUILT = 1795555522128;
 const CACHE = "switchbone-setlist-" + BUILT + "-" + VERSION;
 const ASSETS = [
   "./",
