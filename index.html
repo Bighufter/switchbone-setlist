@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-24 9384c40e4e">
+<meta name="app-updated" content="2026-11-24 5a8339313f">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -766,6 +766,10 @@ body.playing .playfact.clickfact.has[aria-pressed="true"]{background:var(--on-st
 @media (max-width:699px) and (min-height:521px){
   body.playing #nowTitle,body.setmode #nowTitle{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden}
 }
+/* Zang na de intro: tot de zang begint staat de tekst stil met erboven hoeveel maten het nog duurt */
+.intro-cue{display:none}
+body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-size:calc(22px * var(--ls,1));line-height:1.1;letter-spacing:.02em;text-transform:uppercase;color:var(--stock-fg)}
+@media (min-width:700px) and (min-height:521px), (min-width:1001px){ body.introing .intro-cue{font-size:calc(30px * var(--ls,1))} }
 /* Puls op de tel: alleen een rand rond het scherm (geen schermvullende flits), ook bij minder beweging */
 .beatpulse{position:fixed;inset:0;z-index:45;pointer-events:none;opacity:0;box-shadow:inset 0 0 0 12px var(--stock-fg)}
 .beatpulse.acc{box-shadow:inset 0 0 0 22px var(--stock-fg)}
@@ -902,6 +906,7 @@ body.playing .playfact.clickfact.has[aria-pressed="true"]{background:var(--on-st
           </div>
           <p class="play-hint" id="playHint"></p>
           <div class="song-prog" id="songProg" role="progressbar" aria-label="Hoever je in het nummer bent" data-i18n-attr="aria-label:progAria" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" hidden><i id="songProgFill"></i></div>
+          <div class="intro-cue" id="introCue" aria-live="polite"></div>
           <pre class="lyrics" id="nowLyrics"></pre>
           <div class="set-next" id="setNext" aria-live="polite" hidden><span class="label" data-i18n="next">Volgende</span><span class="nx-t" id="nxTitle"></span><button type="button" class="nx-play" id="nxPlay" aria-label="Speel het volgende nummer" title="Speel het volgende nummer" data-i18n-attr="aria-label:playNext;title:playNext"></button></div>
         </div>
@@ -1187,8 +1192,9 @@ body.playing .playfact.clickfact.has[aria-pressed="true"]{background:var(--on-st
       <label class="field wide"><span class="label" data-i18n="fTitle">Titel</span><input type="text" id="fTitle" required></label>
       <div class="field has-find"><label class="label" for="fBpm">Tempo (BPM)</label><span class="find-in"><input type="number" id="fBpm" min="30" max="300" inputmode="numeric"><a class="find" id="lkBpm" target="_blank" rel="noopener" data-i18n="lkBpm">Zoek origineel tempo ↗</a></span></div>
       <div class="field has-find"><label class="label" for="fKey" data-i18n="fKey">Toonsoort</label><span class="find-in"><input type="text" id="fKey" placeholder="bv. Am" data-i18n-attr="placeholder:fKeyPh"><a class="find" id="lkKey" target="_blank" rel="noopener" data-i18n="lkKey">Zoek originele toonsoort ↗</a></span></div>
-      <label class="field wide" style="grid-column:span 2"><span class="label" data-i18n="fArtist">Artiest / origineel</span><input type="text" id="fArtist"></label>
+      <label class="field wide"><span class="label" data-i18n="fArtist">Artiest / origineel</span><input type="text" id="fArtist"></label>
       <label class="field"><span class="label" data-i18n="fDur">Duur (m:ss)</span><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"></label>
+      <label class="field"><span class="label" data-i18n="fIntro">Intro (maten)</span><input type="number" id="fIntro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
     </div>
     <div class="field"><span class="label" id="fStatusL">Status</span>
       <div class="seg seg-status" role="radiogroup" aria-labelledby="fStatusL">
@@ -1359,6 +1365,11 @@ const I18N = {
   "edEdit": ["Nummer bewerken", "Edit song"],
   "errTitle": ["Vul een titel in.", "Enter a title."],
   "errBpm": ["Tempo moet tussen 30 en 300 BPM liggen.", "Tempo must be between 30 and 300 BPM."],
+  "fIntro": ["Intro (maten)", "Intro (bars)"],
+  "errIntro": ["Schrijf het aantal maten intro als een getal van 0 tot 64.", "Write the number of intro bars as a number from 0 to 64."],
+  "errIntroBpm": ["Vul ook het tempo in, dan weet de app hoe lang een maat duurt.", "Fill in the tempo too, so the app knows how long a bar is."],
+  "cueBars": ["Zang over {n} maten", "Vocals in {n} bars"],
+  "cueBar": ["Zang over 1 maat", "Vocals in 1 bar"],
   "errDur": ["Schrijf de duur als minuten:seconden, bijvoorbeeld 3:45.", "Write the length as minutes:seconds, for example 3:45."],
   "added": ["Nummer toegevoegd", "Song added"],
   "saved": ["Opgeslagen", "Saved"],
@@ -1610,7 +1621,7 @@ async function initStore(){
   useLocal();
 }
 async function saveSong(s){
-  const body = {title:s.title, artist:s.artist||"", bpm:s.bpm||null, key:s.key||"", duration:s.duration||null, lyrics:s.lyrics||"", status:songStatus(s), updatedAt:Date.now()};
+  const body = {title:s.title, artist:s.artist||"", bpm:s.bpm||null, key:s.key||"", duration:s.duration||null, intro:s.intro||null, lyrics:s.lyrics||"", status:songStatus(s), updatedAt:Date.now()};
   if(mode === "db"){
     const ref = s.id ? db.collection("songs").doc(s.id) : db.collection("songs").doc();
     await ref.set(body);
@@ -1946,7 +1957,7 @@ function openEditor(id){
   const s = songs.find(x => x.id === id) || {};
   $("edTitle").textContent = id ? t("edEdit") : t("edAdd");
   $("fTitle").value = s.title || ""; $("fArtist").value = s.artist || "";
-  $("fBpm").value = s.bpm || (id ? "" : (detectedBpm || "")); $("fKey").value = s.key || ""; $("fDur").value = s.duration ? fmtDur(s.duration) : ""; $("fLyrics").value = s.lyrics || ""; setRadio("fStatus", songStatus(s));
+  $("fBpm").value = s.bpm || (id ? "" : (detectedBpm || "")); $("fKey").value = s.key || ""; $("fDur").value = s.duration ? fmtDur(s.duration) : ""; $("fIntro").value = s.intro || ""; $("fLyrics").value = s.lyrics || ""; setRadio("fStatus", songStatus(s));
   $("edDelete").hidden = !id; $("edDelete").dataset.armed = ""; $("edDelete").textContent = t("delete");
   $("edErr").hidden = true;
   updateLookups();
@@ -1984,9 +1995,12 @@ $("editor").addEventListener("submit", async e => {
   const durRaw = $("fDur").value.trim();
   const duration = durRaw ? parseDur(durRaw) : null;
   if(durRaw && !duration){ showErr(t("errDur")); return; }
+  const introRaw = $("fIntro").value.trim(), intro = introRaw ? Number(introRaw) : 0;
+  if(introRaw && !(Number.isInteger(intro) && intro >= 0 && intro <= 64)){ showErr(t("errIntro")); return; }
+  if(intro && !bpm){ showErr(t("errIntroBpm")); return; }
   $("edSave").disabled = true;
   try{
-    const id = await saveSong({id:editingId, title, artist:titleCase($("fArtist").value.trim()), bpm, key:$("fKey").value.trim(), duration, lyrics:cleanLyrics($("fLyrics").value), status:(document.querySelector('input[name="fStatus"]:checked') || {}).value});
+    const id = await saveSong({id:editingId, title, artist:titleCase($("fArtist").value.trim()), bpm, key:$("fKey").value.trim(), duration, intro, lyrics:cleanLyrics($("fLyrics").value), status:(document.querySelector('input[name="fStatus"]:checked') || {}).value});
     const wasNew = !editingId;
     closeEditor();
     toast(wasNew ? t("added") : t("saved"));
@@ -2071,7 +2085,7 @@ document.addEventListener("keydown", e => { if(e.key === "Escape" && $("overlay"
 
 /* ---------- lyrics play-along ---------- */
 let lyricsFor = null, speedFactor = 1;
-const scroller = {active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
+const scroller = {lead:0, sung:true, cueN:0, active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
 // Doortellen tijdens het nummer: op = aan/uit (blijft staan voor volgende nummers en de setlist), spb = seconden per tel,
 // anchor = audiotijd van tel 1 na het aftellen (zelfde raster als de aftelklikken), pt = wachtende pulsen
 const beat = {on: false, timer: 0, next: 0, n: 0, spb: 0, anchor: 0, pt: []};
@@ -2162,7 +2176,11 @@ function startPlayAlong(){
   const go = () => {
     hideCount();
     const max = Math.max(0, lyr.scrollHeight - lyr.clientHeight);
-    scroller.speed = max / scroller.total; scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
+    // Zang na de intro (maten x 4 tellen): tot dan blijft de tekst staan, daarna loopt hij in de resterende tijd
+    scroller.lead = s.intro && s.bpm ? Math.min(s.intro * 4 * 60 / s.bpm, Math.max(0, scroller.total - 10)) : 0;
+    scroller.sung = !scroller.lead; scroller.cueN = 0; document.body.classList.toggle("introing", !scroller.sung);
+    if(!scroller.sung) showCue();
+    scroller.speed = max / Math.max(1, scroller.total - scroller.lead); scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
     scroller.paused = false; scroller.last = performance.now();
     songDone = true; prevId = null;
     setPlayBtn("stop");
@@ -2195,9 +2213,15 @@ function step(now){
   // Swipen: zolang de vinger (of het nadeinen) de tekst beweegt, schrijft de app niets; tijd en voortgang springen mee
   if(swipe.down || now < swipe.until){
     scroller.pos = lyr.scrollTop; scroller.lastSet = lyr.scrollTop;
-    if(scroller.speed) scroller.elapsed = Math.max(0, Math.min(scroller.total, scroller.pos / scroller.speed));
+    if(!scroller.sung && scroller.pos > 2) startSung(); // tijdens de intro naar de tekst geschoven: de zang is begonnen
+    if(scroller.speed && scroller.sung) scroller.elapsed = Math.max(0, Math.min(scroller.total, scroller.lead + scroller.pos / scroller.speed));
     showElapsed();
     scroller.raf = requestAnimationFrame(step); return;
+  }
+  if(!scroller.paused && !scroller.sung){
+    scroller.elapsed += dt * speedFactor;
+    if(scroller.elapsed < scroller.lead){ showCue(); showElapsed(); scroller.raf = requestAnimationFrame(step); return; }
+    startSung();
   }
   if(!scroller.paused){
     scroller.pos += scroller.speed * speedFactor * dt;
@@ -2207,6 +2231,21 @@ function step(now){
     if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); if(setPlay.active) setSongEnded(); else { toast(t("songEnd")); autoNext(); } return; }
   }
   scroller.raf = requestAnimationFrame(step);
+}
+// Hoeveel maten tot de zang (alleen bijwerken als het getal verandert)
+function showCue(){
+  const s = songs.find(x => x.id === currentId), bar = s && s.bpm ? 4 * 60 / s.bpm : 1;
+  const n = Math.max(1, Math.ceil((scroller.lead - scroller.elapsed) / bar - .001));
+  if(n !== scroller.cueN){ scroller.cueN = n; $("introCue").textContent = n === 1 ? t("cueBar") : t("cueBars", {n}); }
+}
+// De zang begint: melding weg, tekst krijgt de ruimte, snelheid opnieuw uit de echte hoogte
+function startSung(){
+  scroller.sung = true; scroller.elapsed = Math.max(scroller.elapsed, scroller.lead);
+  document.body.classList.remove("introing"); fitLyrics();
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const lyr = $("nowLyrics"), max = Math.max(0, lyr.scrollHeight - lyr.clientHeight);
+    if(scroller.active) scroller.speed = max / Math.max(1, scroller.total - scroller.lead);
+  }));
 }
 function showElapsed(){
   $("timer").textContent = fmtDur(scroller.elapsed) + " / " + fmtDur(scroller.total);
@@ -2262,6 +2301,7 @@ function stopScroll(silent){
   hideCount();
   cancelAnimationFrame(scroller.raf);
   scroller.active = false; scroller.paused = false; scroller.speed = 0; swipe.down = false; swipe.until = 0;
+  scroller.lead = 0; scroller.sung = true; document.body.classList.remove("introing");
   $("nowLyrics").classList.remove("playing");
   $("songProg").hidden = true; setProg(0);
   document.body.classList.remove("playing"); fitLyrics();
@@ -2845,12 +2885,12 @@ $("importFile").addEventListener("change", async e => {
     let added = 0, updated = 0; const idMap = {};
     list.forEach(raw => {
       if(!raw || !raw.title) return;
-      const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, lyrics:raw.lyrics || "", status:["play", "practice", "pass"].includes(raw.status) ? raw.status : undefined, updatedAt:raw.updatedAt || Date.now()};
+      const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, intro:raw.intro || null, lyrics:raw.lyrics || "", status:["play", "practice", "pass"].includes(raw.status) ? raw.status : undefined, updatedAt:raw.updatedAt || Date.now()};
       const i = songs.findIndex(s => (inc.id && s.id === inc.id) || keyOf(s) === keyOf(inc));
       if(i >= 0){
         const cur = songs[i];
         const lyr = inc.lyrics || cur.lyrics || "";
-        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: lyr, lyricsAt: lyr !== (cur.lyrics || "") ? inc.updatedAt : (+cur.lyricsAt || 0), bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, key: inc.key || cur.key || "", status: inc.status || cur.status});
+        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: lyr, lyricsAt: lyr !== (cur.lyrics || "") ? inc.updatedAt : (+cur.lyricsAt || 0), bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, intro: inc.intro || cur.intro || null, key: inc.key || cur.key || "", status: inc.status || cur.status});
         if(raw.id) idMap[raw.id] = cur.id;
         updated++;
       } else {
@@ -3147,7 +3187,7 @@ function stable(o){
   return JSON.stringify(o === undefined ? null : o);
 }
 const accNorm = c => { const L = window.SBLook, v = L && L.rgb(c || ""); return v ? L.hex(v) : ""; };
-function cleanSong(x){ return {id: String(x.id), title: String(x.title || ""), artist: x.artist || "", bpm: x.bpm || null, key: x.key || "", duration: x.duration || null, lyrics: x.lyrics || "", lyricsAt: +x.lyricsAt || 0, status: songStatus(x), updatedAt: +x.updatedAt || 0}; }
+function cleanSong(x){ return {id: String(x.id), title: String(x.title || ""), artist: x.artist || "", bpm: x.bpm || null, key: x.key || "", duration: x.duration || null, intro: x.intro === undefined ? undefined : (+x.intro || null), lyrics: x.lyrics || "", lyricsAt: +x.lyricsAt || 0, status: songStatus(x), updatedAt: +x.updatedAt || 0}; }
 function cleanSaved(x){ return {id: String(x.id), name: String(x.name || ""), ids: (x.ids || []).map(String), savedAt: +x.savedAt || 0}; }
 function syncSnap(){
   return {v: 1,
@@ -3177,6 +3217,8 @@ function syncMerge(a, b){
       if(!o.bpm && x.bpm) o.bpm = x.bpm;
       if(!o.key && x.key) o.key = x.key;
       if(!o.duration && x.duration) o.duration = x.duration;
+      // Een oudere versie kent intro nog niet (veld ontbreekt): dan de intro van de andere versie houden
+      if(w.intro === undefined && x.intro) o.intro = x.intro;
     });
     return o;
   }).sort(byId);
