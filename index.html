@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-25 f31962b6e0">
+<meta name="app-updated" content="2026-11-25 eedd8309ef">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -429,6 +429,11 @@ body.playing .restartfact{display:grid;background:var(--on-stock);color:var(--st
 .stage.picked .choose-head h2,.stage.picked #chooseSearch,.stage.picked #chooseList,.stage.picked #chooseNone{display:none}
 .choose-list li{grid-template-columns:minmax(0,1fr) auto}
 .choose-list .side{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+/* Bewerk-knop rechts op de regel van de artiest (scherm 2, ook in de setlist-modus zolang het nummer niet loopt) */
+.artist-row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-width:0}
+.artist-row .artist{min-width:0}
+.artist-row .ed-btn{flex:none;min-height:36px;padding:2px 14px;font-size:var(--t-s);font-weight:700}
+body.playing #nowFix{display:none}
 .choose-list .ed-btn{min-height:32px;padding:2px 12px;font-size:var(--t-xs);font-weight:700}
 h1.brand .logo{cursor:pointer}
 .choose-list li.done .t,.choose-list li.done .a,.choose-list li.done .dur{color:var(--faint)}
@@ -877,7 +882,7 @@ body.introing .intro-cue,body.outroing .intro-cue{display:block;font-weight:900;
           <div class="tk-main">
             <div class="now" id="now">
               <h2 id="nowTitle">Nog niets getrokken</h2>
-              <div class="artist" id="nowArtist">Voeg nummers toe en trek er een. Een nummer komt pas terug als de pot leeg is.</div>
+              <div class="artist-row"><div class="artist" id="nowArtist">Voeg nummers toe en trek er een. Een nummer komt pas terug als de pot leeg is.</div><button type="button" class="btn small ed-btn" id="nowFix" data-i18n="chooseEdit" hidden>Bewerk</button></div>
             </div>
 
             <div class="facts" id="nowFacts" hidden>
@@ -1855,7 +1860,7 @@ function renderNow(){
   if(!s){
     $("nowTitle").textContent = songs.length ? t("readyNext") : t("nothingYet");
     $("nowArtist").textContent = !songs.length ? t("addFirst") : (playable().length ? t("readyHint") : t("noPlayable"));
-    $("nowFacts").hidden = true; $("lyricsWrap").hidden = true;
+    $("nowFacts").hidden = true; $("lyricsWrap").hidden = true; $("nowFix").hidden = true;
     return;
   }
   $("ticket").classList.remove("blank");
@@ -1871,6 +1876,7 @@ function renderNow(){
   $("nowDur").textContent = s.duration ? fmtDur(s.duration) : "–";
   $("nowMet").disabled = !s.bpm;
   $("nowEdit").hidden = readOnly;
+  $("nowFix").hidden = readOnly || !incomplete(s); $("nowFix").setAttribute("aria-label", t("chooseEditAria", {t: s.title || t("untitled")}));
   updateTapSave();
   $("lyricsWrap").hidden = false;
   const lyr = $("nowLyrics");
@@ -2053,6 +2059,7 @@ $("fArtist").addEventListener("blur", () => { $("fArtist").value = titleCase($("
 function closeEditor(){ $("overlay").hidden = true; editingId = null; }
 $("addBtn").addEventListener("click", () => openEditor(null));
 $("nowEdit").addEventListener("click", () => openEditor(currentId));
+$("nowFix").addEventListener("click", () => openEditor(currentId));
 $("edCancel").addEventListener("click", closeEditor);
 $("overlay").addEventListener("click", e => { if(e.target === $("overlay")) closeEditor(); });
 document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("overlay").hidden) closeEditor(); });
