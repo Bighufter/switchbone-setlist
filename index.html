@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-25 c821987596">
+<meta name="app-updated" content="2026-11-25 e148215d21">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -1220,7 +1220,7 @@ body.introing .intro-cue,body.outroing .intro-cue{display:block;font-weight:900;
       <label class="field wide"><span class="label" data-i18n="fArtist">Artiest / origineel</span><input type="text" id="fArtist"></label>
       <label class="field"><span class="label" data-i18n="fMeter">Maatsoort</span><select id="fMeter"><option value="4">4/4</option><option value="3">3/4</option><option value="2">2/4</option><option value="5">5/4</option><option value="6">6/8</option><option value="12">12/8</option></select></label>
       <div class="field has-find"><label class="label" for="fDur" data-i18n="fDur">Duur (m:ss)</label><span class="find-in"><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"><a class="find" id="lkDur" target="_blank" rel="noopener" data-i18n="lkDur">Zoek lengte ↗</a></span></div>
-      <label class="field"><span class="label" data-i18n="fIntro">Intro (maten)</span><input type="number" id="fIntro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
+      <div class="field has-find"><label class="label" for="fIntro" data-i18n="fIntro">Intro (maten)</label><span class="find-in"><input type="number" id="fIntro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"><a class="find" id="lkIntro" target="_blank" rel="noopener" data-i18n="lkIntro">Zoek intro ↗</a></span></div>
       <label class="field wide2"><span class="label" data-i18n="fOutro">Outro (maten)</span><input type="number" id="fOutro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
       <p class="note meter-note" id="meterNote" data-i18n="meterNote" hidden>Bij 6/8 en 12/8 telt de app in achtsten: vul het tempo dan ook in achtsten in.</p>
       <div class="field wide2"><span class="label" data-i18n="fBars">Lengte</span><span class="bars-row"><output class="bars-out" id="fBars">–</output><a class="find-sm" id="lkMeter" target="_blank" rel="noopener" data-i18n="lkMeter">Zoek maatsoort ↗</a><a class="find-sm" id="lkForm" target="_blank" rel="noopener" data-i18n="lkForm" data-i18n-attr="title:lkFormT" title="Zoek een uitgeschreven versie met maten en tekst, om te zien na hoeveel maten de zang begint en stopt">Zoek opbouw in maten ↗</a></span></div>
@@ -1347,6 +1347,7 @@ const I18N = {
   "lkBpm": ["Zoek origineel tempo ↗", "Find original tempo ↗"],
   "lkKey": ["Zoek originele toonsoort ↗", "Find original key ↗"],
   "lkDur": ["Zoek lengte ↗", "Find length ↗"],
+  "lkIntro": ["Zoek intro ↗", "Find intro ↗"],
   "lkLyr": ["Zoek tekst ↗", "Find lyrics ↗"],
   "lkNote": ["Opent een zoekopdracht in een nieuw tabblad. Neem de tekst daarna hier over.", "Opens a search in a new tab. Then copy the lyrics here."],
   "fLyrics": ["Tekst", "Lyrics"],
@@ -2045,18 +2046,19 @@ function titleCase(str){ return (str || "").replace(/(^|[\s(\/-])(\p{L})/gu, (m,
 function updateLookups(){
   const t = $("fTitle").value.trim(), a = $("fArtist").value.trim();
   const q = s => "https://www.google.com/search?q=" + encodeURIComponent(`"${t}" ${a} ${s}`.trim());
-  [["lkBpm", "bpm tempo"], ["lkKey", "key"], ["lkDur", "song length duration"], ["lkLyr", "lyrics"], ["lkMeter", "time signature"], ["lkForm", "song structure bars intro outro chord chart"]].forEach(([id, s]) => {
+  [["lkBpm", "bpm tempo"], ["lkKey", "key"], ["lkDur", "song length duration"], ["lkIntro", "intro how many bars before vocals"], ["lkLyr", "lyrics"], ["lkMeter", "time signature"], ["lkForm", "song structure bars intro outro chord chart"]].forEach(([id, s]) => {
     const el = $(id);
     if(t){ el.href = q(s); el.removeAttribute("aria-disabled"); } else { el.removeAttribute("href"); el.setAttribute("aria-disabled", "true"); }
   });
   // Zoeklink in het veld alleen als er een titel is en het veld nog leeg is
-  ["fBpm", "fKey", "fDur"].forEach(id => $(id).closest(".field").classList.toggle("finding", !!t && !$(id).value.trim()));
+  ["fBpm", "fKey", "fDur", "fIntro"].forEach(id => $(id).closest(".field").classList.toggle("finding", !!t && !$(id).value.trim()));
 }
 $("fTitle").addEventListener("input", updateLookups);
 $("fArtist").addEventListener("input", updateLookups);
 $("fBpm").addEventListener("input", updateLookups);
 $("fKey").addEventListener("input", updateLookups);
 $("fDur").addEventListener("input", updateLookups);
+$("fIntro").addEventListener("input", updateLookups);
 $("fArtist").addEventListener("blur", () => { $("fArtist").value = titleCase($("fArtist").value); updateLookups(); });
 function closeEditor(){ $("overlay").hidden = true; editingId = null; }
 $("addBtn").addEventListener("click", () => openEditor(null));
@@ -2923,9 +2925,9 @@ function renderChoose(){
     const main = songMain(s, () => chooseSong(s.id), t("chooseOwn"));
     if(played.has(s.id)){ const d = document.createElement("span"); d.className = "tag-done"; d.textContent = t("chooseDone"); main.querySelector(".t").append(d); }
     const side = document.createElement("div"); side.className = "side"; side.append(durCell(s));
-    if(incomplete(s) && !readOnly){
+    if(!readOnly){ // altijd een Bewerk-knop in het overzicht (feedback band)
       const b = document.createElement("button"); b.type = "button"; b.className = "btn small ed-btn";
-      b.textContent = t("chooseEdit"); b.setAttribute("aria-label", t("chooseEditAria", {t: s.title || t("untitled")}));
+      b.textContent = t("chooseEdit"); b.setAttribute("aria-label", incomplete(s) ? t("chooseEditAria", {t: s.title || t("untitled")}) : t("edEdit") + ": " + (s.title || t("untitled")));
       b.addEventListener("click", () => openEditor(s.id)); side.append(b);
     }
     li.append(main, side);
