@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-25 e148215d21">
+<meta name="app-updated" content="2026-11-25 43b1ba31d3">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -124,7 +124,8 @@ a.btn[aria-disabled="true"]{opacity:.4;pointer-events:none}
 .tk-stub .label{color:var(--on-stock-2)}
 .stub-no{font-size:88px;font-weight:900;font-stretch:125%;line-height:.85}
 .stub-of{font-size:var(--t-s);font-weight:800;font-stretch:125%;letter-spacing:.06em;color:var(--on-stock-2);margin-top:-4px}
-.playfact{width:112px;height:112px;border-radius:50%;background:var(--on-stock);color:var(--stock);border:0;display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease)}
+/* padding 0 en geen eigen knopstijl: Safari geeft knoppen standaard 6px opvulling, waardoor het icoon in kleine cirkels verschoof */
+.playfact{width:112px;height:112px;border-radius:50%;background:var(--on-stock);color:var(--stock);border:0;padding:0;margin:0;-webkit-appearance:none;appearance:none;line-height:1;display:grid;place-items:center;place-content:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease)}
 .playfact:active{transform:scale(.94)}
 .playfact svg{width:44px;height:44px;display:block}
 .playfact .cnt{font-size:46px;font-weight:900;font-stretch:125%;line-height:1}
@@ -223,7 +224,7 @@ textarea{min-height:240px;resize:vertical;line-height:1.5}
 .set-next[hidden]{display:none}
 .set-next .label{color:var(--mute);flex:none}
 .set-next .nx-t{font-size:var(--t-l);font-weight:800;font-stretch:112%;text-transform:uppercase;line-height:1.15;color:var(--paper);overflow-wrap:anywhere;min-width:0}
-.nx-play{margin-left:auto;flex:none;width:56px;height:56px;border-radius:50%;border:0;background:var(--stock);color:var(--on-stock);display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease)}
+.nx-play{margin-left:auto;flex:none;width:56px;height:56px;border-radius:50%;border:0;padding:0;-webkit-appearance:none;appearance:none;background:var(--stock);color:var(--on-stock);display:grid;place-items:center;cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent;transition:transform .15s var(--ease)}
 .nx-play:active{transform:scale(.94)}
 .nx-play svg{width:22px;height:22px;display:block}
 .set-next.last .nx-play{display:none}
