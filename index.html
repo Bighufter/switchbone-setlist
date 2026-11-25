@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-25 5e2a20ec8a">
+<meta name="app-updated" content="2026-11-25 a98204c1f7">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -165,7 +165,8 @@ body.playing .prog-hit.bars .song-prog,body.setmode .prog-hit.bars .song-prog{ma
 .timer{font-size:var(--t-s);font-weight:700;color:var(--mute);min-width:3.4em;text-align:center}
 .play-hint{font-size:var(--t-s);color:var(--mute);margin:0;max-width:70ch}
 .lyrics{white-space:pre-wrap;font-family:var(--f);font-size:calc(26px * var(--ls,1) * var(--stage,1));font-weight:500;line-height:1.5;color:var(--paper);max-width:48ch;margin:0;overflow-wrap:anywhere;max-height:60vh;overflow:auto;padding-right:8px}
-.lyrics .tag{display:inline-block;font-size:.58em;font-weight:800;font-stretch:125%;letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin-top:.5em}
+/* Kopjes (Verse, Chorus, Bridge, [Refrein]): Figma iPad / Setlist afspelen, Archivo Light op 70% in de hoofdkleur */
+.lyrics .tag{display:inline-block;font-size:.7em;font-weight:300;font-stretch:100%;letter-spacing:0;text-transform:none;color:var(--stock-fg)}
 .lyrics.empty{color:var(--mute);font-size:var(--t-l)}
 .lyrics.playing{cursor:pointer;max-width:none}
 .empty{color:var(--mute)}
@@ -419,11 +420,17 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
 .restartfact{display:none}
 body.playing .restartfact{display:grid;background:var(--on-stock);color:var(--stock)}
 /* Zelf een nummer kiezen (Spelen) */
-.choose-btn{background:none;border-color:color-mix(in srgb,var(--paper) 40%,transparent);color:var(--paper);font-weight:700}
-.choose-btn:hover{background:color-mix(in srgb,var(--paper) 8%,transparent);border-color:var(--paper)}
-.stage.picked .choose-btn{display:none}
+/* Scherm 1: de keuzelijst met Random rechtsboven; op scherm 2 alleen Random (iPhone liggend) */
+.stage:not(.picked) .draw-row{flex-direction:column;flex-wrap:nowrap;align-items:stretch}
 .choose-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.choose-head .draw-btn{flex:none}
+.choose-head h2{margin:0;font-size:clamp(20px,4.6vw,var(--t-l));white-space:nowrap;font-weight:900;font-stretch:125%;text-transform:uppercase;letter-spacing:.04em}
+.stage:not(.picked) .draw-btn{min-height:52px;padding:0 26px;font-size:var(--t-m)}
+.stage.picked .choose-head h2,.stage.picked #chooseSearch,.stage.picked #chooseList,.stage.picked #chooseNone{display:none}
 .choose-list li{grid-template-columns:minmax(0,1fr) auto}
+.choose-list .side{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.choose-list .ed-btn{min-height:32px;padding:2px 12px;font-size:var(--t-xs);font-weight:700}
+h1.brand .logo{cursor:pointer}
 .choose-list li.done .t,.choose-list li.done .a,.choose-list li.done .dur{color:var(--faint)}
 .choose-list .tag-done{font-size:var(--t-s);font-weight:600;color:var(--faint);margin-left:8px}
 /* iPhone liggend: onder de trekbalk (vaste plek, verspringt niet) "Vorige nog een keer" (alleen als er een vorige is) en Overslaan */
@@ -443,15 +450,13 @@ body.playing .restartfact{display:grid;background:var(--on-stock);color:var(--st
 @media (min-height:521px), (min-width:1001px){
   body{--pad-h:calc(100dvh - 176px + var(--tab-save,0px) - env(safe-area-inset-bottom,0px))}
   /* Scherm 1 */
-  .stage:not(.picked) .draw-row{flex-direction:column;flex-wrap:nowrap;justify-content:center;gap:16px;min-height:calc(var(--pad-h) - 46px);padding:40px;position:relative;background:none;border:0}
+  .stage:not(.picked) .draw-row{gap:16px;min-height:calc(var(--pad-h) - 46px);padding:8px 0 24px;background:none;border:0}
   /* Scherm 1: groot logo in het midden (90px i.p.v. 44px; het paneel is daarom 46px lager) */
   body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) header.top{justify-content:center}
   body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) h1.brand .logo{height:90px;max-width:min(100%,560px)}
   body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) h1.brand .logo.squarish{height:118px}
-  .stage:not(.picked) .draw-btn{min-height:116px;padding:0 52px;border-radius:16px}
   .stage:not(.picked) .pot{font-size:20px;font-weight:400}
-  .stage:not(.picked) .choose-btn{min-height:64px;padding:0 36px;border-radius:12px;font-size:var(--t-l);font-weight:800}
-  .stage:not(.picked) #resetPot{position:absolute;right:12px;bottom:12px;margin:0}
+  .stage:not(.picked) #resetPot{align-self:flex-start;margin:0}
   /* Scherm 2: geen kaartje maar het nummer los op het paneel */
   body:not(.playing):not(.setmode) .stage.picked{background:none;border:0;border-radius:var(--r);padding:48px 40px 72px;min-height:var(--pad-h);position:relative;gap:32px}
   body:not(.playing):not(.setmode) .stage.picked .draw-row{display:none}
@@ -524,7 +529,6 @@ body.playing .restartfact{display:grid;background:var(--on-stock);color:var(--st
   .backfact .ico-list{display:block}
   body.playing .song-prog,body.setmode .song-prog{height:10px;border-radius:10px;margin:4px 4px 24px}
   .lyrics{font-size:calc(32px * var(--ls,1));line-height:1.3}
-  .lyrics .tag{font-size:.7em;font-weight:300;font-stretch:100%;letter-spacing:0;text-transform:none;color:var(--stock-fg);margin-top:0}
   .set-next{margin:0 -20px;padding:12px 24px;min-height:72px;gap:12px;border:0;border-radius:0;background:color-mix(in srgb,var(--stock) 32%,var(--ink))}
   .set-next .label{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
   .set-next .nx-t{font-size:32px;font-weight:800;font-stretch:62%;line-height:.9;color:var(--stock-fg)}
@@ -607,17 +611,16 @@ body.playing .restartfact{display:grid;background:var(--on-stock);color:var(--st
   .tabbar .tcount{display:none}
   /* Tekst: kopjes als [Refrein] klein en in de hoofdkleur, regels iets dichter op elkaar */
   .lyrics{font-size:calc(21px * var(--ls,1) * var(--stage,1));line-height:1.3}
-  .lyrics .tag{font-size:.76em;font-weight:300;font-stretch:100%;letter-spacing:0;text-transform:none;color:var(--stock-fg);margin-top:0}
 }
 /* iPhone staand: de drie schermen van de iPad, kleiner */
 @media (max-width:699px) and (min-height:521px){
   body{--pad-h:calc(100dvh - 148px + var(--tab-save,0px) - env(safe-area-inset-bottom,0px))}
   body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) h1.brand .logo{height:60px}
   body[data-tab="play"]:not(.playing):not(.practicing):not(.setmode):not(.stagemode):has(.stage:not(.picked)) h1.brand .logo.squarish{height:84px}
-  .stage:not(.picked) .draw-row{min-height:calc(var(--pad-h) - 26px);padding:24px 0}
-  .stage:not(.picked) .draw-btn{flex:none;width:100%;max-width:340px;min-height:88px;padding:0 20px;border-radius:14px;font-size:22px;font-stretch:100%;letter-spacing:.04em;white-space:nowrap}
-  .stage:not(.picked) .pot{flex:none;font-size:17px}
-  .stage:not(.picked) #resetPot{right:0;bottom:0}
+  .stage:not(.picked) .draw-row{min-height:calc(var(--pad-h) - 26px);padding:4px 0 16px;gap:12px}
+  .stage:not(.picked) .draw-btn{flex:none;min-height:48px;padding:0 20px;font-size:17px;font-stretch:100%;white-space:nowrap}
+  .stage:not(.picked) .pot{flex:none;font-size:15px}
+  .choose-head h2{font-size:18px;font-stretch:100%;letter-spacing:0;min-width:0;overflow:hidden;text-overflow:ellipsis}
   body:not(.playing):not(.setmode) .stage.picked{padding:24px 0 88px;gap:24px}
   body:not(.playing):not(.setmode) .stage.picked .ticket{gap:32px}
   body:not(.playing):not(.setmode) .stage.picked .tk-main{gap:18px}
@@ -631,7 +634,6 @@ body.playing .restartfact{display:grid;background:var(--on-stock);color:var(--st
   body:not(.playing):not(.setmode) .stage.picked #playHint{font-size:var(--t-xs)}
   .next-btns{flex-wrap:nowrap;gap:8px;width:100%}
   .next-btn{flex:1;min-width:0;min-height:56px;padding:0 8px;font-size:14px;font-stretch:100%;letter-spacing:.02em;line-height:1.15;white-space:normal}
-  .stage:not(.picked) .choose-btn{min-height:48px;padding:0 20px;font-size:var(--t-s)}
   .next-row .pot{font-size:var(--t-xs)}
   #resetPot2{right:0;bottom:0;min-height:34px;padding:4px 12px;font-size:var(--t-xs)}
   body.playing .ticket{--stub:150px}
@@ -776,8 +778,8 @@ body.playing .playfact.clickfact.has[aria-pressed="true"]{background:var(--on-st
 }
 /* Zang na de intro: tot de zang begint staat de tekst stil met erboven hoeveel maten het nog duurt */
 .intro-cue{display:none}
-body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-size:calc(22px * var(--ls,1));line-height:1.1;letter-spacing:.02em;text-transform:uppercase;color:var(--stock-fg)}
-@media (min-width:700px) and (min-height:521px), (min-width:1001px){ body.introing .intro-cue{font-size:calc(30px * var(--ls,1))} }
+body.introing .intro-cue,body.outroing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-size:calc(22px * var(--ls,1));line-height:1.1;letter-spacing:.02em;text-transform:uppercase;color:var(--stock-fg)}
+@media (min-width:700px) and (min-height:521px), (min-width:1001px){ body.introing .intro-cue,body.outroing .intro-cue{font-size:calc(30px * var(--ls,1))} }
 /* Karaoke: regels als spans; alleen kleur verandert (geen gewicht of maat, anders verspringen de regels) */
 .lyrics{position:relative}
 /* Karaoke en tikken: alleen de regel die gezongen wordt is oranje, de rest lichtgrijs (alleen kleur, anders verspringen regels) */
@@ -860,8 +862,13 @@ body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-si
           <button class="btn small ghost" id="practiceBack" type="button"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg><span data-i18n="practiceBack">Oefenlijst</span></button>
         </div>
         <div class="draw-row">
-          <button class="btn primary draw-btn" id="drawBtn" data-i18n="draw">Trek een nummer</button>
-          <button class="btn choose-btn" id="chooseBtn" type="button" data-i18n="chooseOwn">Kies zelf een nummer</button>
+          <div class="choose-head">
+            <h2 id="chooseH" data-i18n="chooseTitle">Kies een nummer</h2>
+            <button class="btn primary draw-btn" id="drawBtn" type="button" data-i18n="draw">Random</button>
+          </div>
+          <input type="search" id="chooseSearch" placeholder="Zoeken" aria-label="Zoek op titel of artiest" data-i18n-attr="placeholder:searchShort;aria-label:searchAria" autocomplete="off" enterkeyhint="search">
+          <p class="empty" id="chooseNone" hidden></p>
+          <ul class="songs pick choose-list" id="chooseList" aria-labelledby="chooseH"></ul>
           <div class="pot" id="potInfo"></div>
           <button class="btn ghost small" id="resetPot" data-i18n="resetPot" hidden>Alles terug in de pot</button>
         </div>
@@ -1185,17 +1192,6 @@ body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-si
     </div>
   </form>
 </div>
-<div class="overlay" id="chooseOverlay" hidden>
-  <div class="editor choose" role="dialog" aria-modal="true" aria-labelledby="chooseH">
-    <div class="choose-head">
-      <h2 id="chooseH" data-i18n="chooseTitle">Kies een nummer</h2>
-      <button type="button" class="btn" id="chooseClose" data-i18n="close">Sluiten</button>
-    </div>
-    <input type="search" id="chooseSearch" placeholder="Zoeken" aria-label="Zoek op titel of artiest" data-i18n-attr="placeholder:searchShort;aria-label:searchAria" autocomplete="off" enterkeyhint="search">
-    <p class="empty" id="chooseNone" hidden></p>
-    <ul class="songs pick choose-list" id="chooseList" aria-labelledby="chooseH"></ul>
-  </div>
-</div>
 <div class="overlay center" id="saveOverlay" hidden>
   <form class="editor small" id="saveForm" novalidate>
     <h2 data-i18n="saveSetTitle">Setlist bewaren</h2>
@@ -1220,6 +1216,7 @@ body.introing .intro-cue{display:block;font-weight:900;font-stretch:125%;font-si
       <label class="field"><span class="label" data-i18n="fMeter">Maatsoort</span><select id="fMeter"><option value="4">4/4</option><option value="3">3/4</option><option value="2">2/4</option><option value="5">5/4</option><option value="6">6/8</option><option value="12">12/8</option></select></label>
       <label class="field"><span class="label" data-i18n="fDur">Duur (m:ss)</span><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"></label>
       <label class="field"><span class="label" data-i18n="fIntro">Intro (maten)</span><input type="number" id="fIntro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
+      <label class="field"><span class="label" data-i18n="fOutro">Outro (maten)</span><input type="number" id="fOutro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
       <p class="note meter-note" id="meterNote" data-i18n="meterNote" hidden>Bij 6/8 en 12/8 telt de app in achtsten: vul het tempo dan ook in achtsten in.</p>
       <div class="field wide2"><span class="label" data-i18n="fBars">Lengte</span><span class="bars-row"><output class="bars-out" id="fBars">–</output><a class="find-sm" id="lkMeter" target="_blank" rel="noopener" data-i18n="lkMeter">Zoek maatsoort ↗</a></span></div>
     </div>
@@ -1285,7 +1282,7 @@ let opts = Object.assign({}, OPT_DEFAULT, ls.get(LS_OPTS, {}));
 function saveOpts(){ ls.set(LS_OPTS, opts); }
 // Elke tekst als [Nederlands, Engels]. {naam} wordt ingevuld door t().
 const I18N = {
-  "draw": ["Trek een nummer", "Draw a song"],
+  "draw": ["Random", "Random"],
   "resetPot": ["Alles terug in de pot", "Put all songs back"],
   "tapAria": ["Tempo. Tik mee op de tel om het tempo te meten", "Tempo. Tap along with the beat to measure the tempo"],
   "tempo": ["Tempo", "Tempo"],
@@ -1433,6 +1430,10 @@ const I18N = {
   "errIntroBpm": ["Vul ook het tempo in, dan weet de app hoe lang een maat duurt.", "Fill in the tempo too, so the app knows how long a bar is."],
   "cueBars": ["Zang over {n} maten", "Vocals in {n} bars"],
   "cueBar": ["Zang over 1 maat", "Vocals in 1 bar"],
+  "fOutro": ["Outro (maten)", "Outro (bars)"],
+  "errOutro": ["Schrijf het aantal maten outro als een getal van 0 tot 64.", "Write the number of outro bars as a number from 0 to 64."],
+  "outroBars": ["Outro, nog {n} maten", "Outro, {n} bars left"],
+  "outroBar": ["Outro, nog 1 maat", "Outro, 1 bar left"],
   "errDur": ["Schrijf de duur als minuten:seconden, bijvoorbeeld 3:45.", "Write the length as minutes:seconds, for example 3:45."],
   "added": ["Nummer toegevoegd", "Song added"],
   "saved": ["Opgeslagen", "Saved"],
@@ -1456,6 +1457,8 @@ const I18N = {
   "chooseTitle": ["Kies een nummer", "Choose a song"],
   "chooseEmpty": ["Er staan nog geen nummers op Spelen.", "There are no songs set to Play yet."],
   "chooseDone": ["gespeeld", "played"],
+  "chooseEdit": ["Bewerk", "Edit"],
+  "chooseEditAria": ["Bewerk {t}: er ontbreekt nog iets", "Edit {t}: something is missing"],
   "restart": ["Opnieuw vanaf het begin", "Restart from the beginning"],
   "opt.sync": ["Samen met de band", "Sync with the band"],
   "opt.syncNote": ["Met dezelfde bandcode hebben alle apparaten dezelfde nummers, teksten, status, setlists, logo en kleur. Wijzigingen gaan vanzelf heen en weer zodra er internet is. Zonder internet werkt alles gewoon.", "With the same band code, every device has the same songs, lyrics, status, setlists, logo and colour. Changes travel back and forth by themselves when there is internet. Without internet everything keeps working."],
@@ -1684,7 +1687,7 @@ async function initStore(){
   useLocal();
 }
 async function saveSong(s){
-  const body = {title:s.title, artist:s.artist||"", bpm:s.bpm||null, key:s.key||"", duration:s.duration||null, intro:s.intro||null, meter:s.meter||null, lyrics:s.lyrics||"", status:songStatus(s), updatedAt:Date.now()};
+  const body = {title:s.title, artist:s.artist||"", bpm:s.bpm||null, key:s.key||"", duration:s.duration||null, intro:s.intro||null, outro:s.outro||null, meter:s.meter||null, lyrics:s.lyrics||"", status:songStatus(s), updatedAt:Date.now()};
   if(mode === "db"){
     const ref = s.id ? db.collection("songs").doc(s.id) : db.collection("songs").doc();
     await ref.set(body);
@@ -1732,6 +1735,7 @@ function renderAll(){
   }
   renderList(); renderPot(); renderNow(); renderAssign(); renderSetlist();
   if(typeof renderPractice === "function") renderPractice();
+  renderChoose();
   $("addBtn").disabled = readOnly;
 }
 // Status: "play" (in de pot en kiesbaar voor de setlist), "practice" (tab Oefenen) of "pass". Zonder status = play.
@@ -2022,7 +2026,7 @@ function openEditor(id){
   const s = songs.find(x => x.id === id) || {};
   $("edTitle").textContent = id ? t("edEdit") : t("edAdd");
   $("fTitle").value = s.title || ""; $("fArtist").value = s.artist || "";
-  $("fBpm").value = s.bpm || (id ? "" : (detectedBpm || "")); $("fKey").value = s.key || ""; $("fDur").value = s.duration ? fmtDur(s.duration) : ""; $("fIntro").value = s.intro || ""; $("fMeter").value = String(meterOf(s)); $("fLyrics").value = s.lyrics || ""; setRadio("fStatus", songStatus(s));
+  $("fBpm").value = s.bpm || (id ? "" : (detectedBpm || "")); $("fKey").value = s.key || ""; $("fDur").value = s.duration ? fmtDur(s.duration) : ""; $("fIntro").value = s.intro || ""; $("fOutro").value = s.outro || ""; $("fMeter").value = String(meterOf(s)); $("fLyrics").value = s.lyrics || ""; setRadio("fStatus", songStatus(s));
   $("edDelete").hidden = !id; $("edDelete").dataset.armed = ""; $("edDelete").textContent = t("delete");
   $("edErr").hidden = true;
   updateLookups(); updateEdExtra();
@@ -2088,10 +2092,12 @@ async function editorSave(){
   if(durRaw && !duration){ showErr(t("errDur")); return; }
   const introRaw = $("fIntro").value.trim(), intro = introRaw ? Number(introRaw) : 0;
   if(introRaw && !(Number.isInteger(intro) && intro >= 0 && intro <= 64)){ showErr(t("errIntro")); return; }
-  if(intro && !bpm){ showErr(t("errIntroBpm")); return null; }
+  const outroRaw = $("fOutro").value.trim(), outro = outroRaw ? Number(outroRaw) : 0;
+  if(outroRaw && !(Number.isInteger(outro) && outro >= 0 && outro <= 64)){ showErr(t("errOutro")); return; }
+  if((intro || outro) && !bpm){ showErr(t("errIntroBpm")); return null; }
   $("edSave").disabled = true;
   try{
-    return await saveSong({id:editingId, title, artist:titleCase($("fArtist").value.trim()), bpm, key:$("fKey").value.trim(), duration, intro, meter: +$("fMeter").value || 4, lyrics:cleanLyrics($("fLyrics").value), status:(document.querySelector('input[name="fStatus"]:checked') || {}).value});
+    return await saveSong({id:editingId, title, artist:titleCase($("fArtist").value.trim()), bpm, key:$("fKey").value.trim(), duration, intro, outro, meter: +$("fMeter").value || 4, lyrics:cleanLyrics($("fLyrics").value), status:(document.querySelector('input[name="fStatus"]:checked') || {}).value});
   }catch(err){ showErr(writeError(err)); return null; }
   finally{ $("edSave").disabled = false; }
 }
@@ -2126,7 +2132,8 @@ function cleanLyrics(t){
 }
 // Karaoke: een "regel" is een niet-lege regel die geen kopje ([Refrein]) en geen regel met alleen akkoorden is.
 // Overal (tekst tonen, tikken, afspelen, editor) dezelfde indeling, op de opgeschoonde tekst.
-const RX_TAG = /^\s*\[[^\]]+\]\s*$/, RX_CHORD = /^[A-G][#b]?(m|maj|min|dim|aug|sus|add|M)?\d*(sus\d|add\d|maj\d|b\d|#\d)*(\/[A-G][#b]?)?$/;
+// Kopje: [iets] tussen haken, of een regel met alleen een deelnaam (Verse 1, Chorus, Pre-chorus x2, Couplet 2:, Refrein, Brug, ...)
+const RX_TAG = /^\s*(\[[^\]]+\]|\(?(intro|outro|verse|chorus|pre[- ]?chorus|post[- ]?chorus|bridge|hook|refrain|interlude|instrumental|solo|break|breakdown|tag|coda|ending|couplet|refrein|brug|tussenstuk|einde|middenstuk)(\s*\d+)?(\s*[x×]\s*\d+)?\)?:?)\s*$/i, RX_CHORD = /^[A-G][#b]?(m|maj|min|dim|aug|sus|add|M)?\d*(sus\d|add\d|maj\d|b\d|#\d)*(\/[A-G][#b]?)?$/;
 function isCueLine(l){ const x = l.trim(); if(!x || RX_TAG.test(x)) return false; return !x.split(/\s+/).every(w => RX_CHORD.test(w)); }
 function cueLineTexts(lyrics){ return cleanLyrics(lyrics || "").split("\n").filter(isCueLine).map(l => l.trim()); }
 function lineHash(l){ let h = 2166136261; for(let i = 0; i < l.length; i++){ h ^= l.charCodeAt(i); h = Math.imul(h, 16777619); } return (h >>> 0).toString(36); }
@@ -2158,7 +2165,7 @@ function renderLyrics(el, txt){
   el.textContent = ""; let k = 0;
   txt.split("\n").forEach((line, i) => {
     if(i) el.append("\n");
-    if(RX_TAG.test(line)){ const sp = document.createElement("span"); sp.className = "tag"; sp.textContent = line.trim().replace(/^\[|\]$/g, ""); el.append(sp); }
+    if(RX_TAG.test(line)){ const sp = document.createElement("span"); sp.className = "tag"; sp.textContent = line.trim().replace(/^[\[(]|[\])]?:?$/g, ""); el.append(sp); }
     else if(isCueLine(line)){ const sp = document.createElement("span"); sp.className = "ln"; sp.dataset.k = k++; sp.textContent = line; el.append(sp); }
     else el.append(line);
   });
@@ -2214,7 +2221,7 @@ document.addEventListener("keydown", e => { if(e.key === "Escape" && $("overlay"
 
 /* ---------- lyrics play-along ---------- */
 let lyricsFor = null, speedFactor = 1;
-const scroller = {bars:null, vox:0, token:0, anchor:0, off:0, pauseAt:0, cues:null, lead:0, sung:true, cueN:0, active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
+const scroller = {bars:null, vox:0, voxEnd:0, tail:0, outN:0, token:0, anchor:0, off:0, pauseAt:0, cues:null, lead:0, sung:true, cueN:0, active:false, paused:false, pos:0, last:0, lastSet:0, speed:0, elapsed:0, total:0, raf:0, countTimers:[], wake:null};
 // Doortellen tijdens het nummer: op = aan/uit (blijft staan voor volgende nummers en de setlist), spb = seconden per tel,
 // anchor = audiotijd van tel 1 na het aftellen (zelfde raster als de aftelklikken), pt = wachtende pulsen
 const beat = {meter: 4, on: false, timer: 0, next: 0, n: 0, spb: 0, anchor: 0, pt: []};
@@ -2320,15 +2327,17 @@ function startPlayAlong(){
     // Met karaoketijden begint de zang bij de eerste getikte regel; bij het tikken zelf is er geen intro.
     // Met karaoketijden loopt de tekst meteen (ook door de intro), zodat tijd en tekst altijd samen bewegen
     scroller.lead = rec.on || scroller.cues ? 0 : s.intro && s.bpm ? Math.min(s.intro * meterOf(s) * 60 / s.bpm, Math.max(0, scroller.total - 10)) : 0;
+    // Outro: de tekst is klaar als de zang stopt; daarna staat hij stil met "Outro, nog N maten" (niet met karaoketijden: die stoppen vanzelf na de laatste regel)
+    scroller.tail = rec.on || scroller.cues ? 0 : s.outro && s.bpm ? Math.min(s.outro * meterOf(s) * 60 / s.bpm, Math.max(0, scroller.total - scroller.lead - 10)) : 0; scroller.outN = 0;
     if(rec.on){ rec.started = true; document.body.classList.add("recording"); updRec(); toast(t("recHint")); }
     scroller.sung = !scroller.lead; scroller.cueN = 0; document.body.classList.toggle("introing", !scroller.sung);
     if(!scroller.sung) showCue();
-    scroller.speed = max / Math.max(1, scroller.total - scroller.lead); scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
+    scroller.speed = max / Math.max(1, scroller.total - scroller.lead - scroller.tail); scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
     scroller.paused = false; scroller.last = performance.now();
     songDone = true; prevId = null;
     setPlayBtn("stop");
     $("nowTotal").textContent = "/ " + fmtDur(scroller.total); $("nowElapsed").textContent = "0:00";
-    scroller.vox = scroller.lead; scroller.bars = songBars(); barShown = null;
+    scroller.vox = scroller.lead; scroller.voxEnd = scroller.tail ? scroller.total - scroller.tail : 0; scroller.bars = songBars(); barShown = null;
     setProg(0); $("songProg").hidden = false; renderBars(); showBar(); fitLyrics();
     scroller.raf = requestAnimationFrame(step);
   };
@@ -2374,8 +2383,8 @@ function step(now){
     scroller.pos = lyr.scrollTop; scroller.lastSet = lyr.scrollTop;
     if(!scroller.sung && scroller.pos > 2) startSung(); // tijdens de intro naar de tekst geschoven: de zang is begonnen
     if(scroller.cues && scroller.sung){ scroller.elapsed = Math.max(0, Math.min(scroller.total, cueTimeAt(lyr.scrollTop + anchorPx()))); markLine(cueIndexAt(scroller.elapsed)); karaokeCue(); if(!scroller.paused) scroller.off = audio().currentTime - scroller.anchor - scroller.elapsed; }
-    else if(scroller.speed && scroller.sung) scroller.elapsed = Math.max(0, Math.min(scroller.total, scroller.lead + scroller.pos / scroller.speed));
-    showElapsed();
+    else if(scroller.speed && scroller.sung) scroller.elapsed = Math.max(0, Math.min(scroller.total - scroller.tail, scroller.lead + scroller.pos / scroller.speed));
+    showElapsed(); outroCue();
     scroller.raf = requestAnimationFrame(step); return;
   }
   if(!scroller.paused && !scroller.sung){
@@ -2395,7 +2404,7 @@ function step(now){
     scroller.pos += scroller.speed * speedFactor * dt;
     scroller.elapsed += dt * speedFactor;
     lyr.scrollTop = scroller.pos; scroller.lastSet = lyr.scrollTop;
-    showElapsed();
+    showElapsed(); outroCue();
     if(scroller.elapsed >= scroller.total + 2){ stopScroll(false); if(setPlay.active) setSongEnded(); else { toast(t("songEnd")); autoNext(); } return; }
   }
   scroller.raf = requestAnimationFrame(step);
@@ -2489,13 +2498,24 @@ function showCue(until){
   const n = Math.max(1, Math.ceil(((until === undefined ? scroller.lead : until) - scroller.elapsed) / bar - .001));
   if(n !== scroller.cueN){ scroller.cueN = n; $("introCue").textContent = n === 1 ? t("cueBar") : t("cueBars", {n}); }
 }
+// Outro: na het einde van de zang de melding met het aantal maten tot het einde (alleen bijwerken als het getal verandert)
+function outroCue(){
+  const on = scroller.tail > 0 && scroller.sung && scroller.elapsed >= scroller.total - scroller.tail - .05;
+  if(on !== document.body.classList.contains("outroing")){ document.body.classList.toggle("outroing", on); scroller.outN = 0; fitLyrics();
+    // de melding neemt ruimte in: de tekst daarna helemaal naar onderen, zodat de laatste regel zichtbaar blijft
+    if(on) requestAnimationFrame(() => { const l = $("nowLyrics"); l.scrollTop = l.scrollHeight; scroller.pos = scroller.lastSet = l.scrollTop; }); }
+  if(!on) return;
+  const s = songs.find(x => x.id === currentId), bar = s && s.bpm ? meterOf(s) * 60 / s.bpm : 1;
+  const n = Math.max(1, Math.ceil((scroller.total - scroller.elapsed) / bar - .001));
+  if(n !== scroller.outN){ scroller.outN = n; $("introCue").textContent = n === 1 ? t("outroBar") : t("outroBars", {n}); }
+}
 // De zang begint: melding weg, tekst krijgt de ruimte, snelheid opnieuw uit de echte hoogte
 function startSung(){
   scroller.sung = true; scroller.elapsed = Math.max(scroller.elapsed, scroller.lead);
   document.body.classList.remove("introing"); fitLyrics();
   requestAnimationFrame(() => requestAnimationFrame(() => {
     const lyr = $("nowLyrics"), max = Math.max(0, lyr.scrollHeight - lyr.clientHeight);
-    if(scroller.active) scroller.speed = max / Math.max(1, scroller.total - scroller.lead);
+    if(scroller.active) scroller.speed = max / Math.max(1, scroller.total - scroller.lead - scroller.tail);
   }));
 }
 function showElapsed(){
@@ -2534,7 +2554,7 @@ function renderBars(){
     if(m && m % lab === 0 && m < b.n) h += `<span style="left:${x}%">${m}</span>`;
   }
   const vox = scroller.cues ? scroller.cues[0] : scroller.vox;
-  if(vox > 0 && vox < scroller.total) h += `<b style="left:${(vox / scroller.total * 100).toFixed(3)}%"></b>`;
+  for(const v of [vox, scroller.cues ? 0 : scroller.voxEnd]) if(v > 0 && v < scroller.total) h += `<b style="left:${(v / scroller.total * 100).toFixed(3)}%"></b>`;
   box.innerHTML = h;
 }
 // Met de vinger terug of vooruit (bijvoorbeeld bij een intermezzo): bij loslaten loopt de tekst
@@ -2561,10 +2581,10 @@ function seekTo(t){
     showCue(); lyr.scrollTop = 0;
   } else {
     if(!scroller.sung) startSung();
-    lyr.scrollTop = (t - scroller.lead) * scroller.speed;
+    lyr.scrollTop = (Math.min(t, scroller.total - scroller.tail) - scroller.lead) * scroller.speed;
   }
   scroller.elapsed = t; scroller.pos = lyr.scrollTop; scroller.lastSet = lyr.scrollTop;
-  showElapsed();
+  showElapsed(); outroCue();
 }
 (() => {
   const hit = $("progHit"), bar = $("songProg"); let drag = false;
@@ -2629,7 +2649,7 @@ function stopScroll(silent){
   hideCount();
   cancelAnimationFrame(scroller.raf);
   scroller.active = false; scroller.paused = false; scroller.speed = 0; swipe.down = false; swipe.until = 0;
-  scroller.lead = 0; scroller.sung = true; document.body.classList.remove("introing");
+  scroller.lead = 0; scroller.tail = 0; scroller.voxEnd = 0; scroller.sung = true; document.body.classList.remove("introing", "outroing");
   $("nowLyrics").classList.remove("playing", "karaoke", "kcol"); $("nowLyrics").style.paddingTop = ""; scroller.padTop = 0;
   $("songProg").hidden = true; setProg(0);
   scroller.bars = null; renderBars(); barShown = ""; $("nowBar").textContent = "";
@@ -2877,6 +2897,8 @@ $("practiceBack").addEventListener("click", () => setTab("practice"));
 
 /* ---------- zelf een nummer kiezen op Spelen (naast trekken) ---------- */
 // Alle Spelen-nummers op titel; al gespeelde staan gedempt. Kiezen haalt het nummer uit de pot, net als trekken.
+// Onvolledig = geen tekst, tempo, toonsoort, duur of (bewust opgeslagen) maatsoort: dan staat er een Bewerk-knop bij
+function incomplete(s){ return !(s.lyrics || "").trim() || !s.bpm || !s.key || !s.duration || !s.meter; }
 function renderChoose(){
   const ul = $("chooseList"); ul.textContent = "";
   const all = playable().sort((a, b) => (a.title || "").localeCompare(b.title || "", loc(), { sensitivity: "base" }));
@@ -2886,33 +2908,34 @@ function renderChoose(){
   $("chooseNone").textContent = all.length ? t("pickNone", {q: raw}) : t("chooseEmpty");
   list.forEach(s => {
     const li = document.createElement("li");
-    if(s.id === currentId) li.className = "current"; else if(played.has(s.id)) li.className = "done";
+    if(played.has(s.id)) li.className = "done";
     const main = songMain(s, () => chooseSong(s.id), t("chooseOwn"));
-    if(played.has(s.id) && s.id !== currentId){ const d = document.createElement("span"); d.className = "tag-done"; d.textContent = t("chooseDone"); main.querySelector(".t").append(d); }
-    li.append(main, durCell(s));
+    if(played.has(s.id)){ const d = document.createElement("span"); d.className = "tag-done"; d.textContent = t("chooseDone"); main.querySelector(".t").append(d); }
+    const side = document.createElement("div"); side.className = "side"; side.append(durCell(s));
+    if(incomplete(s) && !readOnly){
+      const b = document.createElement("button"); b.type = "button"; b.className = "btn small ed-btn";
+      b.textContent = t("chooseEdit"); b.setAttribute("aria-label", t("chooseEditAria", {t: s.title || t("untitled")}));
+      b.addEventListener("click", () => openEditor(s.id)); side.append(b);
+    }
+    li.append(main, side);
     ul.append(li);
   });
 }
-function openChoose(){
-  if(drawing) return;
-  $("chooseSearch").value = ""; renderChoose();
-  $("chooseOverlay").hidden = false; $("chooseOverlay").scrollTop = 0;
-  if(matchMedia("(hover:hover)").matches) $("chooseSearch").focus();
-}
-function closeChoose(){ $("chooseOverlay").hidden = true; }
 function chooseSong(id){
-  closeChoose();
-  // Het nummer dat klaarstond en nog niet gespeeld is, gaat terug in de pot (zoals bij "Ander nummer")
-  if(currentId && currentId !== id && !songDone) played.delete(currentId);
   played.delete(id); played.add(id); ls.set(LS_PLAYED, [...played]);
   showSong(id); renderPot(); window.scrollTo(0, 0);
 }
-$("chooseBtn").addEventListener("click", openChoose);
-$("chooseBtn2").addEventListener("click", openChoose);
-$("chooseClose").addEventListener("click", closeChoose);
+// Terug naar scherm 1 (de keuzelijst): via de tab Spelen, het logo of "Kies zelf". Een klaargezet nummer dat nog niet gespeeld is, gaat terug in de pot.
+function goHome(){
+  endSetPlay(); setTab("play");
+  const cur = songs.find(x => x.id === currentId);
+  if(cur && !songDone && (cur.lyrics || "").trim()) played.delete(cur.id); // zonder tekst telt het nummer al als gespeeld
+  songDone = false; prevId = null; currentId = null; ls.set(LS_PLAYED, [...played]);
+  resetTempo(); $("chooseSearch").value = ""; renderAll();
+}
+$("chooseBtn2").addEventListener("click", goHome);
+$("brandLogo").addEventListener("click", goHome);
 $("chooseSearch").addEventListener("input", renderChoose);
-$("chooseOverlay").addEventListener("click", e => { if(e.target === $("chooseOverlay")) closeChoose(); });
-document.addEventListener("keydown", e => { if(e.key === "Escape" && !$("chooseOverlay").hidden) closeChoose(); });
 
 /* ---------- tabs (op elk formaat) ---------- */
 function setTab(t){
@@ -2924,7 +2947,7 @@ function setTab(t){
   document.querySelectorAll(".tabbar button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === t ? "page" : "false"));
   window.scrollTo(0, 0);
 }
-document.querySelectorAll(".tabbar button").forEach(b => b.addEventListener("click", () => { endSetPlay(); setTab(b.dataset.tab); }));
+document.querySelectorAll(".tabbar button").forEach(b => b.addEventListener("click", () => { if(b.dataset.tab === "play") return goHome(); endSetPlay(); setTab(b.dataset.tab); }));
 setTab("play");
 
 
@@ -3226,12 +3249,12 @@ $("importFile").addEventListener("change", async e => {
     let added = 0, updated = 0; const idMap = {};
     list.forEach(raw => {
       if(!raw || !raw.title) return;
-      const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, intro:raw.intro || null, meter:raw.meter || null, cues: validCues(raw.cues), cuesAt: +raw.cuesAt || 0, lyrics:raw.lyrics || "", status:["play", "practice", "pass"].includes(raw.status) ? raw.status : undefined, updatedAt:raw.updatedAt || Date.now()};
+      const inc = {id:raw.id, title:String(raw.title), artist:raw.artist || "", bpm:raw.bpm || null, key:raw.key || "", duration:raw.duration || null, intro:raw.intro || null, outro:raw.outro || null, meter:raw.meter || null, cues: validCues(raw.cues), cuesAt: +raw.cuesAt || 0, lyrics:raw.lyrics || "", status:["play", "practice", "pass"].includes(raw.status) ? raw.status : undefined, updatedAt:raw.updatedAt || Date.now()};
       const i = songs.findIndex(s => (inc.id && s.id === inc.id) || keyOf(s) === keyOf(inc));
       if(i >= 0){
         const cur = songs[i];
         const lyr = inc.lyrics || cur.lyrics || "";
-        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: lyr, lyricsAt: lyr !== (cur.lyrics || "") ? inc.updatedAt : (+cur.lyricsAt || 0), bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, intro: inc.intro || cur.intro || null, meter: inc.meter || cur.meter || null, cues: inc.cuesAt > (+cur.cuesAt || 0) ? inc.cues : cur.cues, cuesAt: Math.max(inc.cuesAt, +cur.cuesAt || 0), key: inc.key || cur.key || "", status: inc.status || cur.status});
+        songs[i] = Object.assign({}, cur, inc, {id:cur.id, lyrics: lyr, lyricsAt: lyr !== (cur.lyrics || "") ? inc.updatedAt : (+cur.lyricsAt || 0), bpm: inc.bpm || cur.bpm || null, duration: inc.duration || cur.duration || null, intro: inc.intro || cur.intro || null, outro: inc.outro || cur.outro || null, meter: inc.meter || cur.meter || null, cues: inc.cuesAt > (+cur.cuesAt || 0) ? inc.cues : cur.cues, cuesAt: Math.max(inc.cuesAt, +cur.cuesAt || 0), key: inc.key || cur.key || "", status: inc.status || cur.status});
         if(raw.id) idMap[raw.id] = cur.id;
         updated++;
       } else {
@@ -3528,7 +3551,7 @@ function stable(o){
   return JSON.stringify(o === undefined ? null : o);
 }
 const accNorm = c => { const L = window.SBLook, v = L && L.rgb(c || ""); return v ? L.hex(v) : ""; };
-function cleanSong(x){ return {id: String(x.id), title: String(x.title || ""), artist: x.artist || "", bpm: x.bpm || null, key: x.key || "", duration: x.duration || null, intro: x.intro === undefined ? undefined : (+x.intro || null), meter: x.meter === undefined ? undefined : (+x.meter || null), cues: validCues(x.cues), cuesAt: +x.cuesAt || 0, lyrics: x.lyrics || "", lyricsAt: +x.lyricsAt || 0, status: songStatus(x), updatedAt: +x.updatedAt || 0}; }
+function cleanSong(x){ return {id: String(x.id), title: String(x.title || ""), artist: x.artist || "", bpm: x.bpm || null, key: x.key || "", duration: x.duration || null, intro: x.intro === undefined ? undefined : (+x.intro || null), outro: x.outro === undefined ? undefined : (+x.outro || null), meter: x.meter === undefined ? undefined : (+x.meter || null), cues: validCues(x.cues), cuesAt: +x.cuesAt || 0, lyrics: x.lyrics || "", lyricsAt: +x.lyricsAt || 0, status: songStatus(x), updatedAt: +x.updatedAt || 0}; }
 function cleanSaved(x){ return {id: String(x.id), name: String(x.name || ""), ids: (x.ids || []).map(String), savedAt: +x.savedAt || 0}; }
 function syncSnap(){
   return {v: 1,
@@ -3560,6 +3583,7 @@ function syncMerge(a, b){
       if(!o.duration && x.duration) o.duration = x.duration;
       // Een oudere versie kent intro nog niet (veld ontbreekt): dan de intro van de andere versie houden
       if(w.intro === undefined && x.intro) o.intro = x.intro;
+      if(w.outro === undefined && x.outro) o.outro = x.outro;
       if(w.meter === undefined && x.meter) o.meter = x.meter;
       // Karaoketijden hebben een eigen tijd, zoals de tekst; wissen = lege lijst met tijd
       if(x.cuesAt > (o.cuesAt || 0) || (o.cues === undefined && Array.isArray(x.cues))){ o.cues = x.cues; o.cuesAt = x.cuesAt; }
