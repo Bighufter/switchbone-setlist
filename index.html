@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-25 338f1425f4">
+<meta name="app-updated" content="2026-11-25 d17fed2d00">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -1225,7 +1225,7 @@ body.introing .intro-cue,body.outroing .intro-cue{display:block;font-weight:900;
       <div class="field has-find"><label class="label" for="fKey" data-i18n="fKey">Toonsoort</label><span class="find-in"><input type="text" id="fKey" placeholder="bv. Am" data-i18n-attr="placeholder:fKeyPh"><a class="find" id="lkKey" target="_blank" rel="noopener" data-i18n="lkKey">Zoek originele toonsoort ↗</a></span></div>
       <label class="field wide"><span class="label" data-i18n="fArtist">Artiest / origineel</span><input type="text" id="fArtist"></label>
       <label class="field"><span class="label" data-i18n="fMeter">Maatsoort</span><select id="fMeter"><option value="4">4/4</option><option value="3">3/4</option><option value="2">2/4</option><option value="5">5/4</option><option value="6">6/8</option><option value="12">12/8</option></select></label>
-      <div class="field has-find"><label class="label" for="fDur" data-i18n="fDur">Duur (m:ss)</label><span class="find-in"><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"><a class="find" id="lkDur" target="_blank" rel="noopener" data-i18n="lkDur">Zoek lengte ↗</a></span></div>
+      <div class="field has-find"><label class="label" for="fDur" data-i18n="fDur">Duur (m:ss)</label><span class="find-in"><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"><a class="find" id="lkDur" target="_blank" rel="noopener" data-i18n="lkDur">Haal lengte op</a></span></div>
       <div class="field has-find"><label class="label" for="fIntro" data-i18n="fIntro">Intro (maten)</label><span class="find-in"><input type="number" id="fIntro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"><a class="find" id="lkIntro" target="_blank" rel="noopener" data-i18n="lkIntro">Zoek intro ↗</a></span></div>
       <label class="field wide2"><span class="label" data-i18n="fOutro">Outro (maten)</span><input type="number" id="fOutro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
       <p class="note meter-note" id="meterNote" data-i18n="meterNote" hidden>Bij 6/8 en 12/8 telt de app in achtsten: vul het tempo dan ook in achtsten in.</p>
@@ -1352,7 +1352,11 @@ const I18N = {
   "fDur": ["Duur (m:ss)", "Length (m:ss)"],
   "lkBpm": ["Zoek origineel tempo ↗", "Find original tempo ↗"],
   "lkKey": ["Zoek originele toonsoort ↗", "Find original key ↗"],
-  "lkDur": ["Zoek lengte ↗", "Find length ↗"],
+  "lkDur": ["Haal lengte op", "Get length"],
+  "durBusy": ["Lengte ophalen…", "Getting length…"],
+  "durFound": ["Lengte {d} gevonden (MusicBrainz). Controleer en sla op.", "Found length {d} (MusicBrainz). Check it and save."],
+  "durNone": ["Geen lengte gevonden. Tik nog eens om op internet te zoeken.", "No length found. Tap again to search the web."],
+  "durOffline": ["Geen internet. Vul de lengte zelf in.", "No internet. Enter the length yourself."],
   "lkIntro": ["Zoek intro ↗", "Find intro ↗"],
   "lkLyr": ["Zoek tekst ↗", "Find lyrics ↗"],
   "lkNote": ["Opent een zoekopdracht in een nieuw tabblad. Neem de tekst daarna hier over.", "Opens a search in a new tab. Then copy the lyrics here."],
@@ -2057,9 +2061,36 @@ function updateLookups(){
     const el = $(id);
     if(t){ el.href = q(s); el.removeAttribute("aria-disabled"); } else { el.removeAttribute("href"); el.setAttribute("aria-disabled", "true"); }
   });
+  if($("lkDur").dataset.q !== t + "|" + a){ $("lkDur").dataset.q = t + "|" + a; delete $("lkDur").dataset.web; }
   // Zoeklink in het veld alleen als er een titel is en het veld nog leeg is
   ["fBpm", "fKey", "fDur", "fIntro"].forEach(id => $(id).closest(".field").classList.toggle("finding", !!t && !$(id).value.trim()));
 }
+// Haal lengte op: zoekt de duur bij MusicBrainz (open gegevens, CC0; alleen titel en artiest gaan mee).
+// Niets gevonden: de volgende tik opent de gewone zoekopdracht (href van lkDur).
+async function fetchDuration(t, a){
+  const esc = v => v.replace(/[\\"]/g, "\\$&");
+  const q = `recording:"${esc(t)}"` + (a ? ` AND artist:"${esc(a)}"` : "");
+  const r = await fetch("https://musicbrainz.org/ws/2/recording?fmt=json&limit=25&query=" + encodeURIComponent(q), {headers: {Accept: "application/json"}});
+  if(!r.ok) throw new Error("mb " + r.status);
+  const want = normQ(t);
+  const secs = ((await r.json()).recordings || [])
+    .filter(x => x.length && x.score >= 80 && normQ(x.title || "") === want && !/live|demo|remix|edit|acoustic|instrumental|version|mix/i.test(x.disambiguation || ""))
+    .map(x => Math.round(x.length / 1000)).filter(x => x >= 30 && x <= 1800).sort((x, y) => x - y);
+  return secs.length ? secs[Math.floor(secs.length / 2)] : null; // mediaan: een enkele afwijkende opname telt niet
+}
+$("lkDur").addEventListener("click", async e => {
+  const el = $("lkDur");
+  if(el.dataset.web || !el.hasAttribute("href")) return; // tweede tik: gewone zoekopdracht
+  e.preventDefault();
+  if(el.dataset.busy) return;
+  if(!navigator.onLine){ toast(t("durOffline")); el.dataset.web = "1"; return; }
+  el.dataset.busy = "1"; el.textContent = t("durBusy");
+  let sec = null, failed = false;
+  try{ sec = await fetchDuration($("fTitle").value.trim(), $("fArtist").value.trim()); }catch(err){ failed = true; }
+  delete el.dataset.busy; el.textContent = t("lkDur");
+  if(sec){ $("fDur").value = fmtDur(sec); updateLookups(); updateEdExtra(); toast(t("durFound", {d: fmtDur(sec)})); }
+  else { el.dataset.web = "1"; toast(t(failed && !navigator.onLine ? "durOffline" : "durNone")); }
+});
 $("fTitle").addEventListener("input", updateLookups);
 $("fArtist").addEventListener("input", updateLookups);
 $("fBpm").addEventListener("input", updateLookups);
