@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-25 a98204c1f7">
+<meta name="app-updated" content="2026-11-25 f31962b6e0">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -1216,9 +1216,9 @@ body.introing .intro-cue,body.outroing .intro-cue{display:block;font-weight:900;
       <label class="field"><span class="label" data-i18n="fMeter">Maatsoort</span><select id="fMeter"><option value="4">4/4</option><option value="3">3/4</option><option value="2">2/4</option><option value="5">5/4</option><option value="6">6/8</option><option value="12">12/8</option></select></label>
       <label class="field"><span class="label" data-i18n="fDur">Duur (m:ss)</span><input type="text" id="fDur" placeholder="3:30" inputmode="numeric"></label>
       <label class="field"><span class="label" data-i18n="fIntro">Intro (maten)</span><input type="number" id="fIntro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
-      <label class="field"><span class="label" data-i18n="fOutro">Outro (maten)</span><input type="number" id="fOutro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
+      <label class="field wide2"><span class="label" data-i18n="fOutro">Outro (maten)</span><input type="number" id="fOutro" min="0" max="64" step="1" placeholder="0" inputmode="numeric"></label>
       <p class="note meter-note" id="meterNote" data-i18n="meterNote" hidden>Bij 6/8 en 12/8 telt de app in achtsten: vul het tempo dan ook in achtsten in.</p>
-      <div class="field wide2"><span class="label" data-i18n="fBars">Lengte</span><span class="bars-row"><output class="bars-out" id="fBars">–</output><a class="find-sm" id="lkMeter" target="_blank" rel="noopener" data-i18n="lkMeter">Zoek maatsoort ↗</a></span></div>
+      <div class="field wide2"><span class="label" data-i18n="fBars">Lengte</span><span class="bars-row"><output class="bars-out" id="fBars">–</output><a class="find-sm" id="lkMeter" target="_blank" rel="noopener" data-i18n="lkMeter">Zoek maatsoort ↗</a><a class="find-sm" id="lkForm" target="_blank" rel="noopener" data-i18n="lkForm" data-i18n-attr="title:lkFormT" title="Zoek een uitgeschreven versie met maten en tekst, om te zien na hoeveel maten de zang begint en stopt">Zoek opbouw in maten ↗</a></span></div>
     </div>
     <div class="field"><span class="label" id="fStatusL">Status</span>
       <div class="seg seg-status" role="radiogroup" aria-labelledby="fStatusL">
@@ -1399,6 +1399,8 @@ const I18N = {
   "errBpm": ["Tempo moet tussen 30 en 300 BPM liggen.", "Tempo must be between 30 and 300 BPM."],
   "fMeter": ["Maatsoort", "Time signature"],
   "lkMeter": ["Zoek maatsoort ↗", "Find time signature ↗"],
+  "lkForm": ["Zoek opbouw in maten ↗", "Find song structure in bars ↗"],
+  "lkFormT": ["Zoek een uitgeschreven versie met maten en tekst, om te zien na hoeveel maten de zang begint en stopt", "Find a written-out version with bars and lyrics, to see after how many bars the vocals start and end"],
   "fBars": ["Lengte", "Length"],
   "barsOut": ["≈ {n} maten", "≈ {n} bars"],
   "barsNeed": ["Vul tempo en duur in", "Fill in tempo and length"],
@@ -2036,7 +2038,7 @@ function titleCase(str){ return (str || "").replace(/(^|[\s(\/-])(\p{L})/gu, (m,
 function updateLookups(){
   const t = $("fTitle").value.trim(), a = $("fArtist").value.trim();
   const q = s => "https://www.google.com/search?q=" + encodeURIComponent(`"${t}" ${a} ${s}`.trim());
-  [["lkBpm", "bpm tempo"], ["lkKey", "key"], ["lkLyr", "lyrics"], ["lkMeter", "time signature"]].forEach(([id, s]) => {
+  [["lkBpm", "bpm tempo"], ["lkKey", "key"], ["lkLyr", "lyrics"], ["lkMeter", "time signature"], ["lkForm", "song structure bars intro outro chord chart"]].forEach(([id, s]) => {
     const el = $(id);
     if(t){ el.href = q(s); el.removeAttribute("aria-disabled"); } else { el.removeAttribute("href"); el.setAttribute("aria-disabled", "true"); }
   });
