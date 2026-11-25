@@ -11,7 +11,7 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Setlist">
-<meta name="app-updated" content="2026-11-25 43b1ba31d3">
+<meta name="app-updated" content="2026-11-25 338f1425f4">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="icons/icon-192.png" type="image/png">
@@ -417,6 +417,8 @@ body.tabicons .tabbar button > span{position:absolute;width:1px;height:1px;overf
 }
 /* iPad: drie schermen. 1 = alleen trekken, 2 = het getrokken nummer met afspeelknop, 3 = speelt (strook, voortgang, tekst) */
 .timefact,.pausefact,.next-row,.play-cap{display:none}
+/* Overzicht op een eigen regel onder Vorige, Volgende en Overslaan */
+.nb-break{flex-basis:100%;height:0}
 /* Opnieuw vanaf het begin: alleen zolang het nummer speelt (of aftelt) */
 .restartfact{display:none}
 body.playing .restartfact{display:grid;background:var(--on-stock);color:var(--stock)}
@@ -448,8 +450,9 @@ h1.brand .logo{cursor:pointer}
   .next-row .pot,#resetPot2{display:none!important}
   .next-btns{display:flex;gap:10px}
   .next-btns .btn{flex:1;min-height:52px;font-weight:800}
-  .next-row:not(.has-prev) #nextBtn{display:none}
-  #nextBtn{background:color-mix(in srgb,var(--stock) 26%,var(--ink));border-color:var(--stock-fg);color:var(--stock-fg)}
+  #nextBtn,.nb-break{display:none}
+  .next-row:not(.has-prev) #prevBtn{display:none}
+  #prevBtn{background:color-mix(in srgb,var(--stock) 26%,var(--ink));border-color:var(--stock-fg);color:var(--stock-fg)}
   .skip-btn{background:none}
 }
 /* Ook op de iPhone staand (min-height:521px): dezelfde drie schermen, met kleinere maten verderop */
@@ -638,7 +641,7 @@ h1.brand .logo{cursor:pointer}
   body:not(.playing):not(.setmode) .stage.picked .playfact svg{width:36px;height:36px}
   body:not(.playing):not(.setmode) .stage.picked #lyricsWrap{left:0;right:0;bottom:46px}
   body:not(.playing):not(.setmode) .stage.picked #playHint{font-size:var(--t-xs)}
-  .next-btns{flex-wrap:nowrap;gap:8px;width:100%}
+  .next-btns{flex-wrap:wrap;gap:8px;width:100%}
   .next-btn{flex:1;min-width:0;min-height:56px;padding:0 8px;font-size:14px;font-stretch:100%;letter-spacing:.02em;line-height:1.15;white-space:normal}
   .next-row .pot{font-size:var(--t-xs)}
   #resetPot2{right:0;bottom:0;min-height:34px;padding:4px 12px;font-size:var(--t-xs)}
@@ -854,7 +857,7 @@ body.introing .intro-cue,body.outroing .intro-cue{display:block;font-weight:900;
 </script>
 </head>
 <body>
-<div class="intro" id="intro" aria-hidden="true"><span><b>Ready,</b></span><span><b>Set,</b></span><span><b>Go!</b></span></div>
+<div class="intro" id="intro" aria-hidden="true"><span><b>Ready</b></span><span><b>Set</b></span><span><b>Go!</b></span></div>
 
 <div class="wrap">
   <header class="top">
@@ -918,9 +921,11 @@ body.introing .intro-cue,body.outroing .intro-cue{display:block;font-weight:900;
 
         <div class="next-row" id="nextRow">
           <div class="next-btns">
-            <button class="btn next-btn" id="nextBtn" type="button" data-i18n="otherSong">Ander nummer</button>
+            <button class="btn next-btn skip-btn" id="prevBtn" type="button" data-i18n="prevSong">‹ Vorige</button>
+            <button class="btn next-btn" id="nextBtn" type="button" data-i18n="nextShort">Volgende ›</button>
             <button class="btn next-btn skip-btn" id="skipBtn" type="button" data-i18n="skipSong">Overslaan</button>
-            <button class="btn next-btn skip-btn" id="chooseBtn2" type="button" data-i18n="chooseShort">Kies zelf</button>
+            <span class="nb-break" aria-hidden="true"></span>
+            <button class="btn next-btn skip-btn" id="chooseBtn2" type="button" data-i18n="chooseShort">Overzicht</button>
           </div>
           <div class="pot" id="potInfo2"></div>
           <button class="btn ghost small" id="resetPot2" type="button" data-i18n="resetPot" hidden>Alles terug in de pot</button>
@@ -1457,13 +1462,12 @@ const I18N = {
   "pbResume": ["Verder", "Resume"],
   "pbPause": ["Pauze", "Pause"],
   "pbAgain": ["Nog een keer", "Play again"],
-  "otherSong": ["Ander nummer", "Change song"],
-  "nextSong": ["Volgende nummer", "Next song"],
-  "playPrev": ["Vorige nog een keer", "Play previous again"],
-  "skipSong": ["Overslaan", "Skip song"],
+  "prevSong": ["‹ Vorige", "‹ Previous"],
+  "nextShort": ["Volgende ›", "Next ›"],
+  "skipSong": ["Overslaan", "Skip"],
   "close": ["Sluiten", "Close"],
   "chooseOwn": ["Kies zelf een nummer", "Choose a song"],
-  "chooseShort": ["Kies zelf", "Choose"],
+  "chooseShort": ["Overzicht", "Overview"],
   "chooseTitle": ["Kies een nummer", "Choose a song"],
   "chooseEmpty": ["Er staan nog geen nummers op Spelen.", "There are no songs set to Play yet."],
   "chooseDone": ["gespeeld", "played"],
@@ -1920,7 +1924,7 @@ function resetTempo(){
   setSpeed(1);
 }
 function showSong(id, stay){
-  if(id !== currentId){ songDone = false; prevId = null; stopScroll(true); resetTempo(); }
+  if(id !== currentId){ songDone = false; stopScroll(true); resetTempo(); }
   currentId = id;
   renderNow(); renderList(); renderAssign(); renderSetlist(); revealCurrent();
   if(!stay) setTab("play");
@@ -1932,23 +1936,25 @@ let drawing = false;
 // Zonder tekst valt er niets af te spelen: het nummer telt meteen als gespeeld en de knop eronder wordt "Volgende nummer"
 function curNoLyrics(){ const s = songs.find(x => x.id === currentId); return !!(s && !(s.lyrics || "").trim()); }
 function nextIsNext(){ return songDone || curNoLyrics(); }
-// iPad en iPhone: na afloop of stoppen staat meteen een volgend nummer klaar (autoNext). prevId is het nummer
-// dat net klaar is; de knop eronder wordt dan "Vorige nog een keer" (zolang het nieuwe nummer tekst heeft).
-let prevId = null;
-function showPrev(){ return !!prevId && !curNoLyrics() && songs.some(x => x.id === prevId); }
-function nextLabel(){ return t(showPrev() ? "playPrev" : nextIsNext() ? "nextSong" : "otherSong"); }
-function updNext(){ $("nextBtn").textContent = nextLabel(); $("nextRow").classList.toggle("has-prev", showPrev()); }
+// iPad en iPhone: na afloop of stoppen staat meteen een volgend nummer klaar (autoNext).
+// Vorige: de nummers die eerder op scherm 2 stonden (alleen in het geheugen); drawSong zet het huidige erop.
+let hist = [];
+function prevTarget(){
+  while(hist.length && !playable().some(x => x.id === hist[hist.length - 1])) hist.pop(); // overgeslagen of verwijderd
+  return hist[hist.length - 1] || null;
+}
+function updNext(){ const p = !!prevTarget(); $("prevBtn").disabled = !p; $("nextRow").classList.toggle("has-prev", p); }
 function autoNext(){
   if(!songDone || setPlay.active || document.body.classList.contains("practicing")) return;
-  const done = currentId; prevId = done; drawSong(false);
-  if(!drawing && currentId === done) prevId = null;
-  updNext();
+  drawSong(false); updNext();
 }
-function playPrev(){
-  const id = prevId; prevId = null;
-  if(currentId) played.delete(currentId); // het klaargezette nummer gaat terug in de pot
+function goPrev(){
+  const id = prevTarget(); if(!id || drawing) return;
+  hist.pop();
+  const cur = songs.find(x => x.id === currentId);
+  if(cur && !songDone && (cur.lyrics || "").trim()) played.delete(cur.id); // niet gespeeld: terug in de pot
   played.delete(id); played.add(id); ls.set(LS_PLAYED, [...played]);
-  showSong(id, true); renderPot(); startPlayAlong();
+  showSong(id, true); renderPot();
 }
 
 function drawSong(skip){
@@ -1971,6 +1977,7 @@ function drawSong(skip){
     drawing = false; $("now").classList.remove("shuffling"); $("ticket").classList.remove("drawing");
     played.delete(pick.id); played.add(pick.id); ls.set(LS_PLAYED, [...played]);
     resetTempo();
+    if(cur && cur !== pick.id){ hist.push(cur); if(hist.length > 50) hist.shift(); }
     currentId = pick.id; renderAll(); revealCurrent();
     // Signatuur: het nieuwe kaartje komt onder de trekbalk vandaan
     const t = $("ticket"); t.classList.remove("issued");
@@ -1989,16 +1996,15 @@ function drawSong(skip){
   tick();
 }
 $("drawBtn").addEventListener("click", () => drawSong(false));
-$("nextBtn").addEventListener("click", () => { if(showPrev()) playPrev(); else { prevId = null; drawSong(!nextIsNext()); } });
+$("nextBtn").addEventListener("click", () => drawSong(!nextIsNext()));
+$("prevBtn").addEventListener("click", goPrev);
 // Overslaan: het nummer gaat op Passen (uit de pot, terugzetten kan bij Nummers) en er wordt een ander getrokken.
-// "Vorige nog een keer" blijft staan als die er was.
+// Vorige slaat het overgeslagen nummer over (het is niet meer speelbaar).
 function skipSong(){
   const id = currentId; if(!id || drawing) return;
-  const keep = prevId;
   played.delete(id); ls.set(LS_PLAYED, [...played]);
   setStatus(id, "pass", true);
-  prevId = keep;
-  if(!playable().length){ currentId = null; prevId = null; renderAll(); return; }
+  if(!playable().length){ currentId = null; renderAll(); return; }
   drawSong(false);
 }
 $("skipBtn").addEventListener("click", skipSong);
@@ -2017,7 +2023,7 @@ function tearStub(){
   setTimeout(() => c.remove(), 1200);
 }
 // Terug naar het beginscherm: pot vol, geen nummer getrokken, Spelen-tab bovenaan
-$("resetPot").addEventListener("click", () => { songDone = false; prevId = null; stopScroll(true); resetTempo(); endSetPlay(); currentId = null; played.clear(); ls.set(LS_PLAYED, []); renderAll(); setTab("play"); toast(t("allBack")); });
+$("resetPot").addEventListener("click", () => { songDone = false; hist = []; stopScroll(true); resetTempo(); endSetPlay(); currentId = null; played.clear(); ls.set(LS_PLAYED, []); renderAll(); setTab("play"); toast(t("allBack")); });
 $("resetPot2").addEventListener("click", () => $("resetPot").click());
 $("search").addEventListener("input", renderList);
 $("listFilter").value = ls.get(LS_LISTFILTER, "all");
@@ -2348,7 +2354,7 @@ function startPlayAlong(){
     if(!scroller.sung) showCue();
     scroller.speed = max / Math.max(1, scroller.total - scroller.lead - scroller.tail); scroller.pos = 0; lyr.scrollTop = 0; scroller.lastSet = 0;
     scroller.paused = false; scroller.last = performance.now();
-    songDone = true; prevId = null;
+    songDone = true;
     setPlayBtn("stop");
     $("nowTotal").textContent = "/ " + fmtDur(scroller.total); $("nowElapsed").textContent = "0:00";
     scroller.vox = scroller.lead; scroller.voxEnd = scroller.tail ? scroller.total - scroller.tail : 0; scroller.bars = songBars(); barShown = null;
@@ -2939,12 +2945,12 @@ function chooseSong(id){
   played.delete(id); played.add(id); ls.set(LS_PLAYED, [...played]);
   showSong(id); renderPot(); window.scrollTo(0, 0);
 }
-// Terug naar scherm 1 (de keuzelijst): via de tab Spelen, het logo of "Kies zelf". Een klaargezet nummer dat nog niet gespeeld is, gaat terug in de pot.
+// Terug naar scherm 1 (de keuzelijst): via de tab Spelen, het logo of "Overzicht". Een klaargezet nummer dat nog niet gespeeld is, gaat terug in de pot.
 function goHome(){
   endSetPlay(); setTab("play");
   const cur = songs.find(x => x.id === currentId);
   if(cur && !songDone && (cur.lyrics || "").trim()) played.delete(cur.id); // zonder tekst telt het nummer al als gespeeld
-  songDone = false; prevId = null; currentId = null; ls.set(LS_PLAYED, [...played]);
+  songDone = false; currentId = null; ls.set(LS_PLAYED, [...played]);
   resetTempo(); $("chooseSearch").value = ""; renderAll();
 }
 $("chooseBtn2").addEventListener("click", goHome);
